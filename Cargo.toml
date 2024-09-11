@@ -1,0 +1,13 @@
+[package]
+name = "typewriter"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keyberon = "0.1.1"
+lazy-regex = "3.3.0"
+lazy_static = "1.5.0"
+leptos = { version = "0.6.15", features = ["csr", "nightly"] }
+maybe-owned = "0.3.4"
