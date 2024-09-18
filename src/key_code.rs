@@ -1,0 +1,38 @@
+use keyberon::key_code::KeyCode;
+
+pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
+    match 鍵值 {
+        "KeyA" => KeyCode::A,
+        "KeyB" => KeyCode::B,
+        "KeyC" => KeyCode::C,
+        "KeyD" => KeyCode::D,
+        "KeyE" => KeyCode::E,
+        "KeyF" => KeyCode::F,
+        "KeyG" => KeyCode::G,
+        "KeyH" => KeyCode::H,
+        "KeyI" => KeyCode::I,
+        "KeyJ" => KeyCode::J,
+        "KeyK" => KeyCode::K,
+        "KeyL" => KeyCode::L,
+        "KeyM" => KeyCode::M,
+        "KeyN" => KeyCode::N,
+        "KeyO" => KeyCode::O,
+        "KeyP" => KeyCode::P,
+        "KeyQ" => KeyCode::Q,
+        "KeyR" => KeyCode::R,
+        "KeyS" => KeyCode::S,
+        "KeyT" => KeyCode::T,
+        "KeyU" => KeyCode::U,
+        "KeyV" => KeyCode::V,
+        "KeyW" => KeyCode::W,
+        "KeyX" => KeyCode::X,
+        "KeyY" => KeyCode::Y,
+        "KeyZ" => KeyCode::Z,
+        "Semicolon" => KeyCode::SColon,
+        "Comma" => KeyCode::Comma,
+        "Period" => KeyCode::Dot,
+        "Slash" => KeyCode::Slash,
+        "Space" => KeyCode::Space,
+        _ => KeyCode::No,
+    }
+}
