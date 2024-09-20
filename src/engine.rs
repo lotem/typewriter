@@ -97,7 +97,12 @@ enum 拼寫運算<'a> {
         模式: MaybeOwned<'a, Regex>,
         替換文字: &'a str,
     },
-    轉寫(HashMap<char, char>),
+    轉寫 {
+        字符映射: HashMap<char, char>,
+    },
+    消除 {
+        模式: MaybeOwned<'a, Regex>,
+    },
 }
 macro_rules! 變換 {
     ($模式:literal, $替換文字:literal) => {
@@ -110,7 +115,17 @@ macro_rules! 變換 {
 
 macro_rules! 轉寫 {
     ($左字表:literal, $右字表:literal) => {
-        拼寫運算::轉寫(zip($左字表.chars(), $右字表.chars()).collect())
+        拼寫運算::轉寫 {
+            字符映射: zip($左字表.chars(), $右字表.chars()).collect(),
+        }
+    };
+}
+
+macro_rules! 消除 {
+    ($模式:literal) => {
+        拼寫運算::消除 {
+            模式: regex!($模式).deref().into(),
+        }
     };
 }
 
@@ -196,6 +211,20 @@ lazy_static! {
         // ⟨de, te, ne, le, ge, ke, he⟩
         // 特別地，⟨me⟩ 對應常用字「麼·么」
         變換!("^([mdtnlgkh])$", "${1}e"),
+
+        // 檢查拼音音節，通過檢查則追加隔音符號
+        變換!("^([bpm])([iu]|a|i?e|o|[ae]i|i?ao|[oi]u|i?an|[ie]n|[ei]ng|ang|ong)$", "$1$2'"),
+        變換!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$", "$1$2'"),
+        變換!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$", "$1$2'"),
+        變換!("^([nl])([iuü]|i?a|[iü]?e|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$", "$1$2'"),
+        變換!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$", "$1$2'"),
+        變換!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$", "$1$2'"),
+        變換!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$", "$1$2'"),
+        變換!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$", "$1'"),
+        // 消除不構成合法音節的並擊組合
+        消除!("^[A-Za-z]+$"),
+        // 顯示單個音節不需要加隔音符號；加尖括弧表示拉丁文轉寫，即拼音
+        變換!("^(.*)'$", "⟨$1⟩"),
     ];
 }
 
@@ -257,14 +286,23 @@ impl 並擊狀態 {
         }
         let mut 運算結果 = 並擊序列.to_owned();
         for 運算 in &*並擊轉拼音 {
-            運算結果 = match 運算 {
+            match 運算 {
                 拼寫運算::變換 {
                     ref 模式, 替換文字
-                } => 模式.replace_all(&運算結果, *替換文字).to_string(),
-                拼寫運算::轉寫(ref 字符映射) => 運算結果
+                } => {
+                    運算結果 = 模式.replace_all(&運算結果, *替換文字).to_string();
+                },
+                拼寫運算::轉寫{ref 字符映射} => {
+                    運算結果 = 運算結果
                     .chars()
                     .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
-                    .collect::<String>(),
+                    .collect::<String>();
+                },
+                拼寫運算::消除 {ref 模式} => {
+                    if 模式.is_match(&運算結果) {
+                        return None
+                    }
+                },
             };
         }
         (!運算結果.is_empty()).then_some(運算結果)
