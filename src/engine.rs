@@ -131,6 +131,9 @@ macro_rules! 消除 {
 
 lazy_static! {
     static ref 並擊轉拼音: Vec<拼寫運算::<'static>> = vec![
+        // 空格鍵單擊時產生空白
+        變換!("^A$", "␣"),
+
         // 並擊聲母
         變換!("^ZF", "zh"),
         變換!("^CL", "ch"),
@@ -171,16 +174,13 @@ lazy_static! {
         變換!("N$", "en"),
 
         變換!("IAR$", "iao"),
-        變換!("AR$", "ai"),
-        變換!("RE$", "ei"),
-        變換!("UR$", "uei"),
-        變換!("RO$", "ou"),
         變換!("IR$", "iou"),
+        變換!("UR$", "uei"),
         變換!("AO$", "ao"),
+        變換!("RO$", "ou"),
+        變換!("AR$", "ai"),
+        變換!("RE?$", "ei"),
         變換!("AE$", "a"),
-
-        變換!("^([dtnlgkhzcsr]h?)O$", "${1}ou"),
-        變換!("^([bpmfdtnlgkh])E$", "${1}ei"),
 
         轉寫!("AOEIUÜ", "aoeiuü"),
 
@@ -195,9 +195,10 @@ lazy_static! {
         變換!("^([jqx])ü", "${1}u"),
         // 一些容錯
         變換!("^([bpmf])uo$", "${1}o"),
+        變換!("^([dtngkhzcsr]h?)o$", "${1}uo"),
+        變換!("io$", "iao"),
         變換!("^([nl])uei$", "${1}ei"),
         變換!("^([nl])iong$", "${1}ong"),
-        變換!("io$", "iao"),
         變換!("^([zcsr]h?)i([aoe])", "$1$2"),
         變換!("^([zcsr]h?)i(ng?)$", "${1}e$2"),
         // 拼寫規則
@@ -291,18 +292,18 @@ impl 並擊狀態 {
                     ref 模式, 替換文字
                 } => {
                     運算結果 = 模式.replace_all(&運算結果, *替換文字).to_string();
-                },
-                拼寫運算::轉寫{ref 字符映射} => {
+                }
+                拼寫運算::轉寫 { ref 字符映射 } => {
                     運算結果 = 運算結果
-                    .chars()
-                    .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
-                    .collect::<String>();
-                },
-                拼寫運算::消除 {ref 模式} => {
+                        .chars()
+                        .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
+                        .collect::<String>();
+                }
+                拼寫運算::消除 { ref 模式 } => {
                     if 模式.is_match(&運算結果) {
-                        return None
+                        return None;
                     }
-                },
+                }
             };
         }
         (!運算結果.is_empty()).then_some(運算結果)
