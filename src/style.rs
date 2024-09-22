@@ -2,11 +2,14 @@ use stylers::style;
 
 pub fn 樣式() -> &'static str {
     let styler_class = style! {
+        :deep(kbd) {
+            font-family: Fantasque Sans Mono, Inter, monospace;
+        }
         :deep(.input-code) {
             display: flex;
             justify-content: space-evenly;
             align-items: center;
-            gap: 30px;
+            gap: 24px;
             margin: 24px auto 16px auto;
             width: 384px;
             height: 80px;
@@ -14,14 +17,15 @@ pub fn 樣式() -> &'static str {
             border-radius: 24px;
         }
         :deep(.input-code .raw-input) {
-            flex: 4;
+            flex: 1;
             color: green;
             font-size: 2.5rem;
             text-align: right;
         }
         :deep(.input-code .translated-input) {
-            flex: 3;
+            flex: 1;
             color: green;
+            font-family: LXGW WenKai, Inter, sans-serif;
             font-size: 2rem;
         }
         :deep(.board) {
