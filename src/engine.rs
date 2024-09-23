@@ -168,7 +168,7 @@ lazy_static! {
         變換!("NE$", "eng"),
 
         變換!("AN$", "an"),
-        變換!("ÜN$", "ün"),
+        變換!("ÜN$", "vn"),
         變換!("UN$", "uen"),
         變換!("IN$", "in"),
         變換!("N$", "en"),
@@ -182,7 +182,7 @@ lazy_static! {
         變換!("RE?$", "ei"),
         變換!("AE$", "a"),
 
-        轉寫!("AOEIUÜ", "aoeiuü"),
+        轉寫!("AOEIUÜ", "aoeiuv"),
 
         // 漢語拼音方案的拼寫規則
         變換!("^i(ng?)$", "yi$1"),
@@ -191,8 +191,8 @@ lazy_static! {
         變換!("^ong$", "weng"),
         變換!("^u$", "wu"),
         變換!("^u", "w"),
-        變換!("^ü", "yu"),
-        變換!("^([jqx])ü", "${1}u"),
+        變換!("^v", "yu"),
+        變換!("^([jqx])v", "${1}u"),
         // 一些容錯
         變換!("^([bpmf])uo$", "${1}o"),
         變換!("^([dtngkhzcsr]h?)o$", "${1}uo"),
@@ -217,13 +217,14 @@ lazy_static! {
         變換!("^([bpm])([iu]|a|i?e|o|[ae]i|i?ao|[oi]u|i?an|[ie]n|[ei]ng|ang|ong)$", "$1$2'"),
         變換!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$", "$1$2'"),
         變換!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$", "$1$2'"),
-        變換!("^([nl])([iuü]|i?a|[iü]?e|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$", "$1$2'"),
+        變換!("^([nl])([iuv]|i?a|[iv]?e|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$", "$1$2'"),
         變換!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$", "$1$2'"),
         變換!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$", "$1$2'"),
         變換!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$", "$1$2'"),
         變換!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$", "$1'"),
         // 消除不構成合法音節的並擊組合
         消除!("^[A-Za-z]+$"),
+        轉寫!("v", "ü"),
         // 顯示單個音節不需要加隔音符號；加尖括弧表示拉丁文轉寫，即拼音
         變換!("^(.*)'$", "⟨$1⟩"),
     ];
