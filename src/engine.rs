@@ -130,7 +130,7 @@ macro_rules! 消除 {
 }
 
 lazy_static! {
-    static ref 並擊轉拼音: Vec<拼寫運算::<'static>> = vec![
+    static ref 並擊轉拼音: Box<[拼寫運算::<'static>]> = Box::new([
         // 空格鍵單擊時產生空白
         變換!("^A$", "␣"),
 
@@ -227,10 +227,94 @@ lazy_static! {
         轉寫!("v", "ü"),
         // 顯示單個音節不需要加隔音符號；加尖括弧表示拉丁文轉寫，即拼音
         變換!("^(.*)'$", "⟨$1⟩"),
-    ];
+    ]);
+
+    static ref 拼音轉並擊: Box<[拼寫運算::<'static>]> = Box::new([
+        // 缺省韻母
+        變換!("^bu$", "B"),
+        變換!("^pu$", "P"),
+        變換!("^me$", "FB"),
+        變換!("^fu$", "F"),
+        變換!("^de$", "D"),
+        變換!("^te$", "T"),
+        變換!("^ne$", "LD"),
+        變換!("^le$", "L"),
+        變換!("^ge$", "G"),
+        變換!("^ke$", "K"),
+        變換!("^he$", "H"),
+        變換!("^zhi$", "ZF"),
+        變換!("^chi$", "CL"),
+        變換!("^shi$", "SH"),
+        變換!("^ri$", "HG"),
+        變換!("^zi$", "Z"),
+        變換!("^ci$", "C"),
+        變換!("^si$", "S"),
+        變換!("^er$", "R"),
+        // 韻母的並擊碼
+        變換!("^a$", "AE"),
+        變換!("a$", "A"),
+        變換!("ao$", "AO"),
+        變換!("o$", "O"),
+        變換!("ue$", "ÜE"),
+        變換!("e$", "E"),
+        變換!("ai$", "AR"),
+        變換!("^wei$|ui$", "UR"),
+        變換!("^ei$", "RE"),
+        變換!("^([zcsr]h?)ei$", "${1}RE"),
+        變換!("ei$", "R"),
+        變換!("^you$|iou$|iu$", "IR"),
+        變換!("ou$", "RO"),
+        變換!("an$", "AN"),
+        變換!("^yin|in$", "IN"),
+        變換!("^yun$", "ÜN"),
+        變換!("^([jqx])un$", "${1}ÜN"),
+        變換!("^wen$|un$", "UN"),
+        變換!("en$", "N"),
+        變換!("wang$|uang", "UARO"),
+        變換!("ang$", "ANE"),
+        變換!("eng$", "NE"),
+        變換!("^ying$|ing$", "INE"),
+        變換!("^yong$|iong$", "IRO"),
+        變換!("^weng$|ong$", "URO"),
+        變換!("^yu|ü|v", "Ü"),
+        變換!("^yi?|i", "I"),
+        變換!("^wu?|u", "U"),
+        // 聲母的並擊碼
+        變換!("^p", "P"),
+        變換!("^m", "FB"),
+        變換!("^f", "F"),
+        變換!("^d", "D"),
+        變換!("^t", "T"),
+        變換!("^n", "LD"),
+        變換!("^l", "L"),
+        變換!("^j$", "GI"),
+        變換!("^q$", "KI"),
+        變換!("^x$", "HI"),
+        變換!("^[gj]", "G"),
+        變換!("^[kq]", "K"),
+        變換!("^[hx]", "H"),
+        變換!("^zh", "ZF"),
+        變換!("^ch", "CL"),
+        變換!("^sh", "SH"),
+        變換!("^z", "Z"),
+        變換!("^c", "C"),
+        變換!("^s", "S"),
+        變換!("^r", "HG"),
+    ]);
 }
 
 pub type 鍵組 = BTreeSet<KeyCode>;
+
+pub fn 寫成並擊序列(並擊: &鍵組) -> String {
+    if 並擊.is_empty() {
+        return String::new();
+    }
+    並擊鍵序
+        .iter()
+        .filter(|鍵| 並擊.contains(&鍵.鍵碼))
+        .map(|鍵| 鍵.輸入碼)
+        .collect::<String>()
+}
 
 pub struct 並擊狀態 {
     pub 實時落鍵: 鍵組,
@@ -272,41 +356,48 @@ impl 並擊狀態 {
     pub fn 並擊完成(&mut self) {}
 
     pub fn 並擊序列(&self) -> String {
-        if self.累計擊鍵.is_empty() {
-            return String::new();
-        }
-        並擊鍵序
-            .iter()
-            .filter(|鍵| self.累計擊鍵.contains(&鍵.鍵碼))
-            .map(|鍵| 鍵.輸入碼)
-            .collect::<String>()
+        寫成並擊序列(&self.累計擊鍵)
     }
 
-    pub fn 並擊變換(並擊序列: &str) -> Option<String> {
-        if 並擊序列.is_empty() {
-            return None;
-        }
-        let mut 運算結果 = 並擊序列.to_owned();
-        for 運算 in &*並擊轉拼音 {
-            match 運算 {
-                拼寫運算::變換 {
-                    ref 模式, 替換文字
-                } => {
-                    運算結果 = 模式.replace_all(&運算結果, *替換文字).to_string();
-                }
-                拼寫運算::轉寫 { ref 字符映射 } => {
-                    運算結果 = 運算結果
-                        .chars()
-                        .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
-                        .collect::<String>();
-                }
-                拼寫運算::消除 { ref 模式 } => {
-                    if 模式.is_match(&運算結果) {
-                        return None;
-                    }
-                }
-            };
-        }
-        (!運算結果.is_empty()).then_some(運算結果)
+    pub fn 並擊變換(並擊碼: &str) -> Option<String> {
+        拼寫運算(並擊碼, &*並擊轉拼音)
     }
+}
+
+pub fn 反查變換(反查碼: &str) -> Option<鍵組> {
+    let 反查結果 = 拼寫運算(反查碼, &*拼音轉並擊)?;
+    let 得一鍵組 = 並擊鍵序
+        .iter()
+        .filter(|鍵| 反查結果.contains(&鍵.輸入碼))
+        .map(|鍵| 鍵.鍵碼)
+        .collect::<鍵組>();
+    Some(得一鍵組)
+}
+
+fn 拼寫運算(原形: &str, 運算規則: &[拼寫運算]) -> Option<String> {
+    if 原形.is_empty() {
+        return None;
+    }
+    let mut 運算結果 = 原形.to_owned();
+    for 運算 in 運算規則 {
+        match 運算 {
+            拼寫運算::變換 {
+                ref 模式, 替換文字
+            } => {
+                運算結果 = 模式.replace_all(&運算結果, *替換文字).to_string();
+            }
+            拼寫運算::轉寫 { ref 字符映射 } => {
+                運算結果 = 運算結果
+                    .chars()
+                    .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
+                    .collect::<String>();
+            }
+            拼寫運算::消除 { ref 模式 } => {
+                if 模式.is_match(&運算結果) {
+                    return None;
+                }
+            }
+        };
+    }
+    (!運算結果.is_empty()).then_some(運算結果)
 }

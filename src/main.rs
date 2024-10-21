@@ -1,10 +1,10 @@
 use leptos::*;
 
+mod app;
 mod engine;
 mod key_code;
 mod layout;
 mod style;
-mod app;
 
 use app::RIME_打字機應用;
 

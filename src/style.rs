@@ -13,20 +13,31 @@ pub fn 樣式() -> &'static str {
             margin: 24px auto 16px auto;
             width: 384px;
             height: 80px;
-            border: 2px solid green;
+            border: 2px solid;
             border-radius: 24px;
-        }
-        :deep(.input-code .raw-input) {
-            flex: 1;
-            color: green;
             font-size: 2.5rem;
+        }
+        :deep(.input-code.freeplay) {
+            border-color: purple;
+            color: purple;
+        }
+        :deep(.input-code.target) {
+            border-color: green;
+            color: green;
+        }
+        :deep(.raw-input) {
+            flex: 1;
             text-align: right;
         }
-        :deep(.input-code .translated-input) {
+        :deep(.translated-input, .lookup-code) {
             flex: 1;
-            color: green;
             font-family: LXGW WenKai, Inter, sans-serif;
             font-size: 2rem;
+        }
+        :deep(.lookup-code) {
+            border: 1px dotted green;
+            border-radius: 10px;
+            margin: auto 18px;
         }
         :deep(.board) {
             display: flex;
@@ -54,11 +65,19 @@ pub fn 樣式() -> &'static str {
             height: 80px;
             width: 384px;
         }
+         :deep(.key.hint) {
+            color: green;
+            background-color: color-mix(in srgb, green 5%, transparent);
+        }
         :deep(.key.pressed) {
             color: purple;
             background-color: color-mix(in srgb, purple 5%, transparent);
         }
-        :deep(.key.keydown) {
+         :deep(.key.hint.pressed) {
+            color: teal;
+            background-color: color-mix(in srgb, teal 25%, transparent);
+        }
+        :deep(.key.keydown, .key.hint.keydown) {
             color: purple;
             background-color: color-mix(in srgb, purple 25%, transparent);
         }
