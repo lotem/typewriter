@@ -134,15 +134,22 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 顯示反查碼 = move || 反查所得並擊碼().is_some();
     let 顯示實況並擊碼 = move || !顯示反查碼() && !並擊碼().is_empty();
+    let 並擊成功 = move || 反查拼音().is_some_and(|甲| 並擊所得拼音().is_some_and(|乙| 甲 == 乙));
 
     let 輸入碼 = move || 反查所得並擊碼().unwrap_or_else(並擊碼);
-    let 拼音 = move || 反查拼音().or_else(並擊所得拼音);
+    let 拼音 = move || {
+        反查拼音()
+            .or_else(並擊所得拼音)
+            // 加尖括弧表示拉丁文轉寫，即拼音
+            .map(|拼音| format!("⟨{拼音}⟩"))
+    };
 
     let styler_class = 樣式();
     view! { class = styler_class,
         <div class="input-code"
             class:freeplay={顯示實況並擊碼}
             class:target={顯示反查碼}
+            class:success={並擊成功}
             on:click=move |_| 開啓反查()
         >
             <Show

@@ -25,6 +25,11 @@ pub fn 樣式() -> &'static str {
             border-color: green;
             color: green;
         }
+        :deep(.input-code.success) {
+            background-color: color-mix(in srgb, teal 15%, transparent);
+            border-color: teal;
+            color: teal;
+        }
         :deep(.raw-input) {
             flex: 1;
             text-align: right;
