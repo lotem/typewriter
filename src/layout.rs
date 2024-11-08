@@ -1,3 +1,5 @@
+#![allow(non_upper_case_globals)]
+
 use keyberon::key_code::KeyCode;
 
 pub type 盤面選擇碼 = u64;
