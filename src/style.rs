@@ -72,11 +72,11 @@ pub fn 樣式() -> &'static str {
         }
          :deep(.key.hint) {
             color: green;
-            background-color: color-mix(in srgb, green 5%, transparent);
+            background-color: color-mix(in srgb, green 10%, transparent);
         }
         :deep(.key.pressed) {
             color: purple;
-            background-color: color-mix(in srgb, purple 5%, transparent);
+            background-color: color-mix(in srgb, purple 10%, transparent);
         }
          :deep(.key.hint.pressed) {
             color: teal;
