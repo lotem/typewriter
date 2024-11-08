@@ -402,3 +402,11 @@ fn 拼寫運算(原形: &str, 運算規則: &[拼寫運算]) -> Option<String> {
     }
     (!運算結果.is_empty()).then_some(運算結果)
 }
+
+pub fn 解析拼音(拼音: &str) -> Vec<String> {
+    拼音
+        .split(&[' ', '\'', '-'][..])
+        .filter(|&s| !s.is_empty())
+        .map(str::to_string)
+        .collect()
+}

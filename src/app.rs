@@ -6,7 +6,7 @@ use leptos::{
 };
 use leptos_use::{use_document, use_event_listener, use_window_focus};
 
-use crate::engine::{並擊狀態, 反查變換, 寫成並擊序列, 鍵組};
+use crate::engine::{並擊狀態, 反查變換, 寫成並擊序列, 解析拼音, 鍵組};
 use crate::key_code::網頁鍵值轉換;
 use crate::layout::{盤面選擇碼, 鍵的定義, 鍵盤矩陣};
 use crate::style::樣式;
@@ -128,13 +128,17 @@ pub fn RIME_打字機應用() -> impl IntoView {
     let 並擊碼 = move || 並擊狀態流.with(並擊狀態::並擊序列);
     let 並擊所得拼音 = create_memo(move |_| 並擊狀態::並擊變換(&並擊碼()));
 
-    let 反查拼音 = move || (!反查碼().is_empty()).then(反查碼);
+    let 反查拼音組 = create_memo(move |_| 解析拼音(反查碼().trim()));
+    let (反查進度, 更新反查進度) = create_signal(0);
+    let 反查拼音 = move || 反查拼音組.with(|拼音組| 拼音組.get(反查進度()).cloned());
+
     let 反查鍵位 = create_memo(move |_| 反查拼音().as_deref().and_then(反查變換));
     let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(寫成並擊序列);
 
     let 顯示反查碼 = move || 反查所得並擊碼().is_some();
     let 顯示實況並擊碼 = move || !顯示反查碼() && !並擊碼().is_empty();
-    let 並擊成功 = move || 反查拼音().is_some_and(|甲| 並擊所得拼音().is_some_and(|乙| 甲 == 乙));
+    let 並擊成功 =
+        move || 反查拼音().is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得));
 
     let 輸入碼 = move || 反查所得並擊碼().unwrap_or_else(並擊碼);
     let 拼音 = move || {
