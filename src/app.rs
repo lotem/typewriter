@@ -130,6 +130,13 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 反查拼音組 = create_memo(move |_| 解析拼音(反查碼().trim()));
     let (反查進度, 更新反查進度) = create_signal(0);
+    let _ = watch(
+        反查拼音組,
+        move |_, _, _| {
+            更新反查進度(0);
+        },
+        false,
+    );
     let 反查拼音 = move || 反查拼音組.with(|拼音組| 拼音組.get(反查進度()).cloned());
 
     let 反查鍵位 = create_memo(move |_| 反查拼音().as_deref().and_then(反查變換));
@@ -147,6 +154,19 @@ pub fn RIME_打字機應用() -> impl IntoView {
             // 加尖括弧表示拉丁文轉寫，即拼音
             .map(|拼音| format!("⟨{拼音}⟩"))
     };
+
+    let 並擊完成 =
+        move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.is_empty() && !狀態.累計擊鍵.is_empty());
+
+    create_effect(move |_| {
+        if 並擊完成() && 並擊成功() {
+            let 拼音數 = 反查拼音組.with(|拼音組| 拼音組.len());
+            if 反查進度() + 1 < 拼音數 {
+                更新反查進度(反查進度() + 1);
+                並擊狀態變更.update(並擊狀態::重置);
+            }
+        }
+    });
 
     let styler_class = 樣式();
     view! { class = styler_class,
