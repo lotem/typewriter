@@ -266,16 +266,16 @@ lazy_static! {
         變換!("ou$", "RO"),
         變換!("an$", "AN"),
         變換!("^yin|in$", "IN"),
-        變換!("^yun$", "ÜN"),
+        變換!("^yun|ün$|vn$", "ÜN"),
         變換!("^([jqx])un$", "${1}ÜN"),
-        變換!("^wen$|un$", "UN"),
+        變換!("^wen$|uen$|un$", "UN"),
         變換!("en$", "N"),
-        變換!("wang$|uang", "UARO"),
+        變換!("wang$|uang$", "UARO"),
         變換!("ang$", "ANE"),
-        變換!("eng$", "NE"),
         變換!("^ying$|ing$", "INE"),
         變換!("^yong$|iong$", "IRO"),
-        變換!("^weng$|ong$", "URO"),
+        變換!("^weng$|ueng$|ong$", "URO"),
+        變換!("eng$", "NE"),
         變換!("^yu|ü|v", "Ü"),
         變換!("^yi?|i", "I"),
         變換!("^wu?|u", "U"),
@@ -403,10 +403,33 @@ fn 拼寫運算(原形: &str, 運算規則: &[拼寫運算]) -> Option<String> {
     (!運算結果.is_empty()).then_some(運算結果)
 }
 
-pub fn 解析拼音(拼音: &str) -> Vec<String> {
-    拼音
+fn 貌似拼音(s: &str) -> bool {
+    [
+        regex!("^([bpm])([iu]|a|i?e|o|[ae]i|i?ao|[oi]u|i?an|[ie]n|[ei]ng|ang|ong)$"),
+        regex!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$"),
+        regex!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$"),
+        regex!(
+            "^([nl])([iuv]|i?a|[iv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$"
+        ),
+        regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
+        regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
+        regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$"),
+        regex!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$"),
+        // 聲母
+        regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)$"),
+        // 非音節形式的韻母
+        regex!(
+            "^([iuvyw]|[iu][ao]|[iuv]?e|üe?|u[ae]?i|iao|io?u|[iuv]a?n|üa?n|uen|[iu]a?ng|ueng|i?ong)?$"
+        ),
+    ]
+    .iter()
+    .any(|r| r.is_match(s))
+}
+
+pub fn 解析拼音(長拼音: &str) -> Vec<String> {
+    長拼音
         .split(&[' ', '\'', '-'][..])
-        .filter(|&s| !s.is_empty())
+        .filter(|&s| !s.is_empty() && 貌似拼音(s))
         .map(str::to_string)
         .collect()
 }
