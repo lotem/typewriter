@@ -12,6 +12,21 @@ use crate::key_code::網頁鍵值轉換;
 use crate::layout::{盤面選擇碼, 鍵的定義, 鍵盤矩陣};
 use crate::style::樣式;
 
+const 預設練習題: &str = "\
+zhong zhou yun shu ru fa yin qing \
+gong bao pin yin \
+b p m f d t n l g k h j q x zh ch sh r z c s \
+i u ü \
+a o e ia ua io uo ie üe \
+er \
+ai uai ei uei \
+ao iao ou iou \
+an ian uan üan \
+en in uen ün \
+ang iang uang \
+eng ing ong iong \
+";
+
 #[component]
 fn RIME_鍵圖(
     鍵: &'static 鍵的定義, 目標盤面: 盤面選擇碼, 標註法: 鍵面標註法
@@ -108,10 +123,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
         }
     });
 
-    let (反查碼, 更新反查碼) = create_signal(String::from(
-        "zhong zhou yun shu ru fa yin qing \
-         si xiang yong jian pan biao da ye xing",
-    ));
+    let (反查碼, 更新反查碼) = create_signal(String::from(預設練習題));
     let 反查拼音組 = create_memo(move |_| 解析拼音(反查碼().trim()));
     let (反查進度, 更新反查進度) = create_signal(0);
 
@@ -166,9 +178,11 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 顯示反查 = move || 反查鍵位().is_some();
     let 顯示實況 = move || !顯示反查() && !實況並擊碼().is_empty();
-    // 拼音一致即爲成功，允許並擊碼不同
     let 並擊成功 = move || {
+        // 拼音一致即爲成功，允許並擊碼不同
         目標反查拼音().is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得))
+            // 拼音爲非音節形式的聲母、韻母，須比較並擊碼
+            || 反查所得並擊碼().is_some_and(|查得| 查得 == 實況並擊碼())
     };
     let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.is_empty());
     let 並擊完成 =
