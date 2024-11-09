@@ -5,6 +5,7 @@ use leptos::{
     logging::log,
 };
 use leptos_use::{use_document, use_event_listener, use_window_focus};
+use std::cmp::min;
 
 use crate::engine::{並擊狀態, 反查變換, 寫成並擊序列, 解析拼音, 鍵組};
 use crate::key_code::網頁鍵值轉換;
@@ -116,12 +117,13 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 反查推進 = move |迴轉: bool| {
         let 拼音數 = 反查拼音組.with(Vec::len);
-        if 反查進度() + 1 < 拼音數 {
-            更新反查進度(反查進度() + 1);
+        if 迴轉 && 反查進度() + 1 >= 拼音數 {
+            更新反查進度(0);
             return true;
         }
-        if 迴轉 && 反查進度() + 1 == 拼音數 {
-            更新反查進度(0);
+        // 非迴轉態可推進至結束位置，即拼音數
+        if 反查進度() < 拼音數 {
+            更新反查進度(反查進度() + 1);
             return true;
         }
         false
@@ -142,7 +144,15 @@ pub fn RIME_打字機應用() -> impl IntoView {
         false,
     );
 
-    let 目標反查拼音 = move || 反查拼音組.with(|拼音組| 拼音組.get(反查進度()).cloned());
+    let 目標反查拼音 = move || {
+        反查拼音組.with(|拼音組| {
+            if 拼音組.is_empty() {
+                None
+            } else {
+                拼音組.get(min(反查進度(), 拼音組.len() - 1)).cloned()
+            }
+        })
+    };
     let 反查鍵位 = create_memo(move |_| 目標反查拼音().as_deref().and_then(反查變換));
     let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(寫成並擊序列);
 
@@ -160,19 +170,10 @@ pub fn RIME_打字機應用() -> impl IntoView {
     let 並擊成功 = move || {
         目標反查拼音().is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得))
     };
+    let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.is_empty());
     let 並擊完成 =
         move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.is_empty()) && !實況並擊碼().is_empty();
-
-    create_effect(move |_| {
-        if 並擊完成() && 並擊成功() && 反查推進(false) {
-            重置並擊狀態();
-        }
-    });
-
-    let 反查進度完成 = move || {
-        let 拼音數 = 反查拼音組.with(Vec::len);
-        反查進度() + 1 == 拼音數 && 並擊完成() && 並擊成功()
-    };
+    let 反查進度完成 = move || 反查進度() == 反查拼音組.with(Vec::len);
 
     let 開啓反查 = move || {
         if 反查進度完成() {
@@ -226,12 +227,22 @@ pub fn RIME_打字機應用() -> impl IntoView {
         if !鍵位反查輸入模式() {
             並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
         }
+        // 繼續擊鍵時消除已完成的反查作業
+        if 並擊開始() && 反查進度完成() {
+            更新反查碼(String::new());
+        }
     });
 
     let _ = use_event_listener(use_document().body(), keyup, move |evt: KeyboardEvent| {
         log!("抬鍵 key = {}, code = {}", &evt.key(), &evt.code());
         if !鍵位反查輸入模式() {
             並擊狀態變更.update(|並擊| 並擊.抬鍵(網頁鍵值轉換(&evt.code())));
+        }
+        if 並擊完成() && 並擊成功() {
+            // 擊中目標拼音後，反查下一個拼音；在最後一個拼音完成後顯示結果
+            if 反查推進(false) && !反查進度完成() {
+                重置並擊狀態();
+            }
         }
     });
 
