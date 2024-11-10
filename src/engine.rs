@@ -276,6 +276,7 @@ lazy_static! {
         變換!("^yong$|iong$", "IRO"),
         變換!("^weng$|ueng$|ong$", "URO"),
         變換!("eng$", "NE"),
+        變換!("^([jqx])u", "${1}Ü"),
         變換!("^yu|ü|v", "Ü"),
         變換!("^yi?|i", "I"),
         變換!("^wu?|u", "U"),
@@ -409,7 +410,7 @@ fn 貌似拼音(s: &str) -> bool {
         regex!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$"),
         regex!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$"),
         regex!(
-            "^([nl])([iuv]|i?a|[iv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$"
+            "^([nl])([iuv]|i?a|[iuv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$"
         ),
         regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
         regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
