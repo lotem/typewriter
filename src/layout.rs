@@ -8,7 +8,7 @@ pub type 盤面刻印 = (盤面選擇碼, &'static str);
 
 pub struct 鍵的定義 {
     pub 鍵碼: KeyCode,
-    字符映射: &'static [盤面刻印],
+    pub 字符映射: &'static [盤面刻印],
 }
 
 impl 鍵的定義 {

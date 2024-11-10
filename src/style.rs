@@ -5,12 +5,19 @@ pub fn 樣式() -> &'static str {
         :deep(kbd) {
             font-family: Fantasque Sans Mono, Inter, monospace;
         }
+        :deep(.top-bar) {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0px;
+            height: 80px;
+        }
         :deep(.input-code) {
             display: flex;
             justify-content: space-evenly;
             align-items: center;
             gap: 24px;
-            margin: 24px auto 16px auto;
             width: 384px;
             height: 80px;
             border: 2px solid;
@@ -65,7 +72,17 @@ pub fn 樣式() -> &'static str {
             height: 80px;
             width: 80px;
         }
-        :deep(.key.space) {
+        :deep(.function.key, .function.key.pressed) {
+            color: white;
+            background-color: black;
+            opacity: 15%;
+        }
+        :deep(.function.key.keydown) {
+            color: white;
+            background-color: black;
+            opacity: 33%;
+        }
+        :deep(.space.key) {
             border-radius: 10% / 30%;
             height: 80px;
             width: 384px;
@@ -89,10 +106,16 @@ pub fn 樣式() -> &'static str {
         :deep(.key.fallback, .key.empty) {
             opacity: 33%;
         }
+        :deep(.key.hidden) {
+            visibility: hidden;
+        }
         :deep(.key .label) {
             font-size: 2.5rem;
             margin: auto;
             vertical-align: middle;
+        }
+        :deep(.function.key .label) {
+            font-size: 1.2rem;
         }
     };
     styler_class

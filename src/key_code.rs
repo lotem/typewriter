@@ -33,6 +33,10 @@ pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
         "Period" => KeyCode::Dot,
         "Slash" => KeyCode::Slash,
         "Space" => KeyCode::Space,
+        "Escape" => KeyCode::Escape,
+        "Tab" => KeyCode::Tab,
+        "Backspace" => KeyCode::BSpace,
+        "Enter" => KeyCode::Enter,
         _ => KeyCode::No,
     }
 }
