@@ -288,9 +288,9 @@ lazy_static! {
         變換!("^t", "T"),
         變換!("^n", "LD"),
         變換!("^l", "L"),
-        變換!("^j$", "GI"),
-        變換!("^q$", "KI"),
-        變換!("^x$", "HI"),
+        變換!("^j-?$", "GI"),
+        變換!("^q-?$", "KI"),
+        變換!("^x-?$", "HI"),
         變換!("^[gj]", "G"),
         變換!("^[kq]", "K"),
         變換!("^[hx]", "H"),
@@ -416,11 +416,10 @@ fn 貌似拼音(s: &str) -> bool {
         regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$"),
         regex!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$"),
         // 聲母
-        regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)$"),
+        regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)-?$"),
         // 非音節形式的韻母
-        regex!(
-            "^([iuvyw]|[iu][ao]|[iuv]?e|üe?|u[ae]?i|iao|io?u|[iuv]a?n|üa?n|uen|[iu]a?ng|ueng|i?ong)?$"
-        ),
+        regex!("^([yw])-?$"),
+        regex!("^-?([iuv]|[iu]?[ao]|[iuv]?e|üe?|u?[ae]i|ui|i?ao|i?ou|iu|[iuv]?an|üa?n|[iuv]n|u?en|[iu]?ang|ing|u?eng|i?ong)?$"),
     ]
     .iter()
     .any(|r| r.is_match(s))
@@ -428,7 +427,7 @@ fn 貌似拼音(s: &str) -> bool {
 
 pub fn 解析拼音(長拼音: &str) -> Vec<String> {
     長拼音
-        .split(&[' ', '\'', '-'][..])
+        .split(&[' ', '\''][..])
         .filter(|&s| !s.is_empty() && 貌似拼音(s))
         .map(str::to_string)
         .collect()

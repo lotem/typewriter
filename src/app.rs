@@ -17,7 +17,7 @@ zhong zhou yun shu ru fa yin qing \
 gong bao pin yin \
 b p m f d t n l g k h j q x zh ch sh r z c s \
 i u ü \
-a o e ia ua io uo ie üe \
+-a o e ia ua uo ie üe \
 er \
 ai uai ei uei \
 ao iao ou iou \
