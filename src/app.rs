@@ -185,7 +185,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 開啓反查 = move || {
         if 反查進度完成() {
-            更新反查進度(0);
+            更新反查碼(String::new());
         }
         重置並擊狀態();
         開關編碼反查輸入欄(true);
