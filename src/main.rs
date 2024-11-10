@@ -1,6 +1,7 @@
 use leptos::*;
 
 mod app;
+mod drills;
 mod engine;
 mod key_code;
 mod layout;
