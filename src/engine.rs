@@ -415,6 +415,8 @@ fn 貌似拼音(s: &str) -> bool {
         regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
         regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$"),
         regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$"),
+        // 尖音，演示指法用。其中韻母 i 雙寫
+        regex!("^([zcs])(ii|[iv]e?|üe?|i?ao|iu|[iv]a?n|üa?n|ia?ng|iong)$"),
         regex!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$"),
         // 聲母
         regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)-?$"),
