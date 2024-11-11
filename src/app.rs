@@ -117,7 +117,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let (鍵位反查輸入模式, 開關編碼反查輸入欄) = create_signal(false);
 
-    let (反查碼, 更新反查碼) = create_signal(String::from(預設練習題[0].1));
+    let (反查碼, 更新反查碼) = create_signal(String::from(預設練習題[0].編碼));
     let 反查拼音組 = create_memo(move |_| 解析拼音(反查碼().trim()));
     let (反查進度, 更新反查進度) = create_signal(0);
 
@@ -292,8 +292,8 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 />
                 <datalist id="excercises">
                 {
-                    預設練習題.iter().map(|&題| view! {
-                        <option value={題.1}>{題.0}</option>
+                    預設練習題.iter().map(|題| view! {
+                        <option value={題.編碼}>{題.標題}</option>
                     }).collect_view()
                 }
                 </datalist>
