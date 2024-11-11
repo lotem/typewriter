@@ -8,7 +8,7 @@ use leptos_use::{use_document, use_event_listener, use_window_focus};
 use std::cmp::min;
 
 use crate::drills::預設練習題;
-use crate::engine::{並擊狀態, 反查變換, 寫成並擊序列, 解析拼音, 鍵組};
+use crate::engine::{並擊狀態, 解析輸入碼序列, 輸入碼, 鍵組};
 use crate::key_code::網頁鍵值轉換;
 use crate::layout::{盤面選擇碼, 鍵的定義, 鍵盤矩陣};
 use crate::style::樣式;
@@ -73,15 +73,17 @@ struct 鍵面標註法 {
 impl 鍵面標註法 {
     fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool {
         self.目標並擊
-            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.contains(&鍵.鍵碼)))
+            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵.鍵碼)))
     }
 
     fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊.with(|並擊| 並擊.實時落鍵.contains(&鍵.鍵碼))
+        self.實況並擊
+            .with(|並擊| 並擊.實時落鍵.0.contains(&鍵.鍵碼))
     }
 
     fn 是否擊中(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊.with(|並擊| 並擊.累計擊鍵.contains(&鍵.鍵碼))
+        self.實況並擊
+            .with(|並擊| 並擊.累計擊鍵.0.contains(&鍵.鍵碼))
     }
 }
 
@@ -116,9 +118,10 @@ pub fn RIME_打字機應用() -> impl IntoView {
     });
 
     let (鍵位反查輸入模式, 開關編碼反查輸入欄) = create_signal(false);
-
     let (反查碼, 更新反查碼) = create_signal(String::from(預設練習題[0].編碼));
-    let 反查拼音組 = create_memo(move |_| 解析拼音(反查碼().trim()));
+    let (字幕, 更新字幕) = create_signal(預設練習題[0].字幕);
+
+    let 反查拼音組 = create_memo(move |_| 解析輸入碼序列(&反查碼()));
     let (反查進度, 更新反查進度) = create_signal(0);
 
     let 反查推進 = move |迴轉: bool| {
@@ -150,7 +153,42 @@ pub fn RIME_打字機應用() -> impl IntoView {
         false,
     );
 
-    let 目標反查拼音 = move || {
+    let 分段字幕 = create_memo(move |_| {
+        字幕.with(|有冇字幕| {
+            有冇字幕.map(|有字幕| {
+                *有字幕
+                    .split_whitespace()
+                    .fold(
+                        (0, Box::new(vec![])),
+                        |(起始字序, mut 已標註字序的段落), 又一段| {
+                            let 結束字序 = 起始字序 + 又一段.chars().count();
+                            (*已標註字序的段落).push((起始字序, 結束字序, 又一段));
+                            (結束字序, 已標註字序的段落)
+                        },
+                    )
+                    .1
+            })
+        })
+    });
+    let 該段字幕按進度顯示 = move || {
+        分段字幕.with(|有冇分段字幕| {
+            有冇分段字幕.as_ref().and_then(|衆段落| {
+                let 全文進度 = 反查進度();
+                let 當前段落號 =
+                    衆段落.partition_point(|(_, 段落結束, _)| *段落結束 <= 全文進度);
+                衆段落.get(當前段落號).map(|當前段落| {
+                    let (段落起始, _, 段落文字) = 當前段落;
+                    let 段落進度 = 全文進度 - 段落起始;
+                    let 完成的字 = 段落文字.chars().take(段落進度).collect::<String>();
+                    let 當下的字 = 段落文字.chars().skip(段落進度).take(1).collect::<String>();
+                    let 剩餘的字 = 段落文字.chars().skip(段落進度 + 1).collect::<String>();
+                    (完成的字, 當下的字, 剩餘的字)
+                })
+            })
+        })
+    };
+
+    let 目標反查輸入碼 = move || {
         反查拼音組.with(|拼音組| {
             if 拼音組.is_empty() {
                 None
@@ -159,13 +197,14 @@ pub fn RIME_打字機應用() -> impl IntoView {
             }
         })
     };
-    let 反查鍵位 = create_memo(move |_| 目標反查拼音().as_deref().and_then(反查變換));
-    let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(寫成並擊序列);
 
+    let 反查鍵位 = create_memo(move |_| 目標反查輸入碼().as_ref().and_then(輸入碼::反查鍵位));
+    let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(鍵組::寫成並擊序列);
     let 輸入碼 = move || 反查所得並擊碼().unwrap_or_else(實況並擊碼);
     let 拼音 = move || {
-        目標反查拼音()
-            .or_else(並擊所得拼音)
+        目標反查輸入碼()
+            .and_then(|輸入碼| 輸入碼.轉寫碼原文)
+            .or_else(|| 並擊所得拼音().to_owned())
             // 加尖括弧表示拉丁文轉寫，即拼音
             .map(|拼音| format!("⟨{拼音}⟩"))
     };
@@ -174,18 +213,21 @@ pub fn RIME_打字機應用() -> impl IntoView {
     let 顯示實況 = move || !顯示反查() && !實況並擊碼().is_empty();
     let 並擊成功 = move || {
         // 拼音一致即爲成功，允許並擊碼不同
-        目標反查拼音().is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得))
+        目標反查輸入碼()
+            .and_then(|輸入碼| 輸入碼.轉寫碼原文)
+            .is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得))
             // 拼音爲非音節形式的聲母、韻母，須比較並擊碼
             || 反查所得並擊碼().is_some_and(|查得| 查得 == 實況並擊碼())
     };
-    let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.is_empty());
+    let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty());
     let 並擊完成 =
-        move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.is_empty()) && !實況並擊碼().is_empty();
+        move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty();
     let 反查進度完成 = move || 反查進度() == 反查拼音組.with(Vec::len);
 
     let 開啓反查 = move || {
         if 反查進度完成() {
             更新反查碼(String::new());
+            更新字幕(None);
         }
         重置並擊狀態();
         開關編碼反查輸入欄(true);
@@ -238,6 +280,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
         // 繼續擊鍵時消除已完成的反查作業
         if 並擊開始() && 反查進度完成() {
             更新反查碼(String::new());
+            更新字幕(None);
         }
     });
 
@@ -286,14 +329,22 @@ pub fn RIME_打字機應用() -> impl IntoView {
                     list="excercises"
                     value={反查碼}
                     on:input=move |ev| {
-                        更新反查碼(event_target_value(&ev));
+                        let 輸入文字 = event_target_value(&ev);
+                        if let Some(題) = 預設練習題.iter().find(|題| 輸入文字 == 題.標題) {
+                            更新反查碼(題.編碼.to_owned());
+                            更新字幕(題.字幕);
+                            關閉反查();
+                        } else {
+                            更新反查碼(輸入文字);
+                            更新字幕(None);
+                        }
                     }
                     on:blur=move |_| 關閉反查()
                 />
                 <datalist id="excercises">
                 {
                     預設練習題.iter().map(|題| view! {
-                        <option value={題.編碼}>{題.標題}</option>
+                        <option>{題.標題}</option>
                     }).collect_view()
                 }
                 </datalist>
@@ -323,7 +374,18 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <div class="top-bar">
+        <div class="text-box">
+            <div class="caption">
+            {
+                move || 該段字幕按進度顯示().map(|(完成的字, 當下的字, 剩餘的字)| view! {
+                    <span class="accepted">{完成的字}</span>
+                    <span class="highlight">{當下的字}</span>
+                    <span>{剩餘的字}</span>
+                })
+            }
+            </div>
+        </div>
+        <div class="echo-bar">
             <div title="重新錄入">
                 <RIME_鍵圖 鍵={&退出鍵} 目標盤面={0} 標註法={標註法}/>
             </div>

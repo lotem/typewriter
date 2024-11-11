@@ -5,12 +5,35 @@ pub fn 樣式() -> &'static str {
         :deep(kbd) {
             font-family: Fantasque Sans Mono, Inter, monospace;
         }
-        :deep(.top-bar) {
+        :deep(.text-box) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 24px;
+            min-height: 120px;
+        }
+        :deep(.caption) {
+            //border: 1px dotted;
+            //border-radius: 32px;
+            color: gray;
+            font-family: LXGW WenKai, Inter, sans-serif;
+            font-size: 3.5rem;
+            padding: 16px 32px;
+            text-align: center;
+            width: fit-content;
+        }
+        :deep(.caption .accepted) {
+            color: teal;
+        }
+        :deep(.caption .highlight) {
+            color: purple;
+        }
+        :deep(.echo-bar) {
             display: flex;
             flex-direction: row;
             justify-content: center;
             gap: 16px;
-            margin: 24px 0px;
+            margin: 24px 0;
             height: 80px;
         }
         :deep(.input-code) {

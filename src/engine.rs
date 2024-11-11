@@ -305,17 +305,37 @@ lazy_static! {
     ]);
 }
 
-pub type 鍵組 = BTreeSet<KeyCode>;
+#[derive(Clone, PartialEq)]
+pub struct 鍵組(pub BTreeSet<KeyCode>);
 
-pub fn 寫成並擊序列(並擊: &鍵組) -> String {
-    if 並擊.is_empty() {
-        return String::new();
+impl From<&str> for 鍵組 {
+    fn from(並擊碼: &str) -> Self {
+        鍵組(
+            並擊鍵序
+                .iter()
+                .filter(|鍵| 並擊碼.contains(鍵.輸入碼))
+                .map(|鍵| 鍵.鍵碼)
+                .collect(),
+        )
     }
-    並擊鍵序
-        .iter()
-        .filter(|鍵| 並擊.contains(&鍵.鍵碼))
-        .map(|鍵| 鍵.輸入碼)
-        .collect::<String>()
+}
+
+impl 鍵組 {
+    pub fn new() -> Self {
+        鍵組(BTreeSet::new())
+    }
+
+    pub fn 寫成並擊序列(self: &鍵組) -> String {
+        if self.0.is_empty() {
+            String::new()
+        } else {
+            並擊鍵序
+                .iter()
+                .filter(|鍵| self.0.contains(&鍵.鍵碼))
+                .map(|鍵| 鍵.輸入碼)
+                .collect::<String>()
+        }
+    }
 }
 
 pub struct 並擊狀態 {
@@ -332,23 +352,23 @@ impl 並擊狀態 {
     }
 
     pub fn 落鍵(&mut self, 鍵碼: KeyCode) {
-        if self.實時落鍵.is_empty() {
+        if self.實時落鍵.0.is_empty() {
             self.並擊開始();
         }
-        self.實時落鍵.insert(鍵碼);
-        self.累計擊鍵.insert(鍵碼);
+        self.實時落鍵.0.insert(鍵碼);
+        self.累計擊鍵.0.insert(鍵碼);
     }
 
     pub fn 抬鍵(&mut self, 鍵碼: KeyCode) {
-        self.實時落鍵.remove(&鍵碼);
-        if self.實時落鍵.is_empty() {
+        self.實時落鍵.0.remove(&鍵碼);
+        if self.實時落鍵.0.is_empty() {
             self.並擊完成();
         }
     }
 
     pub fn 重置(&mut self) {
-        self.實時落鍵.clear();
-        self.累計擊鍵.clear();
+        self.實時落鍵.0.clear();
+        self.累計擊鍵.0.clear();
     }
 
     pub fn 並擊開始(&mut self) {
@@ -358,7 +378,7 @@ impl 並擊狀態 {
     pub fn 並擊完成(&mut self) {}
 
     pub fn 並擊序列(&self) -> String {
-        寫成並擊序列(&self.累計擊鍵)
+        self.累計擊鍵.寫成並擊序列()
     }
 
     pub fn 並擊變換(並擊碼: &str) -> Option<String> {
@@ -366,14 +386,9 @@ impl 並擊狀態 {
     }
 }
 
-pub fn 反查變換(反查碼: &str) -> Option<鍵組> {
-    let 反查結果 = 拼寫運算(反查碼, &拼音轉並擊)?;
-    let 得一鍵組 = 並擊鍵序
-        .iter()
-        .filter(|鍵| 反查結果.contains(鍵.輸入碼))
-        .map(|鍵| 鍵.鍵碼)
-        .collect::<鍵組>();
-    Some(得一鍵組)
+fn 反查變換(反查碼: &str) -> Option<鍵組> {
+    let 查得並擊碼 = 拼寫運算(反查碼, &拼音轉並擊)?;
+    Some(鍵組::from(查得並擊碼.as_ref()))
 }
 
 fn 拼寫運算(原形: &str, 運算規則: &[拼寫運算]) -> Option<String> {
@@ -428,10 +443,55 @@ fn 貌似拼音(s: &str) -> bool {
     .any(|r| r.is_match(s))
 }
 
-pub fn 解析拼音(長拼音: &str) -> Vec<String> {
-    長拼音
-        .split(&[' ', '\''][..])
-        .filter(|&s| !s.is_empty() && 貌似拼音(s))
-        .map(str::to_string)
+#[derive(Clone, PartialEq)]
+pub struct 輸入碼 {
+    pub 並擊碼原文: Option<String>,
+    pub 轉寫碼原文: Option<String>,
+}
+
+impl 輸入碼 {
+    pub fn 反查鍵位(&self) -> Option<鍵組> {
+        self.並擊碼原文.as_deref().map(鍵組::from).or_else(|| {
+            self.轉寫碼原文
+                .as_deref()
+                .filter(|轉寫碼| 貌似拼音(轉寫碼))
+                .and_then(反查變換)
+        })
+    }
+}
+
+pub fn 解析輸入碼序列(輸入碼序列: &str) -> Vec<輸入碼> {
+    // 輸入碼通常是拼音音節的序列，音節之間用空白或隔音符號 ' 分開
+    // 特殊形式的拼音寫在尖括號中，如：<'a>
+    // 輸入碼片段也可以是以下形式：
+    // - 用大寫字母連書並擊碼，如 ZFURO
+    // - 寫明並擊碼和對應的拼音，如 SHGUA=shu'ru'fa
+    // - 寫明並擊碼並將對應的拼音寫在尖括號中，如 SHGUA=<shu ru fa>
+    let 輸入碼片段模式 = regex!(
+        r"(?x)
+        (?P<chord> \p{Uppercase}+ )
+        (?:
+            = (?P<eq_code> [\w'] )+ |
+            =< (?P<eq_quoted_code> [^<>]* ) >
+        )? |
+        (?P<code> \w+ ) |
+        <(?P<quoted_code> [^<>]* )>
+    "
+    );
+    輸入碼片段模式
+        .captures_iter(輸入碼序列)
+        .map(|片段| {
+            let 並擊碼原文 = 片段.name("chord").map(|m| m.as_str().to_owned());
+            let 轉寫碼原文 = 片段
+                .name("code")
+                .or_else(|| 片段.name("quoted_code"))
+                .or_else(|| 片段.name("eq_code"))
+                .or_else(|| 片段.name("eq_quoted_code"))
+                .map(|m| m.as_str().to_owned());
+            輸入碼 {
+                並擊碼原文,
+                轉寫碼原文,
+            }
+        })
         .collect()
 }
