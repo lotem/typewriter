@@ -4,7 +4,7 @@ pub struct 練習題<'a> {
     pub 字幕: Option<&'a str>,
 }
 
-pub const 預設練習題: [練習題; 10] = [
+pub const 預設練習題: [練習題; 9] = [
     練習題 {
         標題: "中州韻輸入法引擎",
         編碼: "zhong zhou yun shu ru fa yin qing \
@@ -87,7 +87,7 @@ pub const 預設練習題: [練習題; 10] = [
                     爲什麼 怎麼樣 可不可以 有沒有"),
     },
     練習題 {
-        標題: "宮保拼音並擊術（分尖團）",
+        標題: "宮保拼音並擊術",
         編碼: "gong bao pin yin bing ji shu \
                zie zou ming kuai you zhi guan \
                yi ji yi ge zhong wen zi \
@@ -102,47 +102,52 @@ pub const 預設練習題: [練習題; 10] = [
                     速記千宗歸簡易 音韻萬變列琴盤"),
     },
     練習題 {
-        標題: "題中州韻輸入法",
-        編碼: "hui hao ji jian shu tu tong gui \
+        標題: "鼠鬚管",
+        編碼: "shu sü guan \
+               wei wu sui wei cing bu cian \
+               sin shi zui mo shi yi hui \
+               bie hou ji wo wu ci yuan \
+               ziu ru chang hong yin cang hai \
+               bi ruo zün ma chi ping ban \
+               wen zhang jing shi zhi ming zao \
+               yi qi lun jiao siang de wan \
+               cang jie gong zhuan shi \
+               qiao ziang chu he yin \
+               zhong zhou yun qi yan shi fan pin \
+               da dao zhi jian yi xuan ao gao shen \
+               yun yong miao fa cun hu yi sin \
+               zong cing yu lie zi hai ci lin \
+               hui bu hui mou tian chuan yue gu jin \
+               kou zhong yan yu shi hua xia zheng yin \
+               wo zen ken ziang zhu liu fang ren \
+               ku zhi yi nian zhong bu de siao sa \
+               nan yu jiang ming liao sin li zhen hua \
+               ji cing bian ma yong cian wan ci qiao da \
+               xue hui si siang zai jian pan shang biao da \
+               hui hao ji jian shu tu tong gui \
                wen zi zing miao ji qiao sheng hui \
                shu fa cheng shi bu dao chen gui \
                jin yin gu yun yan yi lui tui \
                ji si zhong tu sin huai zhu yi \
                die dai han shu da zao shen qi \
                dai ma bu ji zhi ling sii li \
-               kai bi yuan xi si liu yong ji",
-        字幕: Some("揮毫擊鍵 殊途同歸 文字精妙 機巧生輝 \
-                    書法程式 不蹈陳規 今音古韻 演繹類推 \
-                    寄思中土 心懷主義 迭代寒暑 打造神器 \
-                    代碼不羈 指令犀利 開彼源兮 斯流永繼"),
-    },
-    練習題 {
-        標題: "鼠鬚管",
-        編碼: "zhuo jun yi jing zhou yu zhen zhi ziao \
-               zeng jun yi süan cheng shu sü zhi guan \
-               ziu ru chang hong yin cang hai \
-               bi ruo zün ma chi ping ban \
-               ai jun shang shao li fang hao \
-               zie wo jiu shuai huan zian sian \
-               wen zhang jing shi zhi ming zao \
-               yi qi lun jiao siang de wan \
-               yu zhen ziao \
-               yi ju shi fen dang fu zhan \
-               shu sü guan \
-               wei wu sui wei cing bu cian \
+               kai bi yuan xi si liu yong ji \
                sin shi zui mo shi yi hui \
                bie hou ji wo wu ci yuan",
-        字幕: Some("酌君以荊州魚枕之蕉 \
-                    贈君以宣城鼠鬚之管 \
-                    酒如長虹飲滄海 \
-                    筆若駿馬馳平坂 \
-                    愛君尚少力方豪 \
-                    嗟我久衰歡漸鮮 \
-                    文章驚世知名早 \
-                    義氣論交相得晚 \
-                    魚枕蕉 一舉十分當覆盞 \
-                    鼠鬚管 爲物雖微情不淺 \
-                    新詩醉墨時一揮 \
-                    別後寄我無辭遠"),
+        字幕: Some("鼠鬚管 爲物雖微情不淺 \
+                    新詩醉墨時一揮 別後寄我無辭遠 \
+                    酒如長虹飲滄海 筆若駿馬馳平坂 \
+                    文章驚世知名早 義氣論交相得晚 \
+                    蒼頡公轉世 巧匠出河陰 中州韻豈言是凡品 \
+                    大道至簡亦玄奧高深 運用妙法存乎一心 \
+                    縱情漁獵字海詞林 會不會某天穿越古今 \
+                    口中言語是華夏正音 我怎肯將主流放任 \
+                    苦執一念終不得瀟灑 難於講明了心裏真話 \
+                    寄情編碼用千萬次敲打 學會思想在鍵盤上表達 \
+                    揮毫擊鍵 殊途同歸 文字精妙 機巧生輝 \
+                    書法程式 不蹈陳規 今音古韻 演繹類推 \
+                    寄思中土 心懷主義 迭代寒暑 打造神器 \
+                    代碼不羈 指令犀利 開彼源兮 斯流永繼 \
+                    新詩醉墨時一揮 別後寄我無辭遠"),
     },
 ];
