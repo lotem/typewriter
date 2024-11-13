@@ -22,7 +22,7 @@ pub const 預設練習題: [練習題; 10] = [
     練習題 {
         標題: "聲母韻母練習",
         編碼: "b p m f d t n l g k h j q x zh ch sh r z c s \
-               i u ü -a o e ia ua uo ie üe er \
+               i u ü A=a o e ia ua uo ie üe er \
                ai uai ei uei ao iao ou iou \
                an ian uan üan en in uen ün \
                ang iang uang eng ing ueng ong iong",
@@ -30,7 +30,7 @@ pub const 預設練習題: [練習題; 10] = [
     },
     練習題 {
         標題: "音節練習",
-        編碼: "bu pu fu me de te le ne ge ke he zhi chi shi ri zi ci si er a",
+        編碼: "bu pu fu me de te le ne ge ke he zhi chi shi ri zi ci si er AE=<'a> A=<␣>",
         字幕: None,
     },
     練習題 {
