@@ -30,6 +30,65 @@ const 回車鍵: 鍵的定義 = 鍵的定義 {
     字符映射: &[(0, "回車")],
 };
 
+#[derive(Clone, Copy)]
+struct 鍵面標註法 {
+    目標並擊: Memo<Option<鍵組>>,
+    實況並擊: ReadSignal<並擊狀態>,
+}
+
+impl 鍵面標註法 {
+    fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool {
+        self.目標並擊
+            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵.鍵碼)))
+    }
+
+    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
+        self.實況並擊
+            .with(|並擊| 並擊.實時落鍵.0.contains(&鍵.鍵碼))
+    }
+
+    fn 是否擊中(&self, 鍵: &鍵的定義) -> bool {
+        self.實況並擊
+            .with(|並擊| 並擊.累計擊鍵.0.contains(&鍵.鍵碼))
+    }
+}
+
+struct 字幕指標<'a> {
+    字幕: &'a str,
+    指標: usize,
+}
+
+impl<'a> From<&'a str> for 字幕指標<'a> {
+    fn from(字幕: &'a str) -> Self {
+        Self{字幕, 指標: 0}
+    }
+}
+
+/// 迭代字幕中的文字.
+/// 傳入的字幕應當是從空白處切分出的一段.
+/// 通常一音對一字. 例外情況用文字組標記 `[]` 括住與一個音節對應的一組文字.
+/// 文字組不能包含空白字符及左右方括號.
+impl<'a> Iterator for 字幕指標<'a> {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut 剩餘文字 = self.字幕.chars().skip(self.指標);
+        match 剩餘文字.next() {
+            Some('[') => {
+                // 將文字組標記 [] 中的文字串視作一個文字
+                let 文字組 = 剩餘文字.take_while(|字| *字 != ']');
+                self.指標 += 文字組.clone().count() + 2;
+                Some(文字組.collect())
+            },
+            Some(單字) => {
+                self.指標 += 1;
+                Some(單字.to_string())
+            }
+            None => None,
+        }
+    }
+}
+
 #[component]
 fn RIME_鍵圖(
     鍵: &'static 鍵的定義, 目標盤面: 盤面選擇碼, 標註法: 鍵面標註法
@@ -61,29 +120,6 @@ fn RIME_鍵圖(
         >
             <kbd class="label">{刻印}</kbd>
         </div>
-    }
-}
-
-#[derive(Clone, Copy)]
-struct 鍵面標註法 {
-    目標並擊: Memo<Option<鍵組>>,
-    實況並擊: ReadSignal<並擊狀態>,
-}
-
-impl 鍵面標註法 {
-    fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool {
-        self.目標並擊
-            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵.鍵碼)))
-    }
-
-    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊
-            .with(|並擊| 並擊.實時落鍵.0.contains(&鍵.鍵碼))
-    }
-
-    fn 是否擊中(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊
-            .with(|並擊| 並擊.累計擊鍵.0.contains(&鍵.鍵碼))
     }
 }
 
@@ -161,7 +197,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
                     .fold(
                         (0, Box::new(vec![])),
                         |(起始字序, mut 已標註字序的段落), 又一段| {
-                            let 結束字序 = 起始字序 + 又一段.chars().count();
+                            let 結束字序 = 起始字序 + 字幕指標::from(又一段).count();
                             (*已標註字序的段落).push((起始字序, 結束字序, 又一段));
                             (結束字序, 已標註字序的段落)
                         },
@@ -170,6 +206,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
             })
         })
     });
+
     let 該段字幕按進度顯示 = move || {
         分段字幕.with(|有冇分段字幕| {
             有冇分段字幕.as_ref().and_then(|衆段落| {
@@ -179,9 +216,10 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 衆段落.get(當前段落號).map(|當前段落| {
                     let (段落起始, _, 段落文字) = 當前段落;
                     let 段落進度 = 全文進度 - 段落起始;
-                    let 完成的字 = 段落文字.chars().take(段落進度).collect::<String>();
-                    let 當下的字 = 段落文字.chars().skip(段落進度).take(1).collect::<String>();
-                    let 剩餘的字 = 段落文字.chars().skip(段落進度 + 1).collect::<String>();
+
+                    let 完成的字 = 字幕指標::from(*段落文字).take(段落進度).collect::<String>();
+                    let 當下的字 = 字幕指標::from(*段落文字).skip(段落進度).take(1).collect::<String>();
+                    let 剩餘的字 = 字幕指標::from(*段落文字).skip(段落進度 + 1).collect::<String>();
                     (完成的字, 當下的字, 剩餘的字)
                 })
             })

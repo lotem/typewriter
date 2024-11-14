@@ -69,6 +69,11 @@ pub fn 樣式() -> &'static str {
             font-family: LXGW WenKai, Inter, sans-serif;
             font-size: 2rem;
         }
+        :deep(.translated-input) {
+            overflow: visible;
+            overflow-wrap: break-word;
+            white-space: nowrap;
+        }
         :deep(.lookup-code) {
             border: 1px dotted green;
             border-radius: 10px;

@@ -4,7 +4,7 @@ pub struct 練習題<'a> {
     pub 字幕: Option<&'a str>,
 }
 
-pub const 預設練習題: [練習題; 9] = [
+pub const 預設練習題: [練習題; 10] = [
     練習題 {
         標題: "中州韻輸入法引擎",
         編碼: "zhong zhou yun shu ru fa yin qing \
@@ -85,6 +85,13 @@ pub const 預設練習題: [練習題; 9] = [
                     屈居 區區 區域 起義 鼓舞 故意 記憶 局域 語句 預計 \
                     說過 中國 最多 或者 各就各位 越來越 \
                     爲什麼 怎麼樣 可不可以 有沒有"),
+    },
+    練習題 {
+        標題: "縮略碼示例",
+        編碼: "SHG=<shen me> SHGUA=<shu ru fa> ZUAO=<zui hao> \
+               FBUR=<wei shen me> ZFB=<mei you> BUA=<ban fa> SHGU=<shu ru> SGIAN=<shi jian>",
+        字幕: Some("[什麼] [輸入法] [最好] \
+                    [爲什麼] [沒有] [辦法] [輸入] [時間]"),
     },
     練習題 {
         標題: "宮保拼音並擊術",
