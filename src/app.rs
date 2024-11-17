@@ -60,7 +60,7 @@ struct 字幕指標<'a> {
 
 impl<'a> From<&'a str> for 字幕指標<'a> {
     fn from(字幕: &'a str) -> Self {
-        Self{字幕, 指標: 0}
+        Self { 字幕, 指標: 0 }
     }
 }
 
@@ -79,13 +79,40 @@ impl<'a> Iterator for 字幕指標<'a> {
                 let 文字組 = 剩餘文字.take_while(|字| *字 != ']');
                 self.指標 += 文字組.clone().count() + 2;
                 Some(文字組.collect())
-            },
+            }
             Some(單字) => {
                 self.指標 += 1;
                 Some(單字.to_string())
             }
             None => None,
         }
+    }
+}
+
+#[derive(Clone, PartialEq)]
+enum 工作模式 {
+    錄入,
+    輸入反查碼,
+    選取練習題,
+}
+
+#[derive(Clone, PartialEq)]
+pub struct 作業 {
+    pub 題號: Option<usize>,
+    pub 自訂反查碼: Option<String>,
+}
+
+impl 作業 {
+    pub fn 反查碼(&self) -> &str {
+        self.題號
+            .and_then(|題號| 預設練習題.get(題號).map(|題| 題.編碼))
+            .or(self.自訂反查碼.as_deref())
+            .unwrap_or("")
+    }
+    pub fn 字幕(&self) -> Option<&'static str> {
+        self.題號
+            .and_then(|題號| 預設練習題.get(題號))
+            .and_then(|題| 題.字幕)
     }
 }
 
@@ -153,11 +180,14 @@ pub fn RIME_打字機應用() -> impl IntoView {
         }
     });
 
-    let (鍵位反查輸入模式, 開關編碼反查輸入欄) = create_signal(false);
-    let (反查碼, 更新反查碼) = create_signal(String::from(預設練習題[0].編碼));
-    let (字幕, 更新字幕) = create_signal(預設練習題[0].字幕);
+    let (當前工作模式, 設置工作模式) = create_signal(工作模式::錄入);
+    let (當前作業, 更新作業) = create_signal(作業 {
+        題號: Some(0),
+        自訂反查碼: None,
+    });
 
-    let 反查拼音組 = create_memo(move |_| 解析輸入碼序列(&反查碼()));
+    let 反查拼音組 =
+        create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
     let (反查進度, 更新反查進度) = create_signal(0);
 
     let 反查推進 = move |迴轉: bool| {
@@ -190,9 +220,9 @@ pub fn RIME_打字機應用() -> impl IntoView {
     );
 
     let 分段字幕 = create_memo(move |_| {
-        字幕.with(|有冇字幕| {
-            有冇字幕.map(|有字幕| {
-                *有字幕
+        當前作業.with(|作業| {
+            作業.字幕().map(move |有字幕| {
+                有字幕
                     .split_whitespace()
                     .fold(
                         (0, Box::new(vec![])),
@@ -216,10 +246,14 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 衆段落.get(當前段落號).map(|當前段落| {
                     let (段落起始, _, 段落文字) = 當前段落;
                     let 段落進度 = 全文進度 - 段落起始;
-
                     let 完成的字 = 字幕指標::from(*段落文字).take(段落進度).collect::<String>();
-                    let 當下的字 = 字幕指標::from(*段落文字).skip(段落進度).take(1).collect::<String>();
-                    let 剩餘的字 = 字幕指標::from(*段落文字).skip(段落進度 + 1).collect::<String>();
+                    let 當下的字 = 字幕指標::from(*段落文字)
+                        .skip(段落進度)
+                        .take(1)
+                        .collect::<String>();
+                    let 剩餘的字 = 字幕指標::from(*段落文字)
+                        .skip(段落進度 + 1)
+                        .collect::<String>();
                     (完成的字, 當下的字, 剩餘的字)
                 })
             })
@@ -262,48 +296,59 @@ pub fn RIME_打字機應用() -> impl IntoView {
         move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty();
     let 反查進度完成 = move || 反查進度() == 反查拼音組.with(Vec::len);
 
-    let 開啓反查 = move || {
+    let 開啓反查輸入 = move || {
         if 反查進度完成() {
-            更新反查碼(String::new());
-            更新字幕(None);
+            更新作業(作業 {
+                題號: None,
+                自訂反查碼: None,
+            });
         }
         重置並擊狀態();
-        開關編碼反查輸入欄(true);
+        設置工作模式(工作模式::輸入反查碼);
     };
-    let 關閉反查 = move || {
-        開關編碼反查輸入欄(false);
+    let 開啓練習題選單 = move || {
+        更新反查進度(0);
+        重置並擊狀態();
+        設置工作模式(工作模式::選取練習題);
+    };
+    let 關閉輸入欄 = move || {
+        設置工作模式(工作模式::錄入);
     };
 
     let _ = use_event_listener(use_document().body(), keydown, move |evt: KeyboardEvent| {
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
         match evt.code().as_str() {
             "Enter" => {
-                if 鍵位反查輸入模式() {
-                    關閉反查();
+                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&當前工作模式())
+                {
+                    關閉輸入欄();
                 } else {
-                    開啓反查();
+                    開啓反查輸入();
                 }
                 evt.prevent_default();
             }
             "Escape" => {
-                if 鍵位反查輸入模式() {
-                    關閉反查();
-                } else {
+                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&當前工作模式())
+                {
+                    關閉輸入欄();
+                } else if 反查進度() != 0 {
                     更新反查進度(0);
                     重置並擊狀態();
+                } else {
+                    開啓練習題選單();
                 }
                 evt.prevent_default();
             }
             "Tab" => {
-                if 鍵位反查輸入模式() {
-                    關閉反查();
+                if 當前工作模式() == 工作模式::輸入反查碼 {
+                    關閉輸入欄();
                 } else if 反查推進(true) {
                     重置並擊狀態();
                 }
                 evt.prevent_default();
             }
             "Backspace" => {
-                if !鍵位反查輸入模式() {
+                if 當前工作模式() == 工作模式::錄入 {
                     if 並擊完成() || 反查回退() {
                         重置並擊狀態();
                     }
@@ -312,19 +357,21 @@ pub fn RIME_打字機應用() -> impl IntoView {
             }
             _ => (),
         }
-        if !鍵位反查輸入模式() {
+        if 當前工作模式() == 工作模式::錄入 {
             並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
         }
         // 繼續擊鍵時消除已完成的反查作業
         if 並擊開始() && 反查進度完成() {
-            更新反查碼(String::new());
-            更新字幕(None);
+            更新作業(作業 {
+                題號: None,
+                自訂反查碼: None,
+            });
         }
     });
 
     let _ = use_event_listener(use_document().body(), keyup, move |evt: KeyboardEvent| {
         log!("抬鍵 key = {}, code = {}", &evt.key(), &evt.code());
-        if !鍵位反查輸入模式() {
+        if 當前工作模式() == 工作模式::錄入 {
             並擊狀態變更.update(|並擊| 並擊.抬鍵(網頁鍵值轉換(&evt.code())));
         }
         if 並擊完成() && 並擊成功() {
@@ -337,11 +384,26 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 反查輸入欄的引用 = create_node_ref::<html::Input>();
     create_effect(move |_| {
-        if 鍵位反查輸入模式() {
+        if 當前工作模式() == 工作模式::輸入反查碼 {
             if let Some(輸入欄) = 反查輸入欄的引用() {
                 let _不看結果 = 輸入欄.on_mount(|輸入欄| {
-                    let _ = 輸入欄.focus();
                     輸入欄.select();
+                });
+            }
+        }
+    });
+
+    let 練習題選單的引用 = create_node_ref::<html::Select>();
+    create_effect(move |_| {
+        if 當前工作模式() == 工作模式::選取練習題 {
+            let 選中題號: i32 = 當前作業
+                .with(|作業| 作業.題號)
+                .and_then(|題號| 題號.try_into().ok())
+                .unwrap_or(-1);
+            if let Some(輸入欄) = 練習題選單的引用() {
+                let _不看結果 = 輸入欄.on_mount(move |輸入欄| {
+                    輸入欄.set_selected_index(選中題號);
+                    let _ = 輸入欄.focus();
                 });
             }
         }
@@ -352,41 +414,57 @@ pub fn RIME_打字機應用() -> impl IntoView {
             class:freeplay={顯示實況}
             class:target={顯示反查}
             class:success={並擊成功}
-            on:click=move |_| 開啓反查()
+            on:click=move |_| {
+                if 當前工作模式() == 工作模式::錄入 {
+                    if 當前作業.with(|作業| 作業.題號).is_some() {
+                        開啓練習題選單()
+                    } else {
+                        開啓反查輸入()
+                    }
+                }
+            }
         >
-            <Show
-                when=move || 鍵位反查輸入模式()
-                fallback=move || view! {
+        {
+            move || match 當前工作模式() {
+                工作模式::錄入 => view! {
                     <kbd class="raw-input">{輸入碼}</kbd>
                     <span class="translated-input">{拼音}</span>
-                }
-            >
-                <input type="text" class="lookup-code"
-                    _ref=反查輸入欄的引用
-                    placeholder="qing shu ru pin yin"
-                    list="excercises"
-                    value={反查碼}
-                    on:input=move |ev| {
-                        let 輸入文字 = event_target_value(&ev);
-                        if let Some(題) = 預設練習題.iter().find(|題| 輸入文字 == 題.標題) {
-                            更新反查碼(題.編碼.to_owned());
-                            更新字幕(題.字幕);
-                            關閉反查();
-                        } else {
-                            更新反查碼(輸入文字);
-                            更新字幕(None);
+                }.into_view(),
+                工作模式::輸入反查碼 => view! {
+                    <input type="text" class="lookup-code"
+                        _ref=反查輸入欄的引用
+                        placeholder="qing shu ru pin yin"
+                        value=move || 當前作業.with(|作業| 作業.反查碼().to_owned())
+                        on:input=move |ev| {
+                            let 輸入文字 = event_target_value(&ev);
+                            更新作業(作業{題號: None, 自訂反查碼: Some(輸入文字)});
                         }
+                        on:blur=move |_| 關閉輸入欄()
+                    />
+                }.into_view(),
+                工作模式::選取練習題 => view! {
+                    <select class="excercises"
+                        _ref=練習題選單的引用
+                        on:change=move |ev| {
+                            let 題號 = event_target_value(&ev);
+                            log!("題號: {}", 題號);
+                            let 題號 = 題號.parse::<usize>().ok();
+                            if 題號.is_some_and(|題號| 題號 < 預設練習題.len()) {
+                                更新作業(作業{題號, 自訂反查碼: None});
+                                關閉輸入欄();
+                            }
+                        }
+                        on:blur=move |_| 關閉輸入欄()
+                    >
+                    {
+                        預設練習題.iter().enumerate().map(|(題號, 題)| view! {
+                            <option value={題號}>{題.標題}</option>
+                        }).collect_view()
                     }
-                    on:blur=move |_| 關閉反查()
-                />
-                <datalist id="excercises">
-                {
-                    預設練習題.iter().map(|題| view! {
-                        <option>{題.標題}</option>
-                    }).collect_view()
-                }
-                </datalist>
-            </Show>
+                    </select>
+                }.into_view(),
+            }
+        }
         </div>
     };
 
@@ -396,18 +474,30 @@ pub fn RIME_打字機應用() -> impl IntoView {
     };
 
     let (反查輸入開關狀態, 更新反查輸入開關狀態) = create_signal(並擊狀態::new());
+    let (練習題選單開關狀態, 更新練習題選單開關狀態) = create_signal(並擊狀態::new());
     create_effect(move |_| {
         更新反查輸入開關狀態.update(|開關| {
-            if 鍵位反查輸入模式() {
+            if 當前工作模式() == 工作模式::輸入反查碼 {
                 開關.落鍵(KeyCode::Enter);
             } else {
                 開關.抬鍵(KeyCode::Enter);
             }
-        })
+        });
+        更新練習題選單開關狀態.update(|開關| {
+            if 當前工作模式() == 工作模式::選取練習題 {
+                開關.落鍵(KeyCode::Escape);
+            } else {
+                開關.抬鍵(KeyCode::Escape);
+            }
+        });
     });
     let 反查輸入開關狀態標註法 = 鍵面標註法 {
         目標並擊: create_memo(|_| None),
         實況並擊: 反查輸入開關狀態,
+    };
+    let 練習題選單開關狀態標註法 = 鍵面標註法 {
+        目標並擊: create_memo(|_| None),
+        實況並擊: 練習題選單開關狀態,
     };
 
     let styler_class = 樣式();
@@ -424,8 +514,8 @@ pub fn RIME_打字機應用() -> impl IntoView {
             </div>
         </div>
         <div class="echo-bar">
-            <div title="重新錄入">
-                <RIME_鍵圖 鍵={&退出鍵} 目標盤面={0} 標註法={標註法}/>
+            <div title="重新錄入／重選練習題">
+                <RIME_鍵圖 鍵={&退出鍵} 目標盤面={0} 標註法={練習題選單開關狀態標註法}/>
             </div>
             <div title="前進一字">
                 <RIME_鍵圖 鍵={&製表鍵} 目標盤面={0} 標註法={標註法}/>
