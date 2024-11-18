@@ -152,3 +152,24 @@ pub const 鍵盤矩陣: &[&[鍵的定義]] = &[
     &[Z, X, C, V, B, N, M, Comma, Dot, Slash],
     &[Space],
 ];
+
+pub mod 功能鍵 {
+    use super::*;
+
+    pub const 退出鍵: 鍵的定義 = 鍵的定義 {
+        鍵碼: KeyCode::Escape,
+        字符映射: &[(0, "退出")],
+    };
+    pub const 製表鍵: 鍵的定義 = 鍵的定義 {
+        鍵碼: KeyCode::Tab,
+        字符映射: &[(0, "製表")],
+    };
+    pub const 退格鍵: 鍵的定義 = 鍵的定義 {
+        鍵碼: KeyCode::BSpace,
+        字符映射: &[(0, "退格")],
+    };
+    pub const 回車鍵: 鍵的定義 = 鍵的定義 {
+        鍵碼: KeyCode::Enter,
+        字符映射: &[(0, "回車")],
+    };
+}

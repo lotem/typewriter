@@ -10,27 +10,13 @@ use std::cmp::min;
 use crate::drills::預設練習題;
 use crate::engine::{並擊狀態, 解析輸入碼序列, 輸入碼, 鍵組};
 use crate::key_code::網頁鍵值轉換;
-use crate::layout::{盤面刻印, 盤面選擇碼, 鍵的定義, 鍵盤矩陣};
+use crate::layout::{
+    功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
+    盤面刻印, 盤面選擇碼, 鍵的定義, 鍵盤矩陣,
+};
 use crate::style::樣式;
 
 const 宮保拼音盤面: 盤面選擇碼 = 盤面選擇碼(2);
-
-const 退出鍵: 鍵的定義 = 鍵的定義 {
-    鍵碼: KeyCode::Escape,
-    字符映射: &[(0, "退出")],
-};
-const 製表鍵: 鍵的定義 = 鍵的定義 {
-    鍵碼: KeyCode::Tab,
-    字符映射: &[(0, "製表")],
-};
-const 退格鍵: 鍵的定義 = 鍵的定義 {
-    鍵碼: KeyCode::BSpace,
-    字符映射: &[(0, "退格")],
-};
-const 回車鍵: 鍵的定義 = 鍵的定義 {
-    鍵碼: KeyCode::Enter,
-    字符映射: &[(0, "回車")],
-};
 
 pub trait 鍵面標註法 {
     fn 刻印(&self) -> Option<String>;
@@ -144,7 +130,7 @@ impl<'a> From<&'a str> for 字幕指標<'a> {
 /// 傳入的字幕應當是從空白處切分出的一段.
 /// 通常一音對一字. 例外情況用文字組標記 `[]` 括住與一個音節對應的一組文字.
 /// 文字組不能包含空白字符及左右方括號.
-impl<'a> Iterator for 字幕指標<'a> {
+impl Iterator for 字幕指標<'_> {
     type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -404,31 +390,33 @@ pub fn RIME_打字機應用() -> impl IntoView {
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
         match evt.code().as_str() {
             "Enter" => {
-                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&實時工作模式())
-                {
-                    關閉輸入欄();
-                } else {
+                if 實時工作模式() == 工作模式::錄入 {
                     開啓反查輸入();
+                } else {
+                    關閉輸入欄();
                 }
                 evt.prevent_default();
             }
             "Escape" => {
-                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&實時工作模式())
-                {
-                    關閉輸入欄();
-                } else if 反查進度() != 0 {
-                    更新反查進度(0);
-                    重置並擊狀態();
+                if 實時工作模式() == 工作模式::錄入 {
+                    if 反查進度() != 0 {
+                        更新反查進度(0);
+                        重置並擊狀態();
+                    } else {
+                        開啓練習題選單();
+                    }
                 } else {
-                    開啓練習題選單();
+                    關閉輸入欄();
                 }
                 evt.prevent_default();
             }
             "Tab" => {
-                if 實時工作模式() == 工作模式::輸入反查碼 {
+                if 實時工作模式() == 工作模式::錄入 {
+                    if 反查推進(true) {
+                        重置並擊狀態();
+                    }
+                } else {
                     關閉輸入欄();
-                } else if 反查推進(true) {
-                    重置並擊狀態();
                 }
                 evt.prevent_default();
             }
