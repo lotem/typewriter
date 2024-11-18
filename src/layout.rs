@@ -2,9 +2,10 @@
 
 use keyberon::key_code::KeyCode;
 
-pub type 盤面選擇碼 = u64;
+#[derive(Clone, Copy, Default)]
+pub struct 盤面選擇碼(pub u64);
 
-pub type 盤面刻印 = (盤面選擇碼, &'static str);
+pub type 盤面刻印 = (u64, &'static str);
 
 pub struct 鍵的定義 {
     pub 鍵碼: KeyCode,
@@ -15,7 +16,7 @@ impl 鍵的定義 {
     pub fn 選擇盤面(&self, 目標盤面: 盤面選擇碼) -> Option<盤面刻印> {
         self.字符映射
             .iter()
-            .rfind(|盤面| (目標盤面 & 盤面.0) == 盤面.0)
+            .rfind(|盤面| (目標盤面.0 & 盤面.0) == 盤面.0)
             .copied()
     }
 }

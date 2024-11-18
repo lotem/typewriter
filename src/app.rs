@@ -10,8 +10,10 @@ use std::cmp::min;
 use crate::drills::預設練習題;
 use crate::engine::{並擊狀態, 解析輸入碼序列, 輸入碼, 鍵組};
 use crate::key_code::網頁鍵值轉換;
-use crate::layout::{盤面選擇碼, 鍵的定義, 鍵盤矩陣};
+use crate::layout::{盤面刻印, 盤面選擇碼, 鍵的定義, 鍵盤矩陣};
 use crate::style::樣式;
+
+const 宮保拼音盤面: 盤面選擇碼 = 盤面選擇碼(2);
 
 const 退出鍵: 鍵的定義 = 鍵的定義 {
     鍵碼: KeyCode::Escape,
@@ -30,13 +32,64 @@ const 回車鍵: 鍵的定義 = 鍵的定義 {
     字符映射: &[(0, "回車")],
 };
 
-#[derive(Clone, Copy)]
-struct 鍵面標註法 {
-    目標並擊: Memo<Option<鍵組>>,
-    實況並擊: ReadSignal<並擊狀態>,
+pub trait 鍵面標註法 {
+    fn 刻印(&self) -> Option<String>;
+    fn 是否空鍵(&self) -> bool;
+    fn 是否後備盤面(&self) -> bool;
+    fn 是否功能鍵(&self) -> bool;
+    fn 是否空格(&self) -> bool;
 }
 
-impl 鍵面標註法 {
+pub trait 鍵面動態着色法 {
+    fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool;
+    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool;
+    fn 是否擊中(&self, 鍵: &鍵的定義) -> bool;
+}
+
+#[derive(Clone, Copy)]
+struct 鍵面標註依據 {
+    鍵: &'static 鍵的定義,
+    目標盤面: 盤面選擇碼,
+}
+
+impl 鍵面標註依據 {
+    fn 有效盤面(&self) -> Option<盤面刻印> {
+        self.鍵.選擇盤面(self.目標盤面)
+    }
+}
+
+impl 鍵面標註法 for 鍵面標註依據 {
+    fn 刻印(&self) -> Option<String> {
+        self.有效盤面().map(|盤面刻印| 盤面刻印.1.to_owned())
+    }
+    fn 是否空鍵(&self) -> bool {
+        self.有效盤面().is_some_and(|盤面| 盤面.1.is_empty())
+    }
+    fn 是否後備盤面(&self) -> bool {
+        self.有效盤面()
+            .is_some_and(|盤面| 盤面.0 != self.目標盤面.0)
+    }
+    fn 是否功能鍵(&self) -> bool {
+        [
+            KeyCode::Escape,
+            KeyCode::Tab,
+            KeyCode::BSpace,
+            KeyCode::Enter,
+        ]
+        .contains(&self.鍵.鍵碼)
+    }
+    fn 是否空格(&self) -> bool {
+        self.鍵.鍵碼 == KeyCode::Space
+    }
+}
+
+#[derive(Clone, Copy)]
+struct 擊鍵動態 {
+    目標並擊: Signal<Option<鍵組>>,
+    實況並擊: Signal<並擊狀態>,
+}
+
+impl 鍵面動態着色法 for 擊鍵動態 {
     fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool {
         self.目標並擊
             .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵.鍵碼)))
@@ -50,6 +103,29 @@ impl 鍵面標註法 {
     fn 是否擊中(&self, 鍵: &鍵的定義) -> bool {
         self.實況並擊
             .with(|並擊| 並擊.累計擊鍵.0.contains(&鍵.鍵碼))
+    }
+}
+
+#[derive(Clone, Copy)]
+struct 功能鍵開關狀態 {
+    實時工作模式: Signal<工作模式>,
+}
+
+impl 鍵面動態着色法 for 功能鍵開關狀態 {
+    fn 鍵位提示(&self, _鍵: &鍵的定義) -> bool {
+        false
+    }
+
+    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
+        match 鍵.鍵碼 {
+            KeyCode::Enter => (self.實時工作模式)() == 工作模式::輸入反查碼,
+            KeyCode::Escape => (self.實時工作模式)() == 工作模式::選取練習題,
+            _ => false,
+        }
+    }
+
+    fn 是否擊中(&self, _鍵: &鍵的定義) -> bool {
+        false
     }
 }
 
@@ -103,6 +179,25 @@ pub struct 作業 {
 }
 
 impl 作業 {
+    pub fn 練習題(題號: usize) -> Self {
+        Self {
+            題號: Some(題號),
+            自訂反查碼: None,
+        }
+    }
+    pub fn 自訂(反查碼: String) -> Self {
+        Self {
+            題號: None,
+            自訂反查碼: Some(反查碼),
+        }
+    }
+    pub fn 自習() -> Self {
+        Self {
+            題號: None,
+            自訂反查碼: None,
+        }
+    }
+
     pub fn 反查碼(&self) -> &str {
         self.題號
             .and_then(|題號| 預設練習題.get(題號).map(|題| 題.編碼))
@@ -117,47 +212,43 @@ impl 作業 {
 }
 
 #[component]
-fn RIME_鍵圖(
-    鍵: &'static 鍵的定義, 目標盤面: 盤面選擇碼, 標註法: 鍵面標註法
-) -> impl IntoView {
-    let 是否空格 = 鍵.鍵碼 == KeyCode::Space;
-    let 是否功能鍵 = [
-        KeyCode::Escape,
-        KeyCode::Tab,
-        KeyCode::BSpace,
-        KeyCode::Enter,
-    ]
-    .contains(&鍵.鍵碼);
-    let 有效盤面 = 鍵.選擇盤面(目標盤面);
-    let 是否後備盤面 = 有效盤面.is_some_and(|盤面| 盤面.0 != 目標盤面);
-    let 是否空鍵 = 有效盤面.is_some_and(|盤面| 盤面.1.is_empty());
-    let 刻印 = 有效盤面.map(|盤面刻印| 盤面刻印.1);
-    let 鍵位提示 = move || 標註法.鍵位提示(鍵);
-    let 是否落鍵 = move || 標註法.是否落鍵(鍵);
-    let 是否擊中 = move || 標註法.是否擊中(鍵);
+fn RIME_鍵圖<T>(
+    鍵: &'static 鍵的定義,
+    #[prop(optional)] 目標盤面: 盤面選擇碼,
+    着色法: T,
+) -> impl IntoView
+where
+    T: 鍵面動態着色法 + Copy + 'static,
+{
+    let 標註法 = 鍵面標註依據 { 鍵, 目標盤面 };
     view! {
         <div class="key"
-            class:empty={是否空鍵}
-            class:fallback={是否後備盤面}
-            class:hint={鍵位提示}
-            class:keydown={是否落鍵}
-            class:pressed={是否擊中}
-            class:function={是否功能鍵}
-            class:space={是否空格}
+            class:empty={move || 標註法.是否空鍵()}
+            class:fallback={move || 標註法.是否後備盤面()}
+            class:function={move || 標註法.是否功能鍵()}
+            class:space={move || 標註法.是否空格()}
+            class:hint={move || 着色法.鍵位提示(鍵)}
+            class:keydown={move || 着色法.是否落鍵(鍵)}
+            class:pressed={move || 着色法.是否擊中(鍵)}
         >
-            <kbd class="label">{刻印}</kbd>
+            <kbd class="label">{move || 標註法.刻印()}</kbd>
         </div>
     }
 }
 
 #[component]
-fn RIME_鍵盤圖(盤面: 盤面選擇碼, 標註法: 鍵面標註法) -> impl IntoView {
+fn RIME_鍵盤圖<T>(目標盤面: 盤面選擇碼, 着色法: T) -> impl IntoView
+where
+    T: 鍵面動態着色法 + Copy + 'static,
+{
     view! {
         <div class="board">
         { 鍵盤矩陣.iter().map(|行| view! {
             <div class="row">
-            { 行.iter().map(|鍵| view! {
-                <RIME_鍵圖 鍵={鍵} 目標盤面={盤面} 標註法={標註法}/>
+            { 行.iter().map(|鍵| {
+                view! {
+                    <RIME_鍵圖 鍵={鍵} 目標盤面={目標盤面} 着色法={着色法}/>
+                }
             }).collect_view() }
             </div>
         }).collect_view() }
@@ -180,11 +271,8 @@ pub fn RIME_打字機應用() -> impl IntoView {
         }
     });
 
-    let (當前工作模式, 設置工作模式) = create_signal(工作模式::錄入);
-    let (當前作業, 更新作業) = create_signal(作業 {
-        題號: Some(0),
-        自訂反查碼: None,
-    });
+    let (實時工作模式, 設置工作模式) = create_signal(工作模式::錄入);
+    let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
 
     let 反查拼音組 =
         create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
@@ -298,10 +386,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 開啓反查輸入 = move || {
         if 反查進度完成() {
-            更新作業(作業 {
-                題號: None,
-                自訂反查碼: None,
-            });
+            佈置作業(作業::自習());
         }
         重置並擊狀態();
         設置工作模式(工作模式::輸入反查碼);
@@ -319,7 +404,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
         match evt.code().as_str() {
             "Enter" => {
-                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&當前工作模式())
+                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&實時工作模式())
                 {
                     關閉輸入欄();
                 } else {
@@ -328,7 +413,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 evt.prevent_default();
             }
             "Escape" => {
-                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&當前工作模式())
+                if [工作模式::輸入反查碼, 工作模式::選取練習題].contains(&實時工作模式())
                 {
                     關閉輸入欄();
                 } else if 反查進度() != 0 {
@@ -340,7 +425,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 evt.prevent_default();
             }
             "Tab" => {
-                if 當前工作模式() == 工作模式::輸入反查碼 {
+                if 實時工作模式() == 工作模式::輸入反查碼 {
                     關閉輸入欄();
                 } else if 反查推進(true) {
                     重置並擊狀態();
@@ -348,7 +433,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
                 evt.prevent_default();
             }
             "Backspace" => {
-                if 當前工作模式() == 工作模式::錄入 {
+                if 實時工作模式() == 工作模式::錄入 {
                     if 並擊完成() || 反查回退() {
                         重置並擊狀態();
                     }
@@ -357,21 +442,18 @@ pub fn RIME_打字機應用() -> impl IntoView {
             }
             _ => (),
         }
-        if 當前工作模式() == 工作模式::錄入 {
+        if 實時工作模式() == 工作模式::錄入 {
             並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
         }
         // 繼續擊鍵時消除已完成的反查作業
         if 並擊開始() && 反查進度完成() {
-            更新作業(作業 {
-                題號: None,
-                自訂反查碼: None,
-            });
+            佈置作業(作業::自習());
         }
     });
 
     let _ = use_event_listener(use_document().body(), keyup, move |evt: KeyboardEvent| {
         log!("抬鍵 key = {}, code = {}", &evt.key(), &evt.code());
-        if 當前工作模式() == 工作模式::錄入 {
+        if 實時工作模式() == 工作模式::錄入 {
             並擊狀態變更.update(|並擊| 並擊.抬鍵(網頁鍵值轉換(&evt.code())));
         }
         if 並擊完成() && 並擊成功() {
@@ -384,7 +466,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 反查輸入欄的引用 = create_node_ref::<html::Input>();
     create_effect(move |_| {
-        if 當前工作模式() == 工作模式::輸入反查碼 {
+        if 實時工作模式() == 工作模式::輸入反查碼 {
             if let Some(輸入欄) = 反查輸入欄的引用() {
                 let _不看結果 = 輸入欄.on_mount(|輸入欄| {
                     輸入欄.select();
@@ -395,7 +477,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let 練習題選單的引用 = create_node_ref::<html::Select>();
     create_effect(move |_| {
-        if 當前工作模式() == 工作模式::選取練習題 {
+        if 實時工作模式() == 工作模式::選取練習題 {
             let 選中題號: i32 = 當前作業
                 .with(|作業| 作業.題號)
                 .and_then(|題號| 題號.try_into().ok())
@@ -415,7 +497,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
             class:target={顯示反查}
             class:success={並擊成功}
             on:click=move |_| {
-                if 當前工作模式() == 工作模式::錄入 {
+                if 實時工作模式() == 工作模式::錄入 {
                     if 當前作業.with(|作業| 作業.題號).is_some() {
                         開啓練習題選單()
                     } else {
@@ -425,7 +507,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
             }
         >
         {
-            move || match 當前工作模式() {
+            move || match 實時工作模式() {
                 工作模式::錄入 => view! {
                     <kbd class="raw-input">{輸入碼}</kbd>
                     <span class="translated-input">{拼音}</span>
@@ -437,7 +519,7 @@ pub fn RIME_打字機應用() -> impl IntoView {
                         value=move || 當前作業.with(|作業| 作業.反查碼().to_owned())
                         on:input=move |ev| {
                             let 輸入文字 = event_target_value(&ev);
-                            更新作業(作業{題號: None, 自訂反查碼: Some(輸入文字)});
+                            佈置作業(作業::自訂(輸入文字));
                         }
                         on:blur=move |_| 關閉輸入欄()
                     />
@@ -448,10 +530,11 @@ pub fn RIME_打字機應用() -> impl IntoView {
                         on:change=move |ev| {
                             let 題號 = event_target_value(&ev);
                             log!("題號: {}", 題號);
-                            let 題號 = 題號.parse::<usize>().ok();
-                            if 題號.is_some_and(|題號| 題號 < 預設練習題.len()) {
-                                更新作業(作業{題號, 自訂反查碼: None});
-                                關閉輸入欄();
+                            if let Ok(題號) = 題號.parse::<usize>() {
+                                if 題號 < 預設練習題.len() {
+                                    佈置作業(作業::練習題(題號));
+                                    關閉輸入欄();
+                                }
                             }
                         }
                         on:blur=move |_| 關閉輸入欄()
@@ -468,36 +551,13 @@ pub fn RIME_打字機應用() -> impl IntoView {
         </div>
     };
 
-    let 標註法 = 鍵面標註法 {
-        目標並擊: 反查鍵位,
-        實況並擊: 並擊狀態流,
+    let 動態 = 擊鍵動態 {
+        目標並擊: 反查鍵位.into(),
+        實況並擊: 並擊狀態流.into(),
     };
 
-    let (反查輸入開關狀態, 更新反查輸入開關狀態) = create_signal(並擊狀態::new());
-    let (練習題選單開關狀態, 更新練習題選單開關狀態) = create_signal(並擊狀態::new());
-    create_effect(move |_| {
-        更新反查輸入開關狀態.update(|開關| {
-            if 當前工作模式() == 工作模式::輸入反查碼 {
-                開關.落鍵(KeyCode::Enter);
-            } else {
-                開關.抬鍵(KeyCode::Enter);
-            }
-        });
-        更新練習題選單開關狀態.update(|開關| {
-            if 當前工作模式() == 工作模式::選取練習題 {
-                開關.落鍵(KeyCode::Escape);
-            } else {
-                開關.抬鍵(KeyCode::Escape);
-            }
-        });
-    });
-    let 反查輸入開關狀態標註法 = 鍵面標註法 {
-        目標並擊: create_memo(|_| None),
-        實況並擊: 反查輸入開關狀態,
-    };
-    let 練習題選單開關狀態標註法 = 鍵面標註法 {
-        目標並擊: create_memo(|_| None),
-        實況並擊: 練習題選單開關狀態,
+    let 各開關狀態 = 功能鍵開關狀態 {
+        實時工作模式: Signal::derive(實時工作模式),
     };
 
     let styler_class = 樣式();
@@ -515,21 +575,21 @@ pub fn RIME_打字機應用() -> impl IntoView {
         </div>
         <div class="echo-bar">
             <div title="重新錄入／重選練習題">
-                <RIME_鍵圖 鍵={&退出鍵} 目標盤面={0} 標註法={練習題選單開關狀態標註法}/>
+                <RIME_鍵圖 鍵={&退出鍵} 着色法={各開關狀態}/>
             </div>
             <div title="前進一字">
-                <RIME_鍵圖 鍵={&製表鍵} 目標盤面={0} 標註法={標註法}/>
+                <RIME_鍵圖 鍵={&製表鍵} 着色法={動態}/>
             </div>
             <div class="function key hidden"/>
             {編碼欄}
             <div class="function key hidden"/>
             <div title="刪除／回退一字">
-                <RIME_鍵圖 鍵={&退格鍵} 目標盤面={0} 標註法={標註法}/>
+                <RIME_鍵圖 鍵={&退格鍵} 着色法={動態}/>
             </div>
             <div title="輸入拼音反查鍵位">
-                <RIME_鍵圖 鍵={&回車鍵} 目標盤面={0} 標註法={反查輸入開關狀態標註法}/>
+                <RIME_鍵圖 鍵={&回車鍵} 着色法={各開關狀態}/>
             </div>
         </div>
-        <RIME_鍵盤圖 盤面={2} 標註法={標註法}/>
+        <RIME_鍵盤圖 目標盤面={宮保拼音盤面} 着色法={動態}/>
     }
 }
