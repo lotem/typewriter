@@ -39,7 +39,7 @@ impl Iterator for 字幕指標<'_> {
 }
 
 #[component]
-pub fn RIME_字幕屏(
+pub fn Rime字幕屏(
     當前作業: Signal<作業>,
     作業進度: Signal<usize>,
 ) -> impl IntoView {

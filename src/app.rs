@@ -8,7 +8,7 @@ use leptos_use::{use_document, use_event_listener, use_window_focus};
 use std::cmp::min;
 
 use crate::assignment::作業;
-use crate::caption::RIME_字幕屏;
+use crate::caption::Rime字幕屏;
 use crate::drills::預設練習題;
 use crate::engine::{並擊狀態, 解析輸入碼序列, 輸入碼, 鍵組};
 use crate::key_code::網頁鍵值轉換;
@@ -125,7 +125,7 @@ enum 工作模式 {
 }
 
 #[component]
-fn RIME_鍵圖<T>(
+fn Rime鍵圖<T>(
     鍵: &'static 鍵的定義,
     #[prop(optional)] 目標盤面: 盤面選擇碼,
     着色法: T,
@@ -150,7 +150,7 @@ where
 }
 
 #[component]
-fn RIME_鍵盤圖<T>(目標盤面: 盤面選擇碼, 着色法: T) -> impl IntoView
+fn Rime鍵盤圖<T>(目標盤面: 盤面選擇碼, 着色法: T) -> impl IntoView
 where
     T: 鍵面動態着色法 + Copy + 'static,
 {
@@ -160,7 +160,7 @@ where
             <div class="row">
             { 行.iter().map(|鍵| {
                 view! {
-                    <RIME_鍵圖 鍵={鍵} 目標盤面={目標盤面} 着色法={着色法}/>
+                    <Rime鍵圖 鍵={鍵} 目標盤面={目標盤面} 着色法={着色法}/>
                 }
             }).collect_view() }
             </div>
@@ -170,7 +170,7 @@ where
 }
 
 #[component]
-pub fn RIME_打字機應用() -> impl IntoView {
+pub fn Rime打字機應用() -> impl IntoView {
     let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
     let 實況並擊碼 = move || 並擊狀態流.with(並擊狀態::並擊序列);
     let 並擊所得拼音 = create_memo(move |_| 並擊狀態::並擊變換(&實況並擊碼()));
@@ -436,24 +436,24 @@ pub fn RIME_打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <RIME_字幕屏 當前作業={當前作業.into()} 作業進度={反查進度.into()}/>
+        <Rime字幕屏 當前作業={當前作業.into()} 作業進度={反查進度.into()}/>
         <div class="echo-bar">
             <div title="重新錄入／重選練習題">
-                <RIME_鍵圖 鍵={&退出鍵} 着色法={各開關狀態}/>
+                <Rime鍵圖 鍵={&退出鍵} 着色法={各開關狀態}/>
             </div>
             <div title="前進一字">
-                <RIME_鍵圖 鍵={&製表鍵} 着色法={動態}/>
+                <Rime鍵圖 鍵={&製表鍵} 着色法={動態}/>
             </div>
             <div class="function key hidden"/>
             {編碼欄}
             <div class="function key hidden"/>
             <div title="刪除／回退一字">
-                <RIME_鍵圖 鍵={&退格鍵} 着色法={動態}/>
+                <Rime鍵圖 鍵={&退格鍵} 着色法={動態}/>
             </div>
             <div title="輸入拼音反查鍵位">
-                <RIME_鍵圖 鍵={&回車鍵} 着色法={各開關狀態}/>
+                <Rime鍵圖 鍵={&回車鍵} 着色法={各開關狀態}/>
             </div>
         </div>
-        <RIME_鍵盤圖 目標盤面={宮保拼音盤面} 着色法={動態}/>
+        <Rime鍵盤圖 目標盤面={宮保拼音盤面} 着色法={動態}/>
     }
 }
