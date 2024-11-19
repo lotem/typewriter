@@ -1,6 +1,8 @@
 use leptos::*;
 
 mod app;
+mod assignment;
+mod caption;
 mod drills;
 mod engine;
 mod key_code;
