@@ -41,4 +41,8 @@ impl 作業 {
             .and_then(|題號| 預設練習題.get(題號))
             .and_then(|題| 題.字幕)
     }
+
+    pub fn 是否練習題(&self) -> bool {
+        self.題號.is_some()
+    }
 }

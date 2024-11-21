@@ -2,12 +2,12 @@ use leptos::*;
 
 mod app;
 mod assignment;
-mod caption;
 mod drills;
 mod engine;
 mod key_code;
 mod layout;
 mod style;
+mod view;
 
 use app::Rime打字機應用;
 
