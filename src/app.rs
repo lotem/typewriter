@@ -130,7 +130,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         false,
     );
 
-    let 目標反查輸入碼 = move || {
+    let 目標輸入碼 = move || {
         反查拼音組.with(|拼音組| {
             if 拼音組.is_empty() {
                 None
@@ -140,12 +140,12 @@ pub fn Rime打字機應用() -> impl IntoView {
         })
     };
 
-    let 反查鍵位 = create_memo(move |_| 目標反查輸入碼().as_ref().and_then(輸入碼::反查鍵位));
+    let 反查鍵位 = create_memo(move |_| 目標輸入碼().as_ref().and_then(輸入碼::反查鍵位));
     let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(鍵組::寫成並擊序列);
 
     let 並擊成功 = move || {
         // 拼音一致即爲成功，允許並擊碼不同
-        目標反查輸入碼()
+        目標輸入碼()
             .and_then(|輸入碼| 輸入碼.轉寫碼原文)
             .is_some_and(|查得| 並擊所得拼音().is_some_and(|擊得| 查得 == 擊得))
             // 拼音爲非音節形式的聲母、韻母，須比較並擊碼
@@ -250,7 +250,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
     let 顯示輸入碼 = move || 反查所得並擊碼().unwrap_or_else(實況並擊碼);
     let 顯示拼音 = move || {
-        目標反查輸入碼()
+        目標輸入碼()
             .and_then(|輸入碼| 輸入碼.轉寫碼原文)
             .or_else(|| 並擊所得拼音().to_owned())
             // 加尖括弧表示拉丁文轉寫，即拼音
