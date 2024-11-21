@@ -81,25 +81,23 @@ const 選擇宮保拼音盤面: 盤面選擇碼 = 盤面選擇碼(2);
 
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
-    let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
-    let 實況並擊碼 = move || 並擊狀態流.with(並擊狀態::並擊序列);
-    let 並擊所得拼音 = create_memo(move |_| 並擊狀態::並擊變換(&實況並擊碼()));
+    // 作業
 
-    let 重置並擊狀態 = move || 並擊狀態變更.update(並擊狀態::重置);
-
-    let 鍵盤輸入焦點源 = create_selector(use_window_focus());
-    create_effect(move |_| {
-        if 鍵盤輸入焦點源.selected(false) {
-            重置並擊狀態();
-        }
-    });
-
-    let (現行工作模式, 設置工作模式) = create_signal(工作模式::錄入);
     let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
+    let (作業進度, 更新作業進度) = create_signal(0);
 
     let 反查拼音組 =
         create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
-    let (作業進度, 更新作業進度) = create_signal(0);
+
+    let _ = watch(
+        反查拼音組,
+        move |_, _, _| {
+            更新作業進度(0);
+        },
+        false,
+    );
+
+    let 作業進度完成 = move || 作業進度() == 反查拼音組.with(Vec::len);
 
     let 作業推進 = move |迴轉: bool| {
         let 拼音數 = 反查拼音組.with(Vec::len);
@@ -114,6 +112,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
         false
     };
+
     let 作業回退 = move || {
         if 作業進度() > 0 && !反查拼音組.with(Vec::is_empty) {
             更新作業進度(作業進度() - 1);
@@ -121,14 +120,6 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
         false
     };
-
-    let _ = watch(
-        反查拼音組,
-        move |_, _, _| {
-            更新作業進度(0);
-        },
-        false,
-    );
 
     let 目標輸入碼 = move || {
         反查拼音組.with(|拼音組| {
@@ -140,8 +131,23 @@ pub fn Rime打字機應用() -> impl IntoView {
         })
     };
 
+    // 擊鍵
+
+    let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
+
+    let 重置並擊狀態 = move || 並擊狀態變更.update(並擊狀態::重置);
+
+    // 並擊輸入方案
+
+    let 實況並擊碼 = move || 並擊狀態流.with(並擊狀態::並擊序列);
+    let 並擊所得拼音 = create_memo(move |_| 並擊狀態::並擊變換(&實況並擊碼()));
+
     let 反查鍵位 = create_memo(move |_| 目標輸入碼().as_ref().and_then(輸入碼::反查鍵位));
     let 反查所得並擊碼 = move || 反查鍵位().as_ref().map(鍵組::寫成並擊序列);
+
+    let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty());
+    let 並擊完成 =
+        move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty();
 
     let 並擊成功 = move || {
         // 拼音一致即爲成功，允許並擊碼不同
@@ -152,10 +158,9 @@ pub fn Rime打字機應用() -> impl IntoView {
             || 反查所得並擊碼().is_some_and(|查得| 查得 == 實況並擊碼())
     };
 
-    let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty());
-    let 並擊完成 =
-        move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty();
-    let 作業進度完成 = move || 作業進度() == 反查拼音組.with(Vec::len);
+    // 工作模式
+
+    let (現行工作模式, 設置工作模式) = create_signal(工作模式::錄入);
 
     let 開啓反查輸入 = move || {
         if 作業進度完成() {
@@ -164,59 +169,72 @@ pub fn Rime打字機應用() -> impl IntoView {
         重置並擊狀態();
         設置工作模式(工作模式::輸入反查碼);
     };
+
     let 開啓練習題選單 = move || {
         更新作業進度(0);
         重置並擊狀態();
         設置工作模式(工作模式::選取練習題);
     };
+
     let 關閉輸入欄 = move || {
         設置工作模式(工作模式::錄入);
     };
 
+    // 輸入事件
+
+    let 鍵盤輸入焦點源 = create_selector(use_window_focus());
+    create_effect(move |_| {
+        if 鍵盤輸入焦點源.selected(false) {
+            重置並擊狀態();
+        }
+    });
+
+    let 處理功能鍵 = move |evt: &KeyboardEvent| match evt.code().as_str() {
+        "Enter" => {
+            if 現行工作模式() == 工作模式::錄入 {
+                開啓反查輸入();
+            } else {
+                關閉輸入欄();
+            }
+            evt.prevent_default();
+        }
+        "Escape" => {
+            if 現行工作模式() == 工作模式::錄入 {
+                if 作業進度() != 0 {
+                    更新作業進度(0);
+                    重置並擊狀態();
+                } else {
+                    開啓練習題選單();
+                }
+            } else {
+                關閉輸入欄();
+            }
+            evt.prevent_default();
+        }
+        "Tab" => {
+            if 現行工作模式() == 工作模式::錄入 {
+                if 作業推進(true) {
+                    重置並擊狀態();
+                }
+            } else {
+                關閉輸入欄();
+            }
+            evt.prevent_default();
+        }
+        "Backspace" => {
+            if 現行工作模式() == 工作模式::錄入 {
+                if 並擊完成() || 作業回退() {
+                    重置並擊狀態();
+                }
+                evt.prevent_default();
+            }
+        }
+        _ => (),
+    };
+
     let _ = use_event_listener(use_document().body(), keydown, move |evt: KeyboardEvent| {
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
-        match evt.code().as_str() {
-            "Enter" => {
-                if 現行工作模式() == 工作模式::錄入 {
-                    開啓反查輸入();
-                } else {
-                    關閉輸入欄();
-                }
-                evt.prevent_default();
-            }
-            "Escape" => {
-                if 現行工作模式() == 工作模式::錄入 {
-                    if 作業進度() != 0 {
-                        更新作業進度(0);
-                        重置並擊狀態();
-                    } else {
-                        開啓練習題選單();
-                    }
-                } else {
-                    關閉輸入欄();
-                }
-                evt.prevent_default();
-            }
-            "Tab" => {
-                if 現行工作模式() == 工作模式::錄入 {
-                    if 作業推進(true) {
-                        重置並擊狀態();
-                    }
-                } else {
-                    關閉輸入欄();
-                }
-                evt.prevent_default();
-            }
-            "Backspace" => {
-                if 現行工作模式() == 工作模式::錄入 {
-                    if 並擊完成() || 作業回退() {
-                        重置並擊狀態();
-                    }
-                    evt.prevent_default();
-                }
-            }
-            _ => (),
-        }
+        處理功能鍵(&evt);
         if 現行工作模式() == 工作模式::錄入 {
             並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
         }
@@ -238,6 +256,8 @@ pub fn Rime打字機應用() -> impl IntoView {
             }
         }
     });
+
+    // 界面
 
     let 顯示選項 = move || {
         if 反查鍵位().is_some() {
