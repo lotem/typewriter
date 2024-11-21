@@ -99,24 +99,24 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let 反查拼音組 =
         create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
-    let (反查進度, 更新反查進度) = create_signal(0);
+    let (作業進度, 更新作業進度) = create_signal(0);
 
-    let 反查推進 = move |迴轉: bool| {
+    let 作業推進 = move |迴轉: bool| {
         let 拼音數 = 反查拼音組.with(Vec::len);
-        if 迴轉 && 反查進度() + 1 >= 拼音數 {
-            更新反查進度(0);
+        if 迴轉 && 作業進度() + 1 >= 拼音數 {
+            更新作業進度(0);
             return true;
         }
         // 非迴轉態可推進至結束位置，即拼音數
-        if 反查進度() < 拼音數 {
-            更新反查進度(反查進度() + 1);
+        if 作業進度() < 拼音數 {
+            更新作業進度(作業進度() + 1);
             return true;
         }
         false
     };
-    let 反查回退 = move || {
-        if 反查進度() > 0 && !反查拼音組.with(Vec::is_empty) {
-            更新反查進度(反查進度() - 1);
+    let 作業回退 = move || {
+        if 作業進度() > 0 && !反查拼音組.with(Vec::is_empty) {
+            更新作業進度(作業進度() - 1);
             return true;
         }
         false
@@ -125,7 +125,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let _ = watch(
         反查拼音組,
         move |_, _, _| {
-            更新反查進度(0);
+            更新作業進度(0);
         },
         false,
     );
@@ -135,7 +135,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             if 拼音組.is_empty() {
                 None
             } else {
-                拼音組.get(min(反查進度(), 拼音組.len() - 1)).cloned()
+                拼音組.get(min(作業進度(), 拼音組.len() - 1)).cloned()
             }
         })
     };
@@ -151,20 +151,21 @@ pub fn Rime打字機應用() -> impl IntoView {
             // 拼音爲非音節形式的聲母、韻母，須比較並擊碼
             || 反查所得並擊碼().is_some_and(|查得| 查得 == 實況並擊碼())
     };
+
     let 並擊開始 = move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty());
     let 並擊完成 =
         move || 並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty();
-    let 反查進度完成 = move || 反查進度() == 反查拼音組.with(Vec::len);
+    let 作業進度完成 = move || 作業進度() == 反查拼音組.with(Vec::len);
 
     let 開啓反查輸入 = move || {
-        if 反查進度完成() {
+        if 作業進度完成() {
             佈置作業(作業::自習());
         }
         重置並擊狀態();
         設置工作模式(工作模式::輸入反查碼);
     };
     let 開啓練習題選單 = move || {
-        更新反查進度(0);
+        更新作業進度(0);
         重置並擊狀態();
         設置工作模式(工作模式::選取練習題);
     };
@@ -185,8 +186,8 @@ pub fn Rime打字機應用() -> impl IntoView {
             }
             "Escape" => {
                 if 現行工作模式() == 工作模式::錄入 {
-                    if 反查進度() != 0 {
-                        更新反查進度(0);
+                    if 作業進度() != 0 {
+                        更新作業進度(0);
                         重置並擊狀態();
                     } else {
                         開啓練習題選單();
@@ -198,7 +199,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             }
             "Tab" => {
                 if 現行工作模式() == 工作模式::錄入 {
-                    if 反查推進(true) {
+                    if 作業推進(true) {
                         重置並擊狀態();
                     }
                 } else {
@@ -208,7 +209,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             }
             "Backspace" => {
                 if 現行工作模式() == 工作模式::錄入 {
-                    if 並擊完成() || 反查回退() {
+                    if 並擊完成() || 作業回退() {
                         重置並擊狀態();
                     }
                     evt.prevent_default();
@@ -220,7 +221,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
         }
         // 繼續擊鍵時消除已完成的反查作業
-        if 並擊開始() && 反查進度完成() {
+        if 並擊開始() && 作業進度完成() {
             佈置作業(作業::自習());
         }
     });
@@ -232,7 +233,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
         if 並擊完成() && 並擊成功() {
             // 擊中目標拼音後，反查下一個拼音；在最後一個拼音完成後顯示結果
-            if 反查推進(false) && !反查進度完成() {
+            if 作業推進(false) && !作業進度完成() {
                 重置並擊狀態();
             }
         }
@@ -268,7 +269,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <Rime字幕屏 當前作業={當前作業.into()} 作業進度={反查進度.into()}/>
+        <Rime字幕屏 當前作業={當前作業.into()} 作業進度={作業進度.into()}/>
         <div class="echo-bar">
             <div title="重新錄入／重選練習題">
                 <Rime鍵圖 鍵={&退出鍵} 標註法={默認盤面} 着色法={開關狀態}/>
