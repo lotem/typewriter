@@ -1,5 +1,6 @@
 use leptos::*;
 
+use crate::action::*;
 use crate::assignment::作業;
 
 #[derive(Clone, PartialEq)]
@@ -12,17 +13,17 @@ pub enum 工作模式 {
 pub fn 工作模式機關(
     作業進度完成: Signal<bool>,
     佈置作業: WriteSignal<作業>,
-    重置作業進度: impl Fn() + Copy + 'static,
-    重置並擊狀態: impl Fn() + Copy + 'static,
+    重置作業進度: impl 動作,
+    重置並擊狀態: impl 動作,
 ) -> (
     // 現行工作模式
     ReadSignal<工作模式>,
     // 開啓反查輸入
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 開啓練習題選單
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 關閉輸入欄
-    impl Fn() + Copy + 'static,
+    impl 動作,
 ) {
     let (現行工作模式, 設置工作模式) = create_signal(工作模式::錄入);
 

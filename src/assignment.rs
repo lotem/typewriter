@@ -1,6 +1,7 @@
 use leptos::*;
 use std::cmp::min;
 
+use crate::action::*;
 use crate::drills::預設練習題;
 use crate::engine::{解析輸入碼序列, 輸入碼};
 
@@ -63,11 +64,11 @@ pub fn 作業機關() -> (
     // 目標輸入碼
     Signal<Option<輸入碼>>,
     // 重置作業進度
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 作業推進
-    impl Fn(bool) -> bool + Copy + 'static,
+    impl 動作給一參數得一結果<bool>,
     // 作業回退
-    impl Fn() -> bool + Copy + 'static,
+    impl 動作得一結果,
 ) {
     let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
     let (作業進度, 更新作業進度) = create_signal(0);
@@ -89,22 +90,24 @@ pub fn 作業機關() -> (
         let 拼音數 = 反查拼音組.with(Vec::len);
         if 迴轉 && 作業進度() + 1 >= 拼音數 {
             重置作業進度();
-            return true;
+            Ok(())
         }
         // 非迴轉態可推進至結束位置，即拼音數
-        if 作業進度() < 拼音數 {
+        else if 作業進度() < 拼音數 {
             更新作業進度(作業進度() + 1);
-            return true;
+            Ok(())
+        } else {
+            Err(未有())
         }
-        false
     };
 
     let 作業回退 = move || {
         if 作業進度() > 0 {
             更新作業進度(作業進度() - 1);
-            return true;
+            Ok(())
+        } else {
+            Err(未有())
         }
-        false
     };
     let 拼音數 = move || 反查拼音組.with(Vec::len);
     let 作業進度完成 = Signal::derive(move || 作業進度() == 拼音數());

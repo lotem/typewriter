@@ -106,7 +106,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
     let 處理製表鍵 = move || {
         if 現行工作模式() == 工作模式::錄入 {
-            if 作業推進(true) {
+            if 作業推進(true).is_ok() {
                 重置並擊狀態();
             }
         } else {
@@ -116,7 +116,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
     let 處理退格鍵 = move || {
         if 現行工作模式() == 工作模式::錄入 {
-            if 並擊完成() || 作業回退() {
+            if 並擊完成() || 作業回退().is_ok() {
                 重置並擊狀態();
             }
             return true;
@@ -140,7 +140,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 既然抬鍵 = move || {
         if 並擊完成() && 並擊成功() {
             // 擊中目標拼音後，反查下一個拼音；在最後一個拼音完成後顯示結果
-            if 作業推進(false) && !作業進度完成() {
+            if 作業推進(false).is_ok() && !作業進度完成() {
                 重置並擊狀態();
             }
         }
