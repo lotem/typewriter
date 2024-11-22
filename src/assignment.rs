@@ -1,4 +1,8 @@
+use leptos::*;
+use std::cmp::min;
+
 use crate::drills::預設練習題;
+use crate::engine::{解析輸入碼序列, 輸入碼};
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
@@ -45,4 +49,76 @@ impl 作業 {
     pub fn 是否練習題(&self) -> bool {
         self.題號.is_some()
     }
+}
+
+pub fn 作業機關() -> (
+    ReadSignal<作業>,
+    WriteSignal<作業>,
+    ReadSignal<usize>,
+    impl Fn() + Copy + 'static,
+    impl Fn() -> bool + Copy + 'static,
+    impl Fn(bool) -> bool + Copy + 'static,
+    impl Fn() -> bool + Copy + 'static,
+    impl Fn() -> Option<輸入碼> + Copy + 'static,
+) {
+    let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
+    let (作業進度, 更新作業進度) = create_signal(0);
+
+    let 反查拼音組 =
+        create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
+
+    let 重置作業進度 = move || 更新作業進度(0);
+
+    let _ = watch(
+        反查拼音組,
+        move |_, _, _| {
+            重置作業進度();
+        },
+        false,
+    );
+
+    let 作業進度完成 = move || 作業進度() == 反查拼音組.with(Vec::len);
+
+    let 作業推進 = move |迴轉: bool| {
+        let 拼音數 = 反查拼音組.with(Vec::len);
+        if 迴轉 && 作業進度() + 1 >= 拼音數 {
+            重置作業進度();
+            return true;
+        }
+        // 非迴轉態可推進至結束位置，即拼音數
+        if 作業進度() < 拼音數 {
+            更新作業進度(作業進度() + 1);
+            return true;
+        }
+        false
+    };
+
+    let 作業回退 = move || {
+        if 作業進度() > 0 && !反查拼音組.with(Vec::is_empty) {
+            更新作業進度(作業進度() - 1);
+            return true;
+        }
+        false
+    };
+
+    let 目標輸入碼 = move || {
+        反查拼音組.with(|拼音組| {
+            if 拼音組.is_empty() {
+                None
+            } else {
+                拼音組.get(min(作業進度(), 拼音組.len() - 1)).cloned()
+            }
+        })
+    };
+
+    (
+        當前作業,
+        佈置作業,
+        作業進度,
+        重置作業進度,
+        作業進度完成,
+        作業推進,
+        作業回退,
+        目標輸入碼,
+    )
 }

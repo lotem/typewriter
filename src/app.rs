@@ -5,10 +5,9 @@ use leptos::{
     logging::log,
 };
 use leptos_use::{use_document, use_event_listener, use_window_focus};
-use std::cmp::min;
 
-use crate::assignment::作業;
-use crate::engine::{並擊狀態, 解析輸入碼序列, 輸入碼, 鍵組};
+use crate::assignment::{作業, 作業機關};
+use crate::engine::{並擊狀態, 輸入碼, 鍵組};
 use crate::key_code::網頁鍵值轉換;
 use crate::layout::{
     功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
@@ -81,55 +80,8 @@ const 選擇宮保拼音盤面: 盤面選擇碼 = 盤面選擇碼(2);
 
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
-    // 作業
-
-    let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
-    let (作業進度, 更新作業進度) = create_signal(0);
-
-    let 反查拼音組 =
-        create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
-
-    let _ = watch(
-        反查拼音組,
-        move |_, _, _| {
-            更新作業進度(0);
-        },
-        false,
-    );
-
-    let 作業進度完成 = move || 作業進度() == 反查拼音組.with(Vec::len);
-
-    let 作業推進 = move |迴轉: bool| {
-        let 拼音數 = 反查拼音組.with(Vec::len);
-        if 迴轉 && 作業進度() + 1 >= 拼音數 {
-            更新作業進度(0);
-            return true;
-        }
-        // 非迴轉態可推進至結束位置，即拼音數
-        if 作業進度() < 拼音數 {
-            更新作業進度(作業進度() + 1);
-            return true;
-        }
-        false
-    };
-
-    let 作業回退 = move || {
-        if 作業進度() > 0 && !反查拼音組.with(Vec::is_empty) {
-            更新作業進度(作業進度() - 1);
-            return true;
-        }
-        false
-    };
-
-    let 目標輸入碼 = move || {
-        反查拼音組.with(|拼音組| {
-            if 拼音組.is_empty() {
-                None
-            } else {
-                拼音組.get(min(作業進度(), 拼音組.len() - 1)).cloned()
-            }
-        })
-    };
+    let (當前作業, 佈置作業, 作業進度, 重置作業進度, 作業進度完成, 作業推進, 作業回退, 目標輸入碼) =
+        作業機關();
 
     // 擊鍵
 
@@ -171,7 +123,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
 
     let 開啓練習題選單 = move || {
-        更新作業進度(0);
+        重置作業進度();
         重置並擊狀態();
         設置工作模式(工作模式::選取練習題);
     };
@@ -201,7 +153,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         "Escape" => {
             if 現行工作模式() == 工作模式::錄入 {
                 if 作業進度() != 0 {
-                    更新作業進度(0);
+                    重置作業進度();
                     重置並擊狀態();
                 } else {
                     開啓練習題選單();
