@@ -6,6 +6,7 @@ mod drills;
 mod engine;
 mod key_code;
 mod layout;
+mod mode;
 mod style;
 mod view;
 
