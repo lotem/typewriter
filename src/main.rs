@@ -2,6 +2,7 @@ use leptos::*;
 
 mod app;
 mod assignment;
+mod chord;
 mod drills;
 mod engine;
 mod input;
