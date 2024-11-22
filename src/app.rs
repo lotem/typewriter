@@ -70,13 +70,12 @@ const 選擇宮保拼音盤面: 盤面選擇碼 = 盤面選擇碼(2);
 
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
-    let (當前作業, 佈置作業, 作業進度, 重置作業進度, 作業進度完成, 作業推進, 作業回退, 目標輸入碼) =
+    let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
         作業機關();
 
     let (
         並擊狀態流,
         並擊狀態變更,
-        重置並擊狀態,
         實況並擊碼,
         並擊所得拼音,
         反查鍵位,
@@ -84,6 +83,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         並擊開始,
         並擊完成,
         並擊成功,
+        重置並擊狀態,
     ) = 並擊機關(目標輸入碼);
 
     let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄) =
@@ -159,7 +159,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     // 界面
 
-    let 顯示選項 = move || {
+    let 顯示選項 = Signal::derive(move || {
         if 反查鍵位().is_some() {
             編碼欄顯示選項::顯示反查
         } else if !實況並擊碼().is_empty() {
@@ -167,21 +167,20 @@ pub fn Rime打字機應用() -> impl IntoView {
         } else {
             編碼欄顯示選項::無顯示
         }
-    };
-    let 顯示輸入碼 = move || 反查所得並擊碼().unwrap_or_else(實況並擊碼);
-    let 顯示拼音 = move || {
+    });
+    let 顯示輸入碼 = Signal::derive(move || 反查所得並擊碼().unwrap_or_else(實況並擊碼));
+    let 顯示拼音 = Signal::derive(move || {
         目標輸入碼()
             .and_then(|輸入碼| 輸入碼.轉寫碼原文)
             .or_else(|| 並擊所得拼音().to_owned())
             // 加尖括弧表示拉丁文轉寫，即拼音
             .map(|拼音| format!("⟨{拼音}⟩"))
-    };
-
-    let 反查碼 = move || 當前作業.with(|作業| 作業.反查碼().to_owned());
-    let 當選題號 = move || 當前作業.with(|作業| 作業.題號);
+    });
+    let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
+    let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
 
     let 動態 = 擊鍵動態 {
-        目標並擊: 反查鍵位.into(),
+        目標並擊: 反查鍵位,
         實況並擊: 並擊狀態流.into(),
     };
 
@@ -199,8 +198,8 @@ pub fn Rime打字機應用() -> impl IntoView {
             </div>
             <div class="function key hidden"/>
             <Rime編碼欄
-                顯示選項={Signal::derive(顯示選項)}
-                並擊成功={Signal::derive(並擊成功)}
+                顯示選項={顯示選項}
+                並擊成功={並擊成功}
                 點擊動作=move || {
                     if 現行工作模式() == 工作模式::錄入 {
                         if 當前作業.with(作業::是否練習題) {
@@ -214,11 +213,11 @@ pub fn Rime打字機應用() -> impl IntoView {
             {
                 move || match 現行工作模式() {
                     工作模式::錄入 => view! {
-                        <Rime編碼回顯區 輸入碼={Signal::derive(顯示輸入碼)} 拼音={Signal::derive(顯示拼音)}/>
+                        <Rime編碼回顯區 輸入碼={顯示輸入碼} 拼音={顯示拼音}/>
                     }.into_view(),
                     工作模式::輸入反查碼 => view! {
                         <Rime反查輸入欄
-                            反查碼={Signal::derive(反查碼)}
+                            反查碼={反查碼}
                             示例輸入={Signal::derive(|| String::from("qing shu ru pin yin"))}
                             反查碼變更=move |反查碼| {
                                 佈置作業(作業::自訂(反查碼));
@@ -228,7 +227,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                     }.into_view(),
                     工作模式::選取練習題 => view! {
                         <Rime練習題選單
-                            當選題號={Signal::derive(當選題號)}
+                            當選題號={當選題號}
                             選中題號=move |題號| {
                                 佈置作業(作業::練習題(題號));
                                 關閉輸入欄();
