@@ -4,6 +4,7 @@ mod app;
 mod assignment;
 mod drills;
 mod engine;
+mod input;
 mod key_code;
 mod layout;
 mod mode;

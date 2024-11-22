@@ -1,14 +1,9 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
-use leptos::{
-    ev::{keydown, keyup, KeyboardEvent},
-    logging::log,
-};
-use leptos_use::{use_document, use_event_listener, use_window_focus};
 
 use crate::assignment::{作業, 作業機關};
 use crate::engine::{並擊狀態, 輸入碼, 鍵組};
-use crate::key_code::網頁鍵值轉換;
+use crate::input::{焦點事件處理機關, 輸入事件處理機關};
 use crate::layout::{
     功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
     盤面選擇碼, 鍵的定義,
@@ -77,8 +72,6 @@ pub fn Rime打字機應用() -> impl IntoView {
     let (當前作業, 佈置作業, 作業進度, 重置作業進度, 作業進度完成, 作業推進, 作業回退, 目標輸入碼) =
         作業機關();
 
-    // 擊鍵
-
     let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
 
     let 重置並擊狀態 = move || 並擊狀態變更.update(並擊狀態::重置);
@@ -107,82 +100,73 @@ pub fn Rime打字機應用() -> impl IntoView {
     let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄) =
         工作模式機關(作業進度完成, 佈置作業, 重置作業進度, 重置並擊狀態);
 
-    // 輸入事件
+    焦點事件處理機關(重置並擊狀態);
 
-    let 鍵盤輸入焦點源 = create_selector(use_window_focus());
-    create_effect(move |_| {
-        if 鍵盤輸入焦點源.selected(false) {
-            重置並擊狀態();
-        }
-    });
-
-    let 處理功能鍵 = move |evt: &KeyboardEvent| match evt.code().as_str() {
-        "Enter" => {
-            if 現行工作模式() == 工作模式::錄入 {
-                開啓反查輸入();
-            } else {
-                關閉輸入欄();
-            }
-            evt.prevent_default();
-        }
-        "Escape" => {
-            if 現行工作模式() == 工作模式::錄入 {
-                if 作業進度() != 0 {
-                    重置作業進度();
-                    重置並擊狀態();
-                } else {
-                    開啓練習題選單();
-                }
-            } else {
-                關閉輸入欄();
-            }
-            evt.prevent_default();
-        }
-        "Tab" => {
-            if 現行工作模式() == 工作模式::錄入 {
-                if 作業推進(true) {
-                    重置並擊狀態();
-                }
-            } else {
-                關閉輸入欄();
-            }
-            evt.prevent_default();
-        }
-        "Backspace" => {
-            if 現行工作模式() == 工作模式::錄入 {
-                if 並擊完成() || 作業回退() {
-                    重置並擊狀態();
-                }
-                evt.prevent_default();
-            }
-        }
-        _ => (),
-    };
-
-    let _ = use_event_listener(use_document().body(), keydown, move |evt: KeyboardEvent| {
-        log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
-        處理功能鍵(&evt);
+    let 處理退出鍵 = move || {
         if 現行工作模式() == 工作模式::錄入 {
-            並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
+            if 作業進度() != 0 {
+                重置作業進度();
+                重置並擊狀態();
+            } else {
+                開啓練習題選單();
+            }
+        } else {
+            關閉輸入欄();
         }
+        true
+    };
+    let 處理製表鍵 = move || {
+        if 現行工作模式() == 工作模式::錄入 {
+            if 作業推進(true) {
+                重置並擊狀態();
+            }
+        } else {
+            關閉輸入欄();
+        }
+        true
+    };
+    let 處理退格鍵 = move || {
+        if 現行工作模式() == 工作模式::錄入 {
+            if 並擊完成() || 作業回退() {
+                重置並擊狀態();
+            }
+            return true;
+        }
+        false
+    };
+    let 處理回車鍵 = move || {
+        if 現行工作模式() == 工作模式::錄入 {
+            開啓反查輸入();
+        } else {
+            關閉輸入欄();
+        }
+        true
+    };
+    let 既然落鍵 = move || {
         // 繼續擊鍵時消除已完成的反查作業
         if 並擊開始() && 作業進度完成() {
             佈置作業(作業::自習());
         }
-    });
-
-    let _ = use_event_listener(use_document().body(), keyup, move |evt: KeyboardEvent| {
-        log!("抬鍵 key = {}, code = {}", &evt.key(), &evt.code());
-        if 現行工作模式() == 工作模式::錄入 {
-            並擊狀態變更.update(|並擊| 並擊.抬鍵(網頁鍵值轉換(&evt.code())));
-        }
+    };
+    let 既然抬鍵 = move || {
         if 並擊完成() && 並擊成功() {
             // 擊中目標拼音後，反查下一個拼音；在最後一個拼音完成後顯示結果
             if 作業推進(false) && !作業進度完成() {
                 重置並擊狀態();
             }
         }
-    });
+    };
+
+    輸入事件處理機關(
+        並擊狀態變更,
+        現行工作模式,
+        處理退出鍵,
+        處理製表鍵,
+        處理退格鍵,
+        處理回車鍵,
+        既然落鍵,
+        既然抬鍵,
+    );
 
     // 界面
 
