@@ -7,10 +7,7 @@ use crate::chord::並擊機關;
 use crate::combo_pinyin::宮保拼音輸入方案;
 use crate::engine::{並擊狀態, 鍵組};
 use crate::input::{焦點事件處理機關, 輸入事件處理機關};
-use crate::layout::{
-    功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
-    盤面選擇碼, 鍵的定義,
-};
+use crate::layout::功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵};
 use crate::mode::{工作模式, 工作模式機關};
 use crate::style::樣式;
 use crate::view::{
@@ -22,25 +19,23 @@ use crate::view::{
 };
 
 #[derive(Clone, Copy)]
-struct 擊鍵動態 {
+struct 並擊對標動態 {
     目標並擊: Signal<Option<鍵組>>,
     實況並擊: Signal<並擊狀態>,
 }
 
-impl 鍵面動態着色法 for 擊鍵動態 {
-    fn 鍵位提示(&self, 鍵: &鍵的定義) -> bool {
+impl 鍵面動態着色法 for 並擊對標動態 {
+    fn 鍵位提示(&self, 鍵: KeyCode) -> bool {
         self.目標並擊
-            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵.鍵碼)))
+            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵)))
     }
 
-    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊
-            .with(|並擊| 並擊.實時落鍵.0.contains(&鍵.鍵碼))
+    fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
+        self.實況並擊.with(|並擊| 並擊.實時落鍵.0.contains(&鍵))
     }
 
-    fn 是否擊中(&self, 鍵: &鍵的定義) -> bool {
-        self.實況並擊
-            .with(|並擊| 並擊.累計擊鍵.0.contains(&鍵.鍵碼))
+    fn 是否擊中(&self, 鍵: KeyCode) -> bool {
+        self.實況並擊.with(|並擊| 並擊.累計擊鍵.0.contains(&鍵))
     }
 }
 
@@ -50,19 +45,19 @@ struct 功能鍵開關狀態 {
 }
 
 impl 鍵面動態着色法 for 功能鍵開關狀態 {
-    fn 鍵位提示(&self, _鍵: &鍵的定義) -> bool {
+    fn 鍵位提示(&self, _鍵: KeyCode) -> bool {
         false
     }
 
-    fn 是否落鍵(&self, 鍵: &鍵的定義) -> bool {
-        match 鍵.鍵碼 {
+    fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
+        match 鍵 {
             KeyCode::Enter => self.現行工作模式.get() == 工作模式::輸入反查碼,
             KeyCode::Escape => self.現行工作模式.get() == 工作模式::選取練習題,
             _ => false,
         }
     }
 
-    fn 是否擊中(&self, _鍵: &鍵的定義) -> bool {
+    fn 是否擊中(&self, _鍵: KeyCode) -> bool {
         false
     }
 }
@@ -191,10 +186,11 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
     let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
 
-    let 默認盤面 = Signal::derive(|| 盤面選擇碼(0));
     let 方案指定盤面 = Signal::derive(move || 方案定義.with(|方案| 方案.盤面));
 
-    let 動態 = 擊鍵動態 {
+    let 標註功能鍵 = |功能鍵| Signal::derive(move || 功能鍵);
+
+    let 並擊動態 = 並擊對標動態 {
         目標並擊: 反查鍵位,
         實況並擊: 並擊狀態流.into(),
     };
@@ -206,10 +202,10 @@ pub fn Rime打字機應用() -> impl IntoView {
         <Rime字幕屏 當前作業={當前作業.into()} 作業進度={作業進度.into()}/>
         <div class="echo-bar">
             <div title="重新錄入／重選練習題">
-                <Rime鍵圖 鍵={&退出鍵} 目標盤面={默認盤面} 着色法={開關狀態}/>
+                <Rime鍵圖 鍵={退出鍵.鍵碼} 標註法={標註功能鍵(退出鍵)} 着色法={開關狀態}/>
             </div>
             <div title="前進一字">
-                <Rime鍵圖 鍵={&製表鍵} 目標盤面={默認盤面} 着色法={動態}/>
+                <Rime鍵圖 鍵={製表鍵.鍵碼} 標註法={標註功能鍵(製表鍵)} 着色法={並擊動態}/>
             </div>
             <div class="function key hidden"/>
             <Rime編碼欄
@@ -255,12 +251,12 @@ pub fn Rime打字機應用() -> impl IntoView {
             </Rime編碼欄>
             <div class="function key hidden"/>
             <div title="刪除／回退一字">
-                <Rime鍵圖 鍵={&退格鍵} 目標盤面={默認盤面} 着色法={動態}/>
+                <Rime鍵圖 鍵={退格鍵.鍵碼} 標註法={標註功能鍵(退格鍵)} 着色法={並擊動態}/>
             </div>
             <div title="輸入拼音反查鍵位">
-                <Rime鍵圖 鍵={&回車鍵} 目標盤面={默認盤面} 着色法={開關狀態}/>
+                <Rime鍵圖 鍵={回車鍵.鍵碼} 標註法={標註功能鍵(回車鍵)} 着色法={開關狀態}/>
             </div>
         </div>
-        <Rime鍵盤圖 目標盤面={方案指定盤面} 着色法={動態}/>
+        <Rime鍵盤圖 目標盤面={方案指定盤面} 着色法={並擊動態}/>
     }
 }
