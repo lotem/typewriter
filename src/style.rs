@@ -78,6 +78,7 @@ pub fn 樣式() -> &'static str {
             border: 1px dotted green;
             border-radius: 10px;
             margin: auto 18px;
+            width: 100%;
         }
         :deep(.board) {
             display: flex;
