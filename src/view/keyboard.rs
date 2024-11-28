@@ -12,8 +12,7 @@ pub trait 鍵面標註依據 {
 }
 
 pub trait 鍵面標註法 {
-    fn 標註<'a>(&'a self, 鍵: &'static 鍵的定義)
-        -> impl 鍵面標註依據 + Copy + 'static;
+    fn 標註(&self, 鍵: &'static 鍵的定義) -> impl 鍵面標註依據 + Copy + 'static;
 }
 
 pub trait 鍵面動態着色法 {
@@ -29,10 +28,8 @@ struct 選擇盤面 {
 }
 
 impl 鍵面標註法 for 盤面選擇碼 {
-    fn 標註<'a>(
-        &'a self, 鍵: &'static 鍵的定義
-    ) -> impl 鍵面標註依據 + Copy + 'static {
-        let 目標盤面 = self.clone();
+    fn 標註(&self, 鍵: &'static 鍵的定義) -> impl 鍵面標註依據 + Copy + 'static {
+        let 目標盤面 = *self;
         選擇盤面 { 鍵, 目標盤面 }
     }
 }

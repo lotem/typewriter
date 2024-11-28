@@ -18,6 +18,7 @@ pub fn 焦點事件處理機關(重置並擊狀態: impl Fn() + Copy + 'static) 
     });
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn 輸入事件處理機關(
     並擊狀態變更: WriteSignal<並擊狀態>,
     現行工作模式: ReadSignal<工作模式>,

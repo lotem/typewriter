@@ -4,12 +4,14 @@ mod action;
 mod app;
 mod assignment;
 mod chord;
+mod combo_pinyin;
 mod drills;
 mod engine;
 mod input;
 mod key_code;
 mod layout;
 mod mode;
+mod spelling_algebra;
 mod style;
 mod view;
 

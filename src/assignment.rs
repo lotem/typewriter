@@ -3,7 +3,7 @@ use std::cmp::min;
 
 use crate::action::*;
 use crate::drills::預設練習題;
-use crate::engine::{解析輸入碼序列, 輸入碼};
+use crate::engine::{對照輸入碼, 解析輸入碼序列};
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
@@ -52,6 +52,7 @@ impl 作業 {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn 作業機關() -> (
     // 當前作業
     ReadSignal<作業>,
@@ -62,7 +63,7 @@ pub fn 作業機關() -> (
     // 作業進度完成
     Signal<bool>,
     // 目標輸入碼
-    Signal<Option<輸入碼>>,
+    Signal<Option<對照輸入碼>>,
     // 重置作業進度
     impl 動作,
     // 作業推進
