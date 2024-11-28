@@ -2,8 +2,8 @@ use keyberon::key_code::KeyCode;
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
+use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
 use crate::layout::盤面選擇碼;
-use crate::engine::{並擊輸入方案, 鍵的定義};
 use crate::spelling_algebra::拼寫運算;
 use crate::{消除, 變換, 轉寫};
 
@@ -286,12 +286,15 @@ lazy_static! {
     ]);
 }
 
-pub fn 宮保拼音輸入方案() -> 並擊輸入方案<'static> {
-    並擊輸入方案 {
+pub fn 宮保拼音輸入方案() -> 輸入方案定義<'static> {
+    輸入方案定義 {
         盤面: 盤面選擇碼(2),
-        並擊鍵序,
-        並擊轉輸入碼規則: &並擊轉拼音,
-        輸入碼轉並擊規則: &拼音轉並擊,
-        驗證輸入碼規則: &貌似拼音,
+        指法: 觸鍵方式::並擊,
+        字根表: 並擊鍵序,
+        轉寫法: 轉寫法定義 {
+            拼式轉寫規則: &並擊轉拼音,
+            字根拆分規則: &拼音轉並擊,
+            拼式驗證規則: &貌似拼音,
+        },
     }
 }

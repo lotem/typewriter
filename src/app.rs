@@ -1,6 +1,7 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
 
+use crate::alphabet::拉丁字母輸入方案;
 use crate::assignment::{作業, 作業機關};
 use crate::chord::並擊機關;
 use crate::combo_pinyin::宮保拼音輸入方案;
@@ -66,11 +67,20 @@ impl 鍵面動態着色法 for 功能鍵開關狀態 {
     }
 }
 
-const 默認盤面: 盤面選擇碼 = 盤面選擇碼(0);
+#[derive(Clone, Copy)]
+pub enum 方案選單 {
+    拉丁字母,
+    宮保拼音,
+}
 
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
-    let 方案 = 宮保拼音輸入方案();
+    let (現行方案, 選用方案) = create_signal(方案選單::宮保拼音);
+
+    let 方案定義 = Signal::derive(move || match 現行方案() {
+        方案選單::拉丁字母 => 拉丁字母輸入方案(),
+        方案選單::宮保拼音 => 宮保拼音輸入方案(),
+    });
 
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
         作業機關();
@@ -86,7 +96,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         並擊完成,
         並擊成功,
         重置並擊狀態,
-    ) = 並擊機關(方案, 目標輸入碼);
+    ) = 並擊機關(方案定義, 目標輸入碼);
 
     let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄) =
         工作模式機關(作業進度完成, 佈置作業, 重置作業進度, 重置並擊狀態);
@@ -181,6 +191,9 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
     let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
 
+    let 默認盤面 = Signal::derive(|| 盤面選擇碼(0));
+    let 方案指定盤面 = Signal::derive(move || 方案定義.with(|方案| 方案.盤面));
+
     let 動態 = 擊鍵動態 {
         目標並擊: 反查鍵位,
         實況並擊: 並擊狀態流.into(),
@@ -193,10 +206,10 @@ pub fn Rime打字機應用() -> impl IntoView {
         <Rime字幕屏 當前作業={當前作業.into()} 作業進度={作業進度.into()}/>
         <div class="echo-bar">
             <div title="重新錄入／重選練習題">
-                <Rime鍵圖 鍵={&退出鍵} 標註法={默認盤面} 着色法={開關狀態}/>
+                <Rime鍵圖 鍵={&退出鍵} 目標盤面={默認盤面} 着色法={開關狀態}/>
             </div>
             <div title="前進一字">
-                <Rime鍵圖 鍵={&製表鍵} 標註法={默認盤面} 着色法={動態}/>
+                <Rime鍵圖 鍵={&製表鍵} 目標盤面={默認盤面} 着色法={動態}/>
             </div>
             <div class="function key hidden"/>
             <Rime編碼欄
@@ -242,12 +255,12 @@ pub fn Rime打字機應用() -> impl IntoView {
             </Rime編碼欄>
             <div class="function key hidden"/>
             <div title="刪除／回退一字">
-                <Rime鍵圖 鍵={&退格鍵} 標註法={默認盤面} 着色法={動態}/>
+                <Rime鍵圖 鍵={&退格鍵} 目標盤面={默認盤面} 着色法={動態}/>
             </div>
             <div title="輸入拼音反查鍵位">
-                <Rime鍵圖 鍵={&回車鍵} 標註法={默認盤面} 着色法={開關狀態}/>
+                <Rime鍵圖 鍵={&回車鍵} 目標盤面={默認盤面} 着色法={開關狀態}/>
             </div>
         </div>
-        <Rime鍵盤圖 標註法={方案.盤面} 着色法={動態}/>
+        <Rime鍵盤圖 目標盤面={方案指定盤面} 着色法={動態}/>
     }
 }

@@ -20,30 +20,42 @@ impl 鍵組 {
 }
 
 #[derive(Clone, Copy)]
-pub struct 並擊輸入方案<'a> {
+pub struct 輸入方案定義<'a> {
     pub 盤面: 盤面選擇碼,
-    pub 並擊鍵序: &'a [鍵的定義<'a>],
-    pub 並擊轉輸入碼規則: &'a [拼寫運算<'a>],
-    pub 輸入碼轉並擊規則: &'a [拼寫運算<'a>],
-    pub 驗證輸入碼規則: &'a [&'a Regex],
+    pub 指法: 觸鍵方式,
+    pub 字根表: &'a [鍵的定義<'a>],
+    pub 轉寫法: 轉寫法定義<'a>,
 }
 
-impl 並擊輸入方案<'_> {
-    pub fn 讀出並擊鍵位(&self, 並擊碼: &str) -> 鍵組 {
+#[derive(Clone, Copy)]
+pub enum 觸鍵方式 {
+    連擊,
+    並擊,
+}
+
+#[derive(Clone, Copy)]
+pub struct 轉寫法定義<'a> {
+    pub 拼式轉寫規則: &'a [拼寫運算<'a>],
+    pub 字根拆分規則: &'a [拼寫運算<'a>],
+    pub 拼式驗證規則: &'a [&'a Regex],
+}
+
+impl 輸入方案定義<'_> {
+    pub fn 讀出鍵位(&self, 字根碼: &str) -> 鍵組 {
         鍵組(
-            self.並擊鍵序
+            self.字根表
                 .iter()
-                .filter(|鍵| 並擊碼.contains(鍵.輸入碼))
+                .filter(|鍵| 字根碼.contains(鍵.輸入碼))
                 .map(|鍵| 鍵.鍵碼)
                 .collect(),
         )
     }
 
-    pub fn 寫成並擊碼(&self, 鍵位: &鍵組) -> String {
+    pub fn 寫成字根碼(&self, 鍵位: &鍵組) -> String {
         if 鍵位.0.is_empty() {
             String::new()
         } else {
-            self.並擊鍵序
+            self.字根表
                 .iter()
                 .filter(|鍵| 鍵位.0.contains(&鍵.鍵碼))
                 .map(|鍵| 鍵.輸入碼)
@@ -51,16 +63,19 @@ impl 並擊輸入方案<'_> {
         }
     }
 
-    pub fn 並擊轉輸入碼(&self, 並擊碼: &str) -> Option<String> {
-        施展拼寫運算(並擊碼, self.並擊轉輸入碼規則)
+    pub fn 字根碼轉寫爲拼式(&self, 字根碼: &str) -> Option<String> {
+        施展拼寫運算(字根碼, self.轉寫法.拼式轉寫規則)
     }
 
-    pub fn 輸入碼轉並擊(&self, 輸入碼: &str) -> Option<String> {
-        施展拼寫運算(輸入碼, self.輸入碼轉並擊規則)
+    pub fn 拼式拆分爲字根碼(&self, 轉寫碼: &str) -> Option<String> {
+        施展拼寫運算(轉寫碼, self.轉寫法.字根拆分規則)
     }
 
-    pub fn 驗證輸入碼(&self, 待驗證: &str) -> bool {
-        self.驗證輸入碼規則.iter().any(|r| r.is_match(待驗證))
+    pub fn 驗證拼式(&self, 待驗證拼式: &str) -> bool {
+        self.轉寫法
+            .拼式驗證規則
+            .iter()
+            .any(|r| r.is_match(待驗證拼式))
     }
 }
 
@@ -111,12 +126,12 @@ pub struct 對照輸入碼 {
 }
 
 impl 對照輸入碼 {
-    pub fn 反查並擊碼<'a>(&'a self, 方案: &並擊輸入方案<'a>) -> Option<String> {
+    pub fn 反查並擊碼<'a>(&'a self, 方案: &輸入方案定義<'a>) -> Option<String> {
         self.並擊碼原文.to_owned().or_else(|| {
             self.轉寫碼原文
                 .as_deref()
-                .filter(|轉寫碼| 方案.驗證輸入碼(轉寫碼))
-                .and_then(|轉寫碼| 方案.輸入碼轉並擊(轉寫碼))
+                .filter(|轉寫碼| 方案.驗證拼式(轉寫碼))
+                .and_then(|轉寫碼| 方案.拼式拆分爲字根碼(轉寫碼))
         })
     }
 }

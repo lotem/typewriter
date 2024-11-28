@@ -1,9 +1,9 @@
-use crate::engine::{並擊狀態, 並擊輸入方案, 對照輸入碼, 鍵組};
+use crate::engine::{並擊狀態, 對照輸入碼, 輸入方案定義, 鍵組};
 use leptos::*;
 
 #[allow(clippy::type_complexity)]
 pub fn 並擊機關(
-    方案: 並擊輸入方案<'static>,
+    方案: Signal<輸入方案定義<'static>>,
     目標輸入碼: Signal<Option<對照輸入碼>>,
 ) -> (
     // 並擊狀態流
@@ -32,15 +32,18 @@ pub fn 並擊機關(
     let 重置並擊狀態 = move || 並擊狀態變更.update(並擊狀態::重置);
 
     let 實況並擊碼 =
-        Signal::derive(move || 並擊狀態流.with(|並擊| 方案.寫成並擊碼(&並擊.累計擊鍵)));
-    let 並擊所得拼音 = create_memo(move |_| 方案.並擊轉輸入碼(&實況並擊碼()));
+        Signal::derive(move || with!(|方案, 並擊狀態流| 方案.寫成字根碼(&並擊狀態流.累計擊鍵)));
+    let 並擊所得拼音 = create_memo(move |_| with!(|方案| 方案.字根碼轉寫爲拼式(&實況並擊碼())));
 
     let 反查所得並擊碼 = create_memo(move |_| {
-        目標輸入碼.with(|對照碼| 對照碼.as_ref().and_then(|對照碼| 對照碼.反查並擊碼(&方案)))
+        with!(|方案, 目標輸入碼| 目標輸入碼
+            .as_ref()
+            .and_then(|對照碼| 對照碼.反查並擊碼(方案)))
     });
     let 反查鍵位 = Signal::derive(move || {
-        反查所得並擊碼
-            .with(|並擊碼| 並擊碼.as_deref().map(|並擊碼| 方案.讀出並擊鍵位(並擊碼)))
+        with!(|方案, 反查所得並擊碼| 反查所得並擊碼
+            .as_deref()
+            .map(|並擊碼| 方案.讀出鍵位(並擊碼)))
     });
 
     let 並擊開始 = Signal::derive(move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty()));

@@ -1,6 +1,7 @@
 use leptos::*;
 
 mod action;
+mod alphabet;
 mod app;
 mod assignment;
 mod chord;
