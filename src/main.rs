@@ -14,6 +14,7 @@ mod layout;
 mod mode;
 mod spelling_algebra;
 mod style;
+mod theory;
 mod view;
 
 use app::Rime打字機應用;

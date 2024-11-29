@@ -2,6 +2,7 @@ use leptos::*;
 
 use crate::action::*;
 use crate::assignment::作業;
+use crate::theory::方案選單;
 
 #[derive(Clone, PartialEq)]
 pub enum 工作模式 {
@@ -11,6 +12,7 @@ pub enum 工作模式 {
 }
 
 pub fn 工作模式機關(
+    現行方案: ReadSignal<方案選單>,
     作業進度完成: Signal<bool>,
     佈置作業: WriteSignal<作業>,
     重置作業進度: impl 動作,
@@ -29,7 +31,7 @@ pub fn 工作模式機關(
 
     let 開啓反查輸入 = move || {
         if 作業進度完成() {
-            佈置作業(作業::自習());
+            佈置作業(作業::自習(現行方案()));
         }
         重置並擊狀態();
         設置工作模式(工作模式::輸入反查碼);

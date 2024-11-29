@@ -1,10 +1,47 @@
+use crate::theory::方案選單;
+
 pub struct 練習題<'a> {
     pub 標題: &'a str,
     pub 編碼: &'a str,
     pub 字幕: Option<&'a str>,
 }
 
-pub const 預設練習題: [練習題; 10] = [
+const 各方案練習題組: &[(方案選單, &[練習題])] = &[
+    (方案選單::拉丁字母, 字母鍵盤練習題),
+    (方案選單::宮保拼音, 宮保拼音練習題),
+];
+
+impl 方案選單 {
+    pub fn 配套練習題(&self) -> Option<&'static [練習題<'static>]> {
+        各方案練習題組.iter().find_map(|&(方案, 練習題)| {
+            if 方案 == *self {
+                Some(練習題)
+            } else {
+                None
+            }
+        })
+    }
+}
+
+const 字母鍵盤練習題: &[練習題] = &[
+    練習題 {
+        標題: "拉丁字母",
+        編碼: "ABCD EFGH IJKL MNOPQ RSTU VWXYZ",
+        字幕: None,
+    },
+    練習題 {
+        標題: "QWERTY 鍵盤",
+        編碼: "QWERT YUIOP ASDFG HJKL ZXCVB NM",
+        字幕: None,
+    },
+    練習題 {
+        標題: "洋文",
+        編碼: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+        字幕: None,
+    },
+];
+
+const 宮保拼音練習題: &[練習題] = &[
     練習題 {
         標題: "中州韻輸入法引擎",
         編碼: "zhong zhou yun shu ru fa yin qing \

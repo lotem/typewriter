@@ -2,48 +2,54 @@ use leptos::*;
 use std::cmp::min;
 
 use crate::action::*;
-use crate::drills::預設練習題;
 use crate::engine::{對照輸入碼, 解析輸入碼序列};
+use crate::theory::方案選單;
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
+    pub 科目: 方案選單,
     pub 題號: Option<usize>,
     pub 自訂反查碼: Option<String>,
 }
 
 impl 作業 {
-    pub fn 練習題(題號: usize) -> Self {
+    pub fn 練習題(科目: 方案選單, 題號: usize) -> Self {
         Self {
+            科目,
             題號: Some(題號),
             自訂反查碼: None,
         }
     }
 
-    pub fn 自訂(反查碼: String) -> Self {
+    pub fn 自訂(科目: 方案選單, 反查碼: String) -> Self {
         Self {
+            科目,
             題號: None,
             自訂反查碼: Some(反查碼),
         }
     }
 
-    pub fn 自習() -> Self {
+    pub fn 自習(科目: 方案選單) -> Self {
         Self {
+            科目,
             題號: None,
             自訂反查碼: None,
         }
     }
 
     pub fn 反查碼(&self) -> &str {
-        self.題號
-            .and_then(|題號| 預設練習題.get(題號))
+        self.科目
+            .配套練習題()
+            .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
             .map(|題| 題.編碼)
             .or(self.自訂反查碼.as_deref())
             .unwrap_or("")
     }
 
     pub fn 字幕(&self) -> Option<&'static str> {
-        self.題號
-            .and_then(|題號| 預設練習題.get(題號))
+        self.科目
+            .配套練習題()
+            .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
             .and_then(|題| 題.字幕)
     }
 
@@ -53,7 +59,9 @@ impl 作業 {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn 作業機關() -> (
+pub fn 作業機關(
+    初始方案: 方案選單,
+) -> (
     // 當前作業
     ReadSignal<作業>,
     // 佈置作業
@@ -71,7 +79,7 @@ pub fn 作業機關() -> (
     // 作業回退
     impl 動作得一結果,
 ) {
-    let (當前作業, 佈置作業) = create_signal(作業::練習題(0));
+    let (當前作業, 佈置作業) = create_signal(作業::練習題(初始方案, 0));
     let (作業進度, 更新作業進度) = create_signal(0);
 
     let 反查拼音組 =

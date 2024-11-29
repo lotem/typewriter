@@ -10,6 +10,7 @@ use crate::input::{焦點事件處理機關, 輸入事件處理機關};
 use crate::layout::功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵};
 use crate::mode::{工作模式, 工作模式機關};
 use crate::style::樣式;
+use crate::theory::方案選單;
 use crate::view::{
     caption::Rime字幕屏,
     input_code::{
@@ -62,12 +63,6 @@ impl 鍵面動態着色法 for 功能鍵開關狀態 {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum 方案選單 {
-    拉丁字母,
-    宮保拼音,
-}
-
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
     let (現行方案, 選用方案) = create_signal(方案選單::宮保拼音);
@@ -78,7 +73,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     });
 
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
-        作業機關();
+        作業機關(現行方案.get_untracked());
 
     let (
         並擊狀態流,
@@ -94,7 +89,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     ) = 並擊機關(方案定義, 目標輸入碼);
 
     let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄) =
-        工作模式機關(作業進度完成, 佈置作業, 重置作業進度, 重置並擊狀態);
+        工作模式機關(現行方案, 作業進度完成, 佈置作業, 重置作業進度, 重置並擊狀態);
 
     焦點事件處理機關(重置並擊狀態);
 
@@ -141,7 +136,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 既然落鍵 = move || {
         // 繼續擊鍵時消除已完成的反查作業
         if 並擊開始() && 作業進度完成() {
-            佈置作業(作業::自習());
+            佈置作業(作業::自習(現行方案()));
         }
     };
     let 既然抬鍵 = move || {
@@ -185,6 +180,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     });
     let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
     let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
+    let 方案配套練習題 = Signal::derive(move || 現行方案().配套練習題().unwrap_or(&[]));
 
     let 方案指定盤面 = Signal::derive(move || 方案定義.with(|方案| 方案.盤面));
 
@@ -231,16 +227,17 @@ pub fn Rime打字機應用() -> impl IntoView {
                             反查碼={反查碼}
                             示例輸入={Signal::derive(|| String::from("qing shu ru pin yin"))}
                             反查碼變更=move |反查碼| {
-                                佈置作業(作業::自訂(反查碼));
+                                佈置作業(作業::自訂(現行方案(), 反查碼));
                             }
                             關閉輸入欄={關閉輸入欄}
                         />
                     }.into_view(),
                     工作模式::選取練習題 => view! {
                         <Rime練習題選單
+                            預設練習題={方案配套練習題}
                             當選題號={當選題號}
                             選中題號=move |題號| {
-                                佈置作業(作業::練習題(題號));
+                                佈置作業(作業::練習題(現行方案(), 題號));
                                 關閉輸入欄();
                             }
                             關閉選單={關閉輸入欄}

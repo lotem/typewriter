@@ -1,7 +1,7 @@
 use leptos::logging::log;
 use leptos::*;
 
-use crate::drills::預設練習題;
+use crate::drills::練習題;
 
 #[component]
 pub fn Rime編碼回顯區(
@@ -45,6 +45,7 @@ pub fn Rime反查輸入欄(
 
 #[component]
 pub fn Rime練習題選單(
+    預設練習題: Signal<&'static [練習題<'static>]>,
     當選題號: Signal<Option<usize>>,
     選中題號: impl Fn(usize) + 'static,
     關閉選單: impl Fn() + 'static,
@@ -69,7 +70,7 @@ pub fn Rime練習題選單(
                 let 題號 = event_target_value(&ev);
                 log!("題號: {}", 題號);
                 if let Ok(題號) = 題號.parse::<usize>() {
-                    if 題號 < 預設練習題.len() {
+                    if 題號 < 預設練習題().len() {
                         選中題號(題號);
                     }
                 }
@@ -77,7 +78,7 @@ pub fn Rime練習題選單(
             on:blur=move |_| 關閉選單()
         >
         {
-            預設練習題.iter().enumerate().map(|(題號, 題)| view! {
+            預設練習題().iter().enumerate().map(|(題號, 題)| view! {
                 <option value={題號}>{題.標題}</option>
             }).collect_view()
         }
