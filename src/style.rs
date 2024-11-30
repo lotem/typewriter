@@ -64,7 +64,7 @@ pub fn 樣式() -> &'static str {
             flex: 1;
             text-align: right;
         }
-        :deep(.translated-input, .lookup-code, .excercises) {
+        :deep(.translated-input, .lookup-code, .exercises, .theories) {
             flex: 1;
             font-family: LXGW WenKai, Inter, sans-serif;
             font-size: 2rem;
@@ -74,7 +74,7 @@ pub fn 樣式() -> &'static str {
             overflow-wrap: break-word;
             white-space: nowrap;
         }
-        :deep(.lookup-code, .excercises) {
+        :deep(.lookup-code, .exercises, .theories) {
             border: 1px dotted green;
             border-radius: 10px;
             margin: auto 18px;

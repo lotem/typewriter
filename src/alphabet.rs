@@ -1,6 +1,7 @@
+use keyberon::key_code::KeyCode;
+
 use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
 use crate::layout::盤面選擇碼;
-use keyberon::key_code::KeyCode;
 
 macro_rules! 字母鍵 {
     ($字母: ident) => {
@@ -42,6 +43,7 @@ const 字母表: &[鍵的定義] = &[
 
 pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
     輸入方案定義 {
+        名稱: "拉丁字母",
         盤面: 盤面選擇碼::default(),
         指法: 觸鍵方式::連擊,
         字根表: 字母表,

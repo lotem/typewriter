@@ -2,17 +2,18 @@ use leptos::*;
 
 use crate::action::*;
 use crate::assignment::作業;
-use crate::theory::方案選單;
+use crate::theory::方案選項;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum 工作模式 {
     錄入,
     輸入反查碼,
     選取練習題,
+    選擇輸入方案,
 }
 
 pub fn 工作模式機關(
-    現行方案: ReadSignal<方案選單>,
+    現行方案: ReadSignal<方案選項>,
     作業進度完成: Signal<bool>,
     佈置作業: WriteSignal<作業>,
     重置作業進度: impl 動作,
@@ -23,6 +24,8 @@ pub fn 工作模式機關(
     // 開啓反查輸入
     impl 動作,
     // 開啓練習題選單
+    impl 動作,
+    // 開啓方案選單
     impl 動作,
     // 關閉輸入欄
     impl 動作,
@@ -43,9 +46,19 @@ pub fn 工作模式機關(
         設置工作模式(工作模式::選取練習題);
     };
 
+    let 開啓方案選單 = move || {
+        設置工作模式(工作模式::選擇輸入方案);
+    };
+
     let 關閉輸入欄 = move || {
         設置工作模式(工作模式::錄入);
     };
 
-    (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄)
+    (
+        現行工作模式,
+        開啓反查輸入,
+        開啓練習題選單,
+        開啓方案選單,
+        關閉輸入欄,
+    )
 }

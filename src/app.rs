@@ -1,22 +1,21 @@
 use keyberon::key_code::KeyCode;
+use leptos::logging::log;
 use leptos::*;
 
-use crate::alphabet::拉丁字母輸入方案;
 use crate::assignment::{作業, 作業機關};
 use crate::chord::並擊機關;
-use crate::combo_pinyin::宮保拼音輸入方案;
 use crate::engine::{並擊狀態, 鍵組};
 use crate::input::{焦點事件處理機關, 輸入事件處理機關};
 use crate::layout::功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵};
 use crate::mode::{工作模式, 工作模式機關};
 use crate::style::樣式;
-use crate::theory::方案選單;
+use crate::theory::輸入方案機關;
 use crate::view::{
     caption::Rime字幕屏,
-    input_code::{
-        Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, Rime練習題選單, 編碼欄顯示選項
-    },
+    exercise_menu::Rime練習題選單,
+    input_code::{Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 編碼欄顯示選項},
     keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
+    theory_menu::Rime方案選單,
 };
 
 #[derive(Clone, Copy)]
@@ -53,7 +52,9 @@ impl 鍵面動態着色法 for 功能鍵開關狀態 {
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
         match 鍵 {
             KeyCode::Enter => self.現行工作模式.get() == 工作模式::輸入反查碼,
-            KeyCode::Escape => self.現行工作模式.get() == 工作模式::選取練習題,
+            KeyCode::Escape => {
+                [工作模式::選取練習題, 工作模式::選擇輸入方案].contains(&self.現行工作模式.get())
+            }
             _ => false,
         }
     }
@@ -65,15 +66,10 @@ impl 鍵面動態着色法 for 功能鍵開關狀態 {
 
 #[component]
 pub fn Rime打字機應用() -> impl IntoView {
-    let (現行方案, 選用方案) = create_signal(方案選單::宮保拼音);
-
-    let 方案定義 = Signal::derive(move || match 現行方案() {
-        方案選單::拉丁字母 => 拉丁字母輸入方案(),
-        方案選單::宮保拼音 => 宮保拼音輸入方案(),
-    });
+    let (現行方案, 選用方案, 方案定義) = 輸入方案機關();
 
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
-        作業機關(現行方案.get_untracked());
+        作業機關(現行方案);
 
     let (
         並擊狀態流,
@@ -88,21 +84,32 @@ pub fn Rime打字機應用() -> impl IntoView {
         重置並擊狀態,
     ) = 並擊機關(方案定義, 目標輸入碼);
 
-    let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 關閉輸入欄) =
+    let (現行工作模式, 開啓反查輸入, 開啓練習題選單, 開啓方案選單, 關閉輸入欄) =
         工作模式機關(現行方案, 作業進度完成, 佈置作業, 重置作業進度, 重置並擊狀態);
+
+    let _ = watch(
+        現行工作模式,
+        move |新, 舊, _| {
+            log!("工作模式: {:?} -> {:?}", 舊, 新);
+        },
+        false,
+    );
 
     焦點事件處理機關(重置並擊狀態);
 
     let 處理退出鍵 = move || {
-        if 現行工作模式() == 工作模式::錄入 {
-            if 作業進度() != 0 {
-                重置作業進度();
-                重置並擊狀態();
-            } else {
-                開啓練習題選單();
+        match 現行工作模式() {
+            工作模式::錄入 => {
+                if 作業進度() != 0 {
+                    重置作業進度();
+                    重置並擊狀態();
+                } else {
+                    開啓練習題選單();
+                }
             }
-        } else {
-            關閉輸入欄();
+            工作模式::輸入反查碼 => 關閉輸入欄(),
+            工作模式::選取練習題 => 開啓方案選單(),
+            工作模式::選擇輸入方案 => 關閉輸入欄(),
         }
         true
     };
@@ -197,7 +204,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     view! { class = styler_class,
         <Rime字幕屏 當前作業={當前作業.into()} 作業進度={作業進度.into()}/>
         <div class="echo-bar">
-            <div title="重新錄入／重選練習題">
+            <div title="重新錄入／選練習題／選輸入方案">
                 <Rime鍵圖 鍵={退出鍵.鍵碼} 標註法={標註功能鍵(退出鍵)} 着色法={開關狀態}/>
             </div>
             <div title="前進一字">
@@ -216,6 +223,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                         }
                     }
                 }
+                關閉輸入欄={關閉輸入欄}
             >
             {
                 move || match 現行工作模式() {
@@ -229,7 +237,6 @@ pub fn Rime打字機應用() -> impl IntoView {
                             反查碼變更=move |反查碼| {
                                 佈置作業(作業::自訂(現行方案(), 反查碼));
                             }
-                            關閉輸入欄={關閉輸入欄}
                         />
                     }.into_view(),
                     工作模式::選取練習題 => view! {
@@ -240,7 +247,15 @@ pub fn Rime打字機應用() -> impl IntoView {
                                 佈置作業(作業::練習題(現行方案(), 題號));
                                 關閉輸入欄();
                             }
-                            關閉選單={關閉輸入欄}
+                        />
+                    }.into_view(),
+                    工作模式::選擇輸入方案 => view! {
+                        <Rime方案選單
+                            現行方案={現行方案}
+                            選中方案=move |方案| {
+                                選用方案(方案);
+                                關閉輸入欄();
+                            }
                         />
                     }.into_view(),
                 }

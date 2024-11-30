@@ -21,6 +21,7 @@ impl 鍵組 {
 
 #[derive(Clone, Copy)]
 pub struct 輸入方案定義<'a> {
+    pub 名稱: &'a str,
     pub 盤面: 盤面選擇碼,
     pub 指法: 觸鍵方式,
     pub 字根表: &'a [鍵的定義<'a>],

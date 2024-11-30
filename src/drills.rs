@@ -1,4 +1,4 @@
-use crate::theory::方案選單;
+use crate::theory::方案選項;
 
 pub struct 練習題<'a> {
     pub 標題: &'a str,
@@ -6,12 +6,12 @@ pub struct 練習題<'a> {
     pub 字幕: Option<&'a str>,
 }
 
-const 各方案練習題組: &[(方案選單, &[練習題])] = &[
-    (方案選單::拉丁字母, 字母鍵盤練習題),
-    (方案選單::宮保拼音, 宮保拼音練習題),
+const 各方案練習題組: &[(方案選項, &[練習題])] = &[
+    (方案選項::拉丁字母, 字母鍵盤練習題),
+    (方案選項::宮保拼音, 宮保拼音練習題),
 ];
 
-impl 方案選單 {
+impl 方案選項 {
     pub fn 配套練習題(&self) -> Option<&'static [練習題<'static>]> {
         各方案練習題組.iter().find_map(|&(方案, 練習題)| {
             if 方案 == *self {
@@ -25,7 +25,7 @@ impl 方案選單 {
 
 const 字母鍵盤練習題: &[練習題] = &[
     練習題 {
-        標題: "拉丁字母",
+        標題: "字母表",
         編碼: "ABCD EFGH IJKL MNOPQ RSTU VWXYZ",
         字幕: None,
     },

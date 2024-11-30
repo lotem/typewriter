@@ -3,17 +3,17 @@ use std::cmp::min;
 
 use crate::action::*;
 use crate::engine::{對照輸入碼, 解析輸入碼序列};
-use crate::theory::方案選單;
+use crate::theory::方案選項;
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
-    pub 科目: 方案選單,
+    pub 科目: 方案選項,
     pub 題號: Option<usize>,
     pub 自訂反查碼: Option<String>,
 }
 
 impl 作業 {
-    pub fn 練習題(科目: 方案選單, 題號: usize) -> Self {
+    pub fn 練習題(科目: 方案選項, 題號: usize) -> Self {
         Self {
             科目,
             題號: Some(題號),
@@ -21,7 +21,7 @@ impl 作業 {
         }
     }
 
-    pub fn 自訂(科目: 方案選單, 反查碼: String) -> Self {
+    pub fn 自訂(科目: 方案選項, 反查碼: String) -> Self {
         Self {
             科目,
             題號: None,
@@ -29,7 +29,7 @@ impl 作業 {
         }
     }
 
-    pub fn 自習(科目: 方案選單) -> Self {
+    pub fn 自習(科目: 方案選項) -> Self {
         Self {
             科目,
             題號: None,
@@ -60,7 +60,7 @@ impl 作業 {
 
 #[allow(clippy::type_complexity)]
 pub fn 作業機關(
-    初始方案: 方案選單,
+    現行方案: ReadSignal<方案選項>,
 ) -> (
     // 當前作業
     ReadSignal<作業>,
@@ -79,7 +79,17 @@ pub fn 作業機關(
     // 作業回退
     impl 動作得一結果,
 ) {
+    let 初始方案 = 現行方案.get_untracked();
     let (當前作業, 佈置作業) = create_signal(作業::練習題(初始方案, 0));
+
+    let _ = watch(
+        現行方案,
+        move |&方案, _, _| {
+            佈置作業(作業::練習題(方案, 0));
+        },
+        false,
+    );
+
     let (作業進度, 更新作業進度) = create_signal(0);
 
     let 反查拼音組 =
