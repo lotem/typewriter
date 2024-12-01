@@ -4,6 +4,7 @@ mod action;
 mod alphabet;
 mod app;
 mod assignment;
+mod caption;
 mod chord;
 mod combo_pinyin;
 mod drills;

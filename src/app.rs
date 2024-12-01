@@ -3,6 +3,7 @@ use leptos::logging::log;
 use leptos::*;
 
 use crate::assignment::{作業, 作業機關};
+use crate::caption::字幕機關;
 use crate::chord::並擊機關;
 use crate::engine::{並擊狀態, 觸鍵方式, 鍵組};
 use crate::input::{焦點事件處理機關, 輸入事件處理機關};
@@ -73,6 +74,8 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
         作業機關(現行方案, 方案定義);
+
+    let (分段字幕, 按進度顯示字幕段落) = 字幕機關(當前作業, 作業進度);
 
     let (連擊狀態流, 連擊狀態變更, 實況字根碼, 反查所得字根碼, 連擊比對成功, 重置連擊狀態) =
         連擊機關(方案定義, 目標輸入碼);
@@ -240,7 +243,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <Rime字幕屏 當前作業={當前作業.into()} 作業進度={作業進度.into()}/>
+        <Rime字幕屏 按進度顯示字幕={按進度顯示字幕段落}/>
         <div class="echo-bar">
             <div title="重新錄入／選練習題／選輸入方案">
                 <Rime鍵圖 鍵={退出鍵.鍵碼} 標註法={標註功能鍵(退出鍵)} 着色法={開關狀態}/>
