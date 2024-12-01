@@ -2,7 +2,7 @@ use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::*;
 
-use crate::assignment::{作業, 作業機關};
+use crate::assignment::{作業, 作業推進參數, 作業機關};
 use crate::caption::字幕機關;
 use crate::chord::並擊機關;
 use crate::engine::{並擊狀態, 觸鍵方式, 鍵組};
@@ -75,7 +75,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
         作業機關(現行方案, 方案定義);
 
-    let (分段字幕, 按進度顯示字幕段落) = 字幕機關(當前作業, 作業進度);
+    let (分段字幕, 當前段落, 按進度顯示字幕段落) = 字幕機關(當前作業, 作業進度);
 
     let (連擊狀態流, 連擊狀態變更, 實況字根碼, 反查所得字根碼, 連擊比對成功, 重置連擊狀態) =
         連擊機關(方案定義, 目標輸入碼);
@@ -124,7 +124,12 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
     let 處理製表鍵 = move || {
         if 現行工作模式() == 工作模式::錄入 {
-            if 作業推進(true).is_ok() {
+            if 作業推進(作業推進參數 {
+                段落: 當前段落().map(|(起, 止, _)| (起, 止)),
+                迴轉: true,
+            })
+            .is_ok()
+            {
                 重置並擊狀態();
             }
         } else {
@@ -156,7 +161,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     };
     let 批閱作業 = move || {
         // 擊中目標輸入碼後反查下一個輸入碼
-        擊中目標() && 作業推進(false).is_ok()
+        擊中目標() && 作業推進(作業推進參數::步進()).is_ok()
     };
     let 既然落鍵 = move || {
         // 繼續擊鍵時消除已完成的反查作業
@@ -174,7 +179,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                 if 並擊完成() && !作業進度完成() {
                     重置並擊狀態();
                 }
-            },
+            }
             觸鍵方式::並擊 => {
                 // 推進到下一題時, 清除上一題的並擊結果
                 // 但在最後一題完成後停下顯示結果
@@ -220,9 +225,13 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 顯示轉寫碼 = Signal::derive(move || {
         目標輸入碼()
             .and_then(|輸入碼| 輸入碼.轉寫碼原文)
-            .or_else(|| if 指法() == 觸鍵方式::並擊 {
-                並擊所得拼音().to_owned()
-            } else { None })
+            .or_else(|| {
+                if 指法() == 觸鍵方式::並擊 {
+                    並擊所得拼音().to_owned()
+                } else {
+                    None
+                }
+            })
             // 加尖括弧表示拉丁文轉寫
             .map(|轉寫| format!("⟨{轉寫}⟩"))
     });

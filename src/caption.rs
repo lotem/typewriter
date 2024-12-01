@@ -40,18 +40,21 @@ impl Iterator for 字幕指標<'_> {
 
 pub type 字幕段落 = (usize, usize, &'static str);
 
-pub fn 字幕機關(當前作業: ReadSignal<作業>, 作業進度: ReadSignal<usize>) -> (
+pub fn 字幕機關(
+    當前作業: ReadSignal<作業>,
+    作業進度: ReadSignal<usize>,
+) -> (
     // 分段字幕
     Memo<Box<Vec<字幕段落>>>,
+    // 當前段落
+    Signal<Option<字幕段落>>,
     // 按進度顯示字幕段落
     Signal<Option<(String, String, String)>>,
 ) {
     let 未有段落 = || Box::new(vec![]);
     let 分段字幕 = create_memo(move |_| {
         當前作業.with(|作業| {
-            作業.字幕().map_or_else(
-                未有段落,
-                move |有字幕| {
+            作業.字幕().map_or_else(未有段落, move |有字幕| {
                 有字幕
                     .split_whitespace()
                     .fold(
@@ -67,26 +70,29 @@ pub fn 字幕機關(當前作業: ReadSignal<作業>, 作業進度: ReadSignal<u
         })
     });
 
-    let 按進度顯示字幕段落 = Signal::derive(move || {
+    let 當前段落 = Signal::derive(move || {
         分段字幕.with(|衆段落| {
-                let 全文進度 = 作業進度();
-                let 當前段落號 =
-                    衆段落.partition_point(|(_, 段落結束, _)| *段落結束 <= 全文進度);
-                衆段落.get(當前段落號).map(|當前段落| {
-                    let (段落起始, _, 段落文字) = 當前段落;
-                    let 段落進度 = 全文進度 - 段落起始;
-                    let 完成的字 = 字幕指標::from(*段落文字).take(段落進度).collect::<String>();
-                    let 當下的字 = 字幕指標::from(*段落文字)
-                        .skip(段落進度)
-                        .take(1)
-                        .collect::<String>();
-                    let 剩餘的字 = 字幕指標::from(*段落文字)
-                        .skip(段落進度 + 1)
-                        .collect::<String>();
-                    (完成的字, 當下的字, 剩餘的字)
-                })
-            })
+            let 全文進度 = 作業進度();
+            let 當前段落號 = 衆段落.partition_point(|(_, 段落結束, _)| *段落結束 <= 全文進度);
+            衆段落.get(當前段落號).copied()
+        })
     });
 
-    (分段字幕, 按進度顯示字幕段落)
+    let 按進度顯示字幕段落 = Signal::derive(move || {
+        當前段落().map(|(段落起始, _, 段落文字)| {
+            let 全文進度 = 作業進度();
+            let 段落進度 = 全文進度 - 段落起始;
+            let 完成的字 = 字幕指標::from(段落文字).take(段落進度).collect::<String>();
+            let 當下的字 = 字幕指標::from(段落文字)
+                .skip(段落進度)
+                .take(1)
+                .collect::<String>();
+            let 剩餘的字 = 字幕指標::from(段落文字)
+                .skip(段落進度 + 1)
+                .collect::<String>();
+            (完成的字, 當下的字, 剩餘的字)
+        })
+    });
+
+    (分段字幕, 當前段落, 按進度顯示字幕段落)
 }

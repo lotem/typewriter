@@ -1,8 +1,9 @@
 use leptos::*;
 
 #[component]
-pub fn Rime字幕屏(按進度顯示字幕: Signal<Option<(String, String, String)>>) -> impl IntoView {
-
+pub fn Rime字幕屏(
+    按進度顯示字幕: Signal<Option<(String, String, String)>>
+) -> impl IntoView {
     view! {
         <div class="text-box">
             <div class="caption">

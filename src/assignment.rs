@@ -59,6 +59,20 @@ impl 作業 {
     }
 }
 
+pub struct 作業推進參數 {
+    pub 段落: Option<(usize, usize)>,
+    pub 迴轉: bool,
+}
+
+impl 作業推進參數 {
+    pub fn 步進() -> Self {
+        Self {
+            段落: None,
+            迴轉: false,
+        }
+    }
+}
+
 #[allow(clippy::type_complexity)]
 pub fn 作業機關(
     現行方案: ReadSignal<方案選項>,
@@ -77,7 +91,7 @@ pub fn 作業機關(
     // 重置作業進度
     impl 動作,
     // 作業推進
-    impl 動作給一參數得一結果<bool>,
+    impl 動作給一參數得一結果<作業推進參數>,
     // 作業回退
     impl 動作得一結果,
 ) {
@@ -108,15 +122,25 @@ pub fn 作業機關(
         false,
     );
 
-    let 作業推進 = move |迴轉: bool| {
-        let 拼音數 = 反查拼音組.with(Vec::len);
-        if 迴轉 && 作業進度() + 1 >= 拼音數 {
+    let 作業推進 = move |參數: 作業推進參數| {
+        let 全文結束 = 反查拼音組.with(Vec::len);
+        let 推進目標位置 = match 參數.段落 {
+            Some((起, 止)) => {
+                if 作業進度() < 起 {
+                    起
+                } else {
+                    止
+                }
+            }
+            None => 作業進度() + 1,
+        };
+        if 參數.迴轉 && 推進目標位置 >= 全文結束 {
             重置作業進度();
             Ok(())
         }
-        // 非迴轉態可推進至結束位置，即拼音數
-        else if 作業進度() < 拼音數 {
-            更新作業進度(作業進度() + 1);
+        // 非迴轉態可推進至全文結束位置
+        else if 推進目標位置 <= 全文結束 {
+            更新作業進度(推進目標位置);
             Ok(())
         } else {
             Err(未有())
