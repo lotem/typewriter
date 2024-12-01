@@ -39,7 +39,7 @@ pub fn 並擊機關(
     let 反查所得並擊碼 = create_memo(move |_| {
         with!(|方案, 目標輸入碼| 目標輸入碼
             .as_ref()
-            .and_then(|對照碼| 對照碼.反查並擊碼(方案)))
+            .and_then(|對照碼| 對照碼.反查字根碼(方案)))
     });
     let 反查鍵位 = Signal::derive(move || {
         with!(|方案, 反查所得並擊碼| 反查所得並擊碼

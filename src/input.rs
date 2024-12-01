@@ -5,7 +5,7 @@ use leptos::{
 };
 use leptos_use::{use_document, use_event_listener, use_window_focus};
 
-use crate::engine::並擊狀態;
+use crate::engine::{並擊狀態, 連擊狀態};
 use crate::key_code::網頁鍵值轉換;
 use crate::mode::工作模式;
 
@@ -20,6 +20,7 @@ pub fn 焦點事件處理機關(重置並擊狀態: impl Fn() + Copy + 'static) 
 
 #[allow(clippy::too_many_arguments)]
 pub fn 輸入事件處理機關(
+    連擊狀態變更: WriteSignal<連擊狀態>,
     並擊狀態變更: WriteSignal<並擊狀態>,
     現行工作模式: ReadSignal<工作模式>,
     處理退出鍵: impl Fn() -> bool + Copy + 'static,
@@ -57,7 +58,9 @@ pub fn 輸入事件處理機關(
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
         處理功能鍵(&evt);
         if 現行工作模式() == 工作模式::錄入 {
-            並擊狀態變更.update(|並擊| 並擊.落鍵(網頁鍵值轉換(&evt.code())));
+            let 鍵碼 = 網頁鍵值轉換(&evt.code());
+            連擊狀態變更.update(|連擊| *連擊 = 連擊.擊發(鍵碼));
+            並擊狀態變更.update(|並擊| 並擊.落鍵(鍵碼));
         }
         既然落鍵();
     });
@@ -65,7 +68,8 @@ pub fn 輸入事件處理機關(
     let _ = use_event_listener(use_document().body(), keyup, move |evt: KeyboardEvent| {
         log!("抬鍵 key = {}, code = {}", &evt.key(), &evt.code());
         if 現行工作模式() == 工作模式::錄入 {
-            並擊狀態變更.update(|並擊| 並擊.抬鍵(網頁鍵值轉換(&evt.code())));
+            let 鍵碼 = 網頁鍵值轉換(&evt.code());
+            並擊狀態變更.update(|並擊| 並擊.抬鍵(鍵碼));
         }
         既然抬鍵();
     });

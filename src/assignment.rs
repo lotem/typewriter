@@ -167,11 +167,9 @@ fn 解析連擊輸入碼序列(輸入碼序列: &str) -> Vec<對照輸入碼> {
     輸入碼序列
         .split_whitespace()
         .flat_map(|片段| 片段.chars())
-        .map(|字符| {
-            對照輸入碼 {
-                並擊碼原文: Some(字符.to_string()),
-                轉寫碼原文: None,
-            }
+        .map(|字符| 對照輸入碼 {
+            並擊碼原文: Some(字符.to_string()),
+            轉寫碼原文: None,
         })
         .collect()
 }

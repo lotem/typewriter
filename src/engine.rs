@@ -28,7 +28,7 @@ pub struct 輸入方案定義<'a> {
     pub 轉寫法: 轉寫法定義<'a>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum 觸鍵方式 {
     連擊,
     並擊,
@@ -39,6 +39,31 @@ pub struct 轉寫法定義<'a> {
     pub 拼式轉寫規則: &'a [拼寫運算<'a>],
     pub 字根拆分規則: &'a [拼寫運算<'a>],
     pub 拼式驗證規則: &'a [&'a Regex],
+}
+
+pub trait 判定鍵位 {
+    fn 有無鍵位(&self) -> bool;
+    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool;
+}
+
+impl 判定鍵位 for &鍵組 {
+    fn 有無鍵位(&self) -> bool {
+        !self.0.is_empty()
+    }
+
+    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
+        self.0.contains(鍵碼)
+    }
+}
+
+impl 判定鍵位 for KeyCode {
+    fn 有無鍵位(&self) -> bool {
+        *self != KeyCode::No
+    }
+
+    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
+        self == 鍵碼
+    }
 }
 
 impl 輸入方案定義<'_> {
@@ -52,13 +77,13 @@ impl 輸入方案定義<'_> {
         )
     }
 
-    pub fn 寫成字根碼(&self, 鍵位: &鍵組) -> String {
-        if 鍵位.0.is_empty() {
+    pub fn 寫成字根碼(&self, 鍵位: impl 判定鍵位) -> String {
+        if !鍵位.有無鍵位() {
             String::new()
         } else {
             self.字根表
                 .iter()
-                .filter(|鍵| 鍵位.0.contains(&鍵.鍵碼))
+                .filter(|鍵| 鍵位.包含鍵位(&鍵.鍵碼))
                 .map(|鍵| 鍵.輸入碼)
                 .collect::<String>()
         }
@@ -77,6 +102,34 @@ impl 輸入方案定義<'_> {
             .拼式驗證規則
             .iter()
             .any(|r| r.is_match(待驗證拼式))
+    }
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub struct 連擊狀態 {
+    pub 鍵碼: KeyCode,
+    pub 連擊次數: usize,
+}
+
+impl Default for 連擊狀態 {
+    fn default() -> Self {
+        Self {
+            鍵碼: KeyCode::No,
+            連擊次數: 0,
+        }
+    }
+}
+
+impl 連擊狀態 {
+    pub fn 擊發(&self, 鍵碼: KeyCode) -> 連擊狀態 {
+        let 連擊次數 = if 鍵碼 == self.鍵碼 {
+            self.連擊次數 + 1
+        } else {
+            1
+        };
+        Self {
+            鍵碼, 連擊次數
+        }
     }
 }
 
@@ -127,7 +180,7 @@ pub struct 對照輸入碼 {
 }
 
 impl 對照輸入碼 {
-    pub fn 反查並擊碼<'a>(&'a self, 方案: &輸入方案定義<'a>) -> Option<String> {
+    pub fn 反查字根碼<'a>(&'a self, 方案: &輸入方案定義<'a>) -> Option<String> {
         self.並擊碼原文.to_owned().or_else(|| {
             self.轉寫碼原文
                 .as_deref()

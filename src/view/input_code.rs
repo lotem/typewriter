@@ -51,7 +51,7 @@ pub enum 編碼欄顯示選項 {
 #[component]
 pub fn Rime編碼欄(
     顯示選項: Signal<編碼欄顯示選項>,
-    並擊成功: Signal<bool>,
+    擊中目標: Signal<bool>,
     點擊動作: impl Fn() + 'static,
     關閉輸入欄: impl Fn() + Clone + 'static,
     children: Children,
@@ -65,7 +65,7 @@ pub fn Rime編碼欄(
         <div node_ref=target class="input-code"
             class:freeplay={move || 顯示選項() == 編碼欄顯示選項::顯示實況}
             class:target={move || 顯示選項() == 編碼欄顯示選項::顯示反查}
-            class:success={並擊成功}
+            class:success={擊中目標}
             on:click={move |_| 點擊動作()}
         >
         {children()}

@@ -10,6 +10,7 @@ mod drills;
 mod engine;
 mod input;
 mod key_code;
+mod key_press;
 mod layout;
 mod mode;
 mod spelling_algebra;
