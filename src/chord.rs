@@ -1,5 +1,6 @@
-use crate::engine::{並擊狀態, 對照輸入碼, 輸入方案定義, 鍵組};
 use leptos::*;
+
+use crate::engine::{並擊狀態, 對照輸入碼, 輸入方案定義, 鍵組};
 
 #[allow(clippy::type_complexity)]
 pub fn 並擊機關(

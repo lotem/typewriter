@@ -69,7 +69,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let (現行方案, 選用方案, 方案定義) = 輸入方案機關();
 
     let (當前作業, 佈置作業, 作業進度, 作業進度完成, 目標輸入碼, 重置作業進度, 作業推進, 作業回退) =
-        作業機關(現行方案);
+        作業機關(現行方案, 方案定義);
 
     let (
         並擊狀態流,
@@ -178,12 +178,12 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
     });
     let 顯示輸入碼 = Signal::derive(move || 反查所得並擊碼().unwrap_or_else(實況並擊碼));
-    let 顯示拼音 = Signal::derive(move || {
+    let 顯示轉寫碼 = Signal::derive(move || {
         目標輸入碼()
             .and_then(|輸入碼| 輸入碼.轉寫碼原文)
             .or_else(|| 並擊所得拼音().to_owned())
-            // 加尖括弧表示拉丁文轉寫，即拼音
-            .map(|拼音| format!("⟨{拼音}⟩"))
+            // 加尖括弧表示拉丁文轉寫
+            .map(|轉寫| format!("⟨{轉寫}⟩"))
     });
     let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
     let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
@@ -228,7 +228,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             {
                 move || match 現行工作模式() {
                     工作模式::錄入 => view! {
-                        <Rime編碼回顯區 輸入碼={顯示輸入碼} 拼音={顯示拼音}/>
+                        <Rime編碼回顯區 輸入碼={顯示輸入碼} 轉寫碼={顯示轉寫碼}/>
                     }.into_view(),
                     工作模式::輸入反查碼 => view! {
                         <Rime反查輸入欄

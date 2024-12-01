@@ -1,5 +1,5 @@
 use keyberon::key_code::KeyCode;
-use lazy_regex::{regex, Regex};
+use lazy_regex::Regex;
 use std::collections::BTreeSet;
 
 use crate::layout::盤面選擇碼;
@@ -135,44 +135,4 @@ impl 對照輸入碼 {
                 .and_then(|轉寫碼| 方案.拼式拆分爲字根碼(轉寫碼))
         })
     }
-}
-
-/// 將輸入碼序列解析爲輸入碼片段.
-///
-/// 輸入碼通常是拼音音節的序列, 音節之間用空白或隔音符號 `'` 分開.
-/// 特殊形式的拼音寫在尖括號中, 如: `<'a>`。
-///
-/// 輸入碼片段也可以是以下形式:
-///
-/// - 用大寫字母連書並擊碼, 如 `ZFURO`
-/// - 寫明並擊碼和對應的拼音, 如 `SHGUA=shu'ru'fa`
-/// - 寫明並擊碼並將對應的拼音寫在尖括號中, 如 `SHGUA=<shu ru fa>`
-pub fn 解析輸入碼序列(輸入碼序列: &str) -> Vec<對照輸入碼> {
-    let 輸入碼片段模式 = regex!(
-        r"(?x)
-        (?P<chord> \p{Uppercase}+ )
-        (?:
-            = (?P<eq_code> [\w'] )+ |
-            =< (?P<eq_quoted_code> [^<>]* ) >
-        )? |
-        (?P<code> \w+ ) |
-        <(?P<quoted_code> [^<>]* )>
-    "
-    );
-    輸入碼片段模式
-        .captures_iter(輸入碼序列)
-        .map(|片段| {
-            let 並擊碼原文 = 片段.name("chord").map(|m| m.as_str().to_owned());
-            let 轉寫碼原文 = 片段
-                .name("code")
-                .or_else(|| 片段.name("quoted_code"))
-                .or_else(|| 片段.name("eq_code"))
-                .or_else(|| 片段.name("eq_quoted_code"))
-                .map(|m| m.as_str().to_owned());
-            對照輸入碼 {
-                並擊碼原文,
-                轉寫碼原文,
-            }
-        })
-        .collect()
 }

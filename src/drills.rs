@@ -27,17 +27,17 @@ const 字母鍵盤練習題: &[練習題] = &[
     練習題 {
         標題: "字母表",
         編碼: "ABCD EFGH IJKL MNOPQ RSTU VWXYZ",
-        字幕: None,
+        字幕: Some("ABCD EFGH IJKL MNOPQ RSTU VWXYZ"),
     },
     練習題 {
         標題: "QWERTY 鍵盤",
         編碼: "QWERT YUIOP ASDFG HJKL ZXCVB NM",
-        字幕: None,
+        字幕: Some("QWERT YUIOP ASDFG HJKL ZXCVB NM"),
     },
     練習題 {
-        標題: "洋文",
-        編碼: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
-        字幕: None,
+        標題: "洋文金句",
+        編碼: "HELLO WORLD THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+        字幕: Some("hello world the quick brown fox jumps over the lazy dog"),
     },
 ];
 

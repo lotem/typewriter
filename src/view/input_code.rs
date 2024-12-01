@@ -1,14 +1,15 @@
-use leptos::*;
 use leptos::html::Div;
+use leptos::*;
 use leptos_use::on_click_outside;
 
 #[component]
 pub fn Rime編碼回顯區(
-    輸入碼: Signal<String>, 拼音: Signal<Option<String>>
+    輸入碼: Signal<String>,
+    轉寫碼: Signal<Option<String>>,
 ) -> impl IntoView {
     view! {
         <kbd class="raw-input">{輸入碼}</kbd>
-        <span class="translated-input">{拼音}</span>
+        <span class="translated-input">{轉寫碼}</span>
     }
 }
 

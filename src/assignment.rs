@@ -1,8 +1,9 @@
+use lazy_regex::regex;
 use leptos::*;
 use std::cmp::min;
 
 use crate::action::*;
-use crate::engine::{對照輸入碼, 解析輸入碼序列};
+use crate::engine::{對照輸入碼, 觸鍵方式, 輸入方案定義};
 use crate::theory::方案選項;
 
 #[derive(Clone, PartialEq)]
@@ -61,6 +62,7 @@ impl 作業 {
 #[allow(clippy::type_complexity)]
 pub fn 作業機關(
     現行方案: ReadSignal<方案選項>,
+    方案定義: Signal<輸入方案定義<'static>>,
 ) -> (
     // 當前作業
     ReadSignal<作業>,
@@ -92,8 +94,9 @@ pub fn 作業機關(
 
     let (作業進度, 更新作業進度) = create_signal(0);
 
+    let 指法 = move || 方案定義.with(|方案| 方案.指法);
     let 反查拼音組 =
-        create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(作業.反查碼())));
+        create_memo(move |_| 當前作業.with(|作業| 解析輸入碼序列(指法(), 作業.反查碼())));
 
     let 重置作業進度 = move || 更新作業進度(0);
 
@@ -151,4 +154,64 @@ pub fn 作業機關(
         作業推進,
         作業回退,
     )
+}
+
+fn 解析輸入碼序列(指法: 觸鍵方式, 輸入碼序列: &str) -> Vec<對照輸入碼> {
+    match 指法 {
+        觸鍵方式::連擊 => 解析連擊輸入碼序列(輸入碼序列),
+        觸鍵方式::並擊 => 解析並擊輸入碼序列(輸入碼序列),
+    }
+}
+
+fn 解析連擊輸入碼序列(輸入碼序列: &str) -> Vec<對照輸入碼> {
+    輸入碼序列
+        .split_whitespace()
+        .flat_map(|片段| 片段.chars())
+        .map(|字符| {
+            對照輸入碼 {
+                並擊碼原文: Some(字符.to_string()),
+                轉寫碼原文: None,
+            }
+        })
+        .collect()
+}
+
+/// 將並擊輸入碼序列解析爲輸入碼片段.
+///
+/// 輸入碼通常是拼音音節的序列, 音節之間用空白或隔音符號 `'` 分開.
+/// 特殊形式的拼音寫在尖括號中, 如: `<'a>`。
+///
+/// 輸入碼片段也可以是以下形式:
+///
+/// - 用大寫字母連書並擊碼, 如 `ZFURO`
+/// - 寫明並擊碼和對應的拼音, 如 `SHGUA=shu'ru'fa`
+/// - 寫明並擊碼並將對應的拼音寫在尖括號中, 如 `SHGUA=<shu ru fa>`
+fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Vec<對照輸入碼> {
+    let 輸入碼片段模式 = regex!(
+        r"(?x)
+        (?P<chord> \p{Uppercase}+ )
+        (?:
+            = (?P<eq_code> [\w'] )+ |
+            =< (?P<eq_quoted_code> [^<>]* ) >
+        )? |
+        (?P<code> \w+ ) |
+        <(?P<quoted_code> [^<>]* )>
+    "
+    );
+    輸入碼片段模式
+        .captures_iter(輸入碼序列)
+        .map(|片段| {
+            let 並擊碼原文 = 片段.name("chord").map(|m| m.as_str().to_owned());
+            let 轉寫碼原文 = 片段
+                .name("code")
+                .or_else(|| 片段.name("quoted_code"))
+                .or_else(|| 片段.name("eq_code"))
+                .or_else(|| 片段.name("eq_quoted_code"))
+                .map(|m| m.as_str().to_owned());
+            對照輸入碼 {
+                並擊碼原文,
+                轉寫碼原文,
+            }
+        })
+        .collect()
 }
