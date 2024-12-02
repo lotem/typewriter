@@ -16,7 +16,7 @@ pub fn 樣式() -> &'static str {
             //border: 1px dotted;
             //border-radius: 32px;
             color: gray;
-            font-family: LXGW WenKai, Inter, sans-serif;
+            font-family: Fantasque Sans Mono, LXGW WenKai, Inter, sans-serif;
             font-size: 3.5rem;
             padding: 16px 32px;
             text-align: center;

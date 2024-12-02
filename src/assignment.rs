@@ -65,10 +65,9 @@ pub struct 作業推進參數 {
 }
 
 impl 作業推進參數 {
-    pub fn 步進() -> Self {
+    pub fn 步進(迴轉: bool) -> Self {
         Self {
-            段落: None,
-            迴轉: false,
+            段落: None, 迴轉
         }
     }
 }

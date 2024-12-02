@@ -7,14 +7,14 @@ use crate::engine::輸入方案定義;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 方案選項 {
-    拉丁字母,
     宮保拼音,
+    拉丁字母,
 }
 
 lazy_static! {
     pub static ref 方案選單: Vec<(方案選項, 輸入方案定義<'static>)> = vec![
-        (方案選項::拉丁字母, 拉丁字母輸入方案()),
         (方案選項::宮保拼音, 宮保拼音輸入方案()),
+        (方案選項::拉丁字母, 拉丁字母輸入方案()),
     ];
 }
 
