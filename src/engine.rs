@@ -67,6 +67,10 @@ impl 判定鍵位 for KeyCode {
 }
 
 impl 輸入方案定義<'_> {
+    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵的定義> {
+        self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
+    }
+
     pub fn 讀出鍵位(&self, 字根碼: &str) -> 鍵組 {
         鍵組(
             self.字根表
@@ -88,20 +92,19 @@ impl 輸入方案定義<'_> {
                 .collect::<String>()
         }
     }
+}
 
+impl 轉寫法定義<'_> {
     pub fn 字根碼轉寫爲拼式(&self, 字根碼: &str) -> Option<String> {
-        施展拼寫運算(字根碼, self.轉寫法.拼式轉寫規則)
+        施展拼寫運算(字根碼, self.拼式轉寫規則)
     }
 
     pub fn 拼式拆分爲字根碼(&self, 轉寫碼: &str) -> Option<String> {
-        施展拼寫運算(轉寫碼, self.轉寫法.字根拆分規則)
+        施展拼寫運算(轉寫碼, self.字根拆分規則)
     }
 
     pub fn 驗證拼式(&self, 待驗證拼式: &str) -> bool {
-        self.轉寫法
-            .拼式驗證規則
-            .iter()
-            .any(|r| r.is_match(待驗證拼式))
+        self.拼式驗證規則.iter().any(|r| r.is_match(待驗證拼式))
     }
 }
 
@@ -175,17 +178,17 @@ impl 並擊狀態 {
 
 #[derive(Clone, PartialEq)]
 pub struct 對照輸入碼 {
-    pub 並擊碼原文: Option<String>,
+    pub 字根碼原文: Option<String>,
     pub 轉寫碼原文: Option<String>,
 }
 
 impl 對照輸入碼 {
-    pub fn 反查字根碼<'a>(&'a self, 方案: &輸入方案定義<'a>) -> Option<String> {
-        self.並擊碼原文.to_owned().or_else(|| {
+    pub fn 反查字根碼<'a>(&'a self, 轉寫法: &轉寫法定義<'a>) -> Option<String> {
+        self.字根碼原文.to_owned().or_else(|| {
             self.轉寫碼原文
                 .as_deref()
-                .filter(|轉寫碼| 方案.驗證拼式(轉寫碼))
-                .and_then(|轉寫碼| 方案.拼式拆分爲字根碼(轉寫碼))
+                .filter(|轉寫碼| 轉寫法.驗證拼式(轉寫碼))
+                .and_then(|轉寫碼| 轉寫法.拼式拆分爲字根碼(轉寫碼))
         })
     }
 }

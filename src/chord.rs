@@ -34,12 +34,13 @@ pub fn 並擊機關(
 
     let 實況並擊碼 =
         Signal::derive(move || with!(|方案, 並擊狀態流| 方案.寫成字根碼(&並擊狀態流.累計擊鍵)));
-    let 並擊所得拼音 = create_memo(move |_| with!(|方案| 方案.字根碼轉寫爲拼式(&實況並擊碼())));
+    let 並擊所得拼音 =
+        create_memo(move |_| with!(|方案| 方案.轉寫法.字根碼轉寫爲拼式(&實況並擊碼())));
 
     let 反查所得並擊碼 = create_memo(move |_| {
         with!(|方案, 目標輸入碼| 目標輸入碼
             .as_ref()
-            .and_then(|對照碼| 對照碼.反查字根碼(方案)))
+            .and_then(|對照碼| 對照碼.反查字根碼(&方案.轉寫法)))
     });
     let 反查鍵位 = Signal::derive(move || {
         with!(|方案, 反查所得並擊碼| 反查所得並擊碼
