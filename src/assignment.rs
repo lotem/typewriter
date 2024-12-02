@@ -85,6 +85,8 @@ pub fn 作業機關(
     ReadSignal<usize>,
     // 作業進度完成
     Signal<bool>,
+    // 輸入碼序列
+    Memo<Box<[對照輸入碼]>>,
     // 目標輸入碼
     Signal<Option<對照輸入碼>>,
     // 重置作業進度
@@ -107,14 +109,14 @@ pub fn 作業機關(
 
     let (作業進度, 更新作業進度) = create_signal(0);
 
-    let 反查拼音組 = create_memo(move |_| {
+    let 輸入碼序列 = create_memo(move |_| {
         with!(|當前作業, 方案定義| 解析輸入碼序列(當前作業.反查碼(), 方案定義))
     });
 
     let 重置作業進度 = move || 更新作業進度(0);
 
     let _ = watch(
-        反查拼音組,
+        輸入碼序列,
         move |_, _, _| {
             重置作業進度();
         },
@@ -122,7 +124,7 @@ pub fn 作業機關(
     );
 
     let 作業推進 = move |參數: 作業推進參數| {
-        let 全文結束 = 反查拼音組.with(Vec::len);
+        let 全文結束 = 輸入碼序列.with(|輸入碼| 輸入碼.len());
         let 推進目標位置 = match 參數.段落 {
             Some((起, 止)) => {
                 if 作業進度() < 起 {
@@ -154,15 +156,17 @@ pub fn 作業機關(
             Err(未有())
         }
     };
-    let 拼音數 = move || 反查拼音組.with(Vec::len);
-    let 作業進度完成 = Signal::derive(move || 作業進度() == 拼音數());
+    let 輸入碼總數 = move || 輸入碼序列.with(|輸入碼| 輸入碼.len());
+    let 作業進度完成 = Signal::derive(move || 作業進度() == 輸入碼總數());
 
     let 目標輸入碼 = Signal::derive(move || {
-        反查拼音組.with(|拼音組| {
-            if 拼音組.is_empty() {
+        with!(|輸入碼序列| {
+            if 輸入碼序列.is_empty() {
                 None
             } else {
-                拼音組.get(min(作業進度(), 拼音組.len() - 1)).cloned()
+                輸入碼序列
+                    .get(min(作業進度(), 輸入碼序列.len() - 1))
+                    .cloned()
             }
         })
     });
@@ -172,6 +176,7 @@ pub fn 作業機關(
         佈置作業,
         作業進度,
         作業進度完成,
+        輸入碼序列,
         目標輸入碼,
         重置作業進度,
         作業推進,
@@ -181,7 +186,7 @@ pub fn 作業機關(
 
 fn 解析輸入碼序列(
     輸入碼序列: &str, 方案: &輸入方案定義
-) -> Vec<對照輸入碼> {
+) -> Box<[對照輸入碼]> {
     match 方案.指法 {
         觸鍵方式::連擊 => 解析連擊輸入碼序列(輸入碼序列, 方案),
         觸鍵方式::並擊 => 解析並擊輸入碼序列(輸入碼序列),
@@ -190,7 +195,7 @@ fn 解析輸入碼序列(
 
 fn 解析連擊輸入碼序列(
     輸入碼序列: &str, 方案: &輸入方案定義
-) -> Vec<對照輸入碼> {
+) -> Box<[對照輸入碼]> {
     輸入碼序列
         .split_whitespace()
         .flat_map(|片段| 片段.chars())
@@ -221,7 +226,7 @@ fn 解析連擊輸入碼序列(
 /// - 用大寫字母連書並擊碼, 如 `ZFURO`
 /// - 寫明並擊碼和對應的拼音, 如 `SHGUA=shu'ru'fa`
 /// - 寫明並擊碼並將對應的拼音寫在尖括號中, 如 `SHGUA=<shu ru fa>`
-fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Vec<對照輸入碼> {
+fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Box<[對照輸入碼]> {
     let 輸入碼片段模式 = regex!(
         r"(?x)
         (?P<chord> \p{Uppercase}+ )
