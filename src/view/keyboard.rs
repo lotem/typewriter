@@ -1,7 +1,9 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
 
-use crate::layout::{打字機鍵盤佈局, 盤面選擇碼, 鍵面刻印, 鍵面映射};
+use crate::layout::{
+    功能鍵::衆功能鍵, 打字機鍵盤佈局, 盤面選擇碼, 鍵面刻印, 鍵面映射
+};
 
 pub trait 鍵面標註法<'a> {
     fn 鍵碼(&self) -> KeyCode;
@@ -9,13 +11,7 @@ pub trait 鍵面標註法<'a> {
     fn 是否空鍵(&self) -> bool;
     fn 是否後備盤面(&self) -> bool;
     fn 是否功能鍵(&self) -> bool {
-        [
-            KeyCode::Escape,
-            KeyCode::Tab,
-            KeyCode::BSpace,
-            KeyCode::Enter,
-        ]
-        .contains(&self.鍵碼())
+        衆功能鍵.iter().any(|功能鍵| 功能鍵.鍵碼 == self.鍵碼())
     }
     fn 是否空格(&self) -> bool {
         self.鍵碼() == KeyCode::Space

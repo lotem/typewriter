@@ -1,3 +1,4 @@
+use keyberon::key_code::KeyCode;
 use leptos::*;
 use leptos::{
     ev::{keydown, keyup, KeyboardEvent},
@@ -23,42 +24,17 @@ pub fn 輸入事件處理機關(
     連擊狀態變更: WriteSignal<連擊狀態>,
     並擊狀態變更: WriteSignal<並擊狀態>,
     現行工作模式: ReadSignal<工作模式>,
-    處理退出鍵: impl Fn() -> bool + Copy + 'static,
-    處理製表鍵: impl Fn() -> bool + Copy + 'static,
-    處理退格鍵: impl Fn() -> bool + Copy + 'static,
-    處理回車鍵: impl Fn() -> bool + Copy + 'static,
+    處理功能鍵: impl Fn(KeyCode) -> bool + Copy + 'static,
     既然落鍵: impl Fn() + Copy + 'static,
     既然抬鍵: impl Fn() + Copy + 'static,
 ) {
-    let 處理功能鍵 = move |evt: &KeyboardEvent| match evt.code().as_str() {
-        "Escape" => {
-            if 處理退出鍵() {
-                evt.prevent_default();
-            }
-        }
-        "Tab" => {
-            if 處理製表鍵() {
-                evt.prevent_default();
-            }
-        }
-        "Backspace" => {
-            if 處理退格鍵() {
-                evt.prevent_default();
-            }
-        }
-        "Enter" => {
-            if 處理回車鍵() {
-                evt.prevent_default();
-            }
-        }
-        _ => (),
-    };
-
     let _ = use_event_listener(use_document().body(), keydown, move |evt: KeyboardEvent| {
         log!("落鍵 key = {}, code = {}", &evt.key(), evt.code());
-        處理功能鍵(&evt);
+        let 鍵碼 = 網頁鍵值轉換(&evt.code());
+        if 處理功能鍵(鍵碼) {
+            evt.prevent_default();
+        }
         if 現行工作模式() == 工作模式::錄入 {
-            let 鍵碼 = 網頁鍵值轉換(&evt.code());
             連擊狀態變更.update(|連擊| *連擊 = 連擊.擊發(鍵碼));
             並擊狀態變更.update(|並擊| 並擊.落鍵(鍵碼));
         }

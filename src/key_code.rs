@@ -32,6 +32,8 @@ pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
         "Comma" => KeyCode::Comma,
         "Period" => KeyCode::Dot,
         "Slash" => KeyCode::Slash,
+        "Backquote" => KeyCode::Grave,
+        "Quote" => KeyCode::Quote,
         "Space" => KeyCode::Space,
         "Escape" => KeyCode::Escape,
         "Tab" => KeyCode::Tab,

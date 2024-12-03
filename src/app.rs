@@ -8,7 +8,9 @@ use crate::chord::並擊機關;
 use crate::engine::{並擊狀態, 觸鍵方式, 鍵組};
 use crate::input::{焦點事件處理機關, 輸入事件處理機關};
 use crate::key_press::連擊機關;
-use crate::layout::功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵};
+use crate::layout::功能鍵::{
+    回車鍵, 撇號鍵, 製表鍵, 退出鍵, 退格鍵, 重音符鍵
+};
 use crate::mode::{工作模式, 工作模式機關};
 use crate::style::樣式;
 use crate::theory::輸入方案機關;
@@ -54,9 +56,8 @@ impl 鍵面動態着色法 for 功能鍵開關狀態 {
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
         match 鍵 {
             KeyCode::Enter => self.現行工作模式.get() == 工作模式::輸入反查碼,
-            KeyCode::Escape => {
-                [工作模式::選取練習題, 工作模式::選擇輸入方案].contains(&self.現行工作模式.get())
-            }
+            KeyCode::Escape => self.現行工作模式.get() == 工作模式::選取練習題,
+            KeyCode::Grave => self.現行工作模式.get() == 工作模式::選擇輸入方案,
             _ => false,
         }
     }
@@ -115,53 +116,61 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     焦點事件處理機關(重置並擊狀態);
 
-    let 處理退出鍵 = move || {
-        match 現行工作模式() {
-            工作模式::錄入 => {
-                if 作業進度() != 0 {
-                    重置作業進度();
-                    重置並擊狀態();
-                } else {
-                    開啓練習題選單();
+    let 處理功能鍵 = move |鍵碼: KeyCode| match 鍵碼 {
+        KeyCode::Escape => {
+            match 現行工作模式() {
+                工作模式::錄入 => {
+                    if 作業進度() != 0 {
+                        重置作業進度();
+                        重置並擊狀態();
+                    } else {
+                        開啓練習題選單();
+                    }
                 }
+                _ => 關閉輸入欄(),
             }
-            工作模式::輸入反查碼 => 關閉輸入欄(),
-            工作模式::選取練習題 => 開啓方案選單(),
-            工作模式::選擇輸入方案 => 關閉輸入欄(),
+            true
         }
-        true
-    };
-    let 處理製表鍵 = move || {
-        if 現行工作模式() == 工作模式::錄入 {
-            if 作業推進(作業推進參數 {
-                段落: 當前段落().map(|字幕段落(起, 止, _)| (起, 止)),
-                迴轉: true,
-            })
-            .is_ok()
-            {
-                重置並擊狀態();
+        KeyCode::Tab => {
+            if 現行工作模式() == 工作模式::錄入 {
+                if 作業推進(作業推進參數 {
+                    段落: 當前段落().map(|字幕段落(起, 止, _)| (起, 止)),
+                    迴轉: true,
+                })
+                .is_ok()
+                {
+                    重置並擊狀態();
+                }
+            } else {
+                關閉輸入欄();
             }
-        } else {
-            關閉輸入欄();
+            true
         }
-        true
-    };
-    let 處理退格鍵 = move || {
-        if 現行工作模式() == 工作模式::錄入 {
-            if 並擊完成() || 作業回退().is_ok() {
-                重置並擊狀態();
+        KeyCode::BSpace => {
+            if 現行工作模式() == 工作模式::錄入 {
+                if 並擊完成() || 作業回退().is_ok() {
+                    重置並擊狀態();
+                }
+                return true;
             }
-            return true;
+            false
         }
-        false
-    };
-    let 處理回車鍵 = move || {
-        if 現行工作模式() == 工作模式::錄入 {
-            開啓反查輸入();
-        } else {
-            關閉輸入欄();
+        KeyCode::Enter => {
+            if 現行工作模式() == 工作模式::錄入 {
+                開啓反查輸入();
+            } else {
+                關閉輸入欄();
+            }
+            true
         }
-        true
+        KeyCode::Grave => {
+            match 現行工作模式() {
+                工作模式::選擇輸入方案 => 關閉輸入欄(),
+                _ => 開啓方案選單(),
+            }
+            true
+        }
+        _ => false,
     };
 
     let 擊中目標 = move || match 指法() {
@@ -204,10 +213,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         連擊狀態變更,
         並擊狀態變更,
         現行工作模式,
-        處理退出鍵,
-        處理製表鍵,
-        處理退格鍵,
-        處理回車鍵,
+        處理功能鍵,
         既然落鍵,
         既然抬鍵,
     );
@@ -264,13 +270,15 @@ pub fn Rime打字機應用() -> impl IntoView {
     view! { class = styler_class,
         <Rime字幕屏 按進度顯示字幕={按進度顯示字幕段落}/>
         <div class="echo-bar">
-            <div title="重新錄入／選練習題／選輸入方案">
+            <div title="選輸入方案">
+                <Rime鍵圖 鍵={重音符鍵.鍵碼} 標註法={標註功能鍵(重音符鍵)} 着色法={開關狀態}/>
+            </div>
+            <div title="重新錄入／選練習題">
                 <Rime鍵圖 鍵={退出鍵.鍵碼} 標註法={標註功能鍵(退出鍵)} 着色法={開關狀態}/>
             </div>
-            <div title="前進一字">
+            <div title="下一題">
                 <Rime鍵圖 鍵={製表鍵.鍵碼} 標註法={標註功能鍵(製表鍵)} 着色法={並擊動態}/>
             </div>
-            <div class="function key hidden"/>
             <Rime編碼欄
                 顯示選項={顯示選項}
                 擊中目標={擊中目標}
@@ -321,12 +329,14 @@ pub fn Rime打字機應用() -> impl IntoView {
                 }
             }
             </Rime編碼欄>
-            <div class="function key hidden"/>
-            <div title="刪除／回退一字">
-                <Rime鍵圖 鍵={退格鍵.鍵碼} 標註法={標註功能鍵(退格鍵)} 着色法={並擊動態}/>
+            <div title="撇號">
+                <Rime鍵圖 鍵={撇號鍵.鍵碼} 標註法={標註功能鍵(撇號鍵)} 着色法={並擊動態}/>
             </div>
             <div title="輸入拼音反查鍵位">
                 <Rime鍵圖 鍵={回車鍵.鍵碼} 標註法={標註功能鍵(回車鍵)} 着色法={開關狀態}/>
+            </div>
+            <div title="刪除／回退一字">
+                <Rime鍵圖 鍵={退格鍵.鍵碼} 標註法={標註功能鍵(退格鍵)} 着色法={並擊動態}/>
             </div>
         </div>
         <Rime鍵盤圖 目標盤面={方案指定盤面} 着色法={並擊動態}/>
