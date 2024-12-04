@@ -43,7 +43,8 @@ pub fn 樣式() -> &'static str {
             gap: 24px;
             width: 384px;
             height: 80px;
-            border: 2px solid;
+            margin: 2px;
+            border: 1px dotted;
             border-radius: 24px;
             font-size: 2.5rem;
         }
