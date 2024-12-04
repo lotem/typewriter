@@ -191,4 +191,9 @@ impl 對照輸入碼 {
                 .and_then(|轉寫碼| 轉寫法.拼式拆分爲字根碼(轉寫碼))
         })
     }
+
+    /// 用於顯示的輸入碼. 優先顯示轉寫碼.
+    pub fn 顯示輸入碼(&self) -> Option<&str> {
+        self.轉寫碼原文.as_deref().or(self.字根碼原文.as_deref())
+    }
 }

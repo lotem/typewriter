@@ -2,7 +2,29 @@ use leptos::*;
 use std::borrow::Cow;
 
 use crate::assignment::作業;
-use crate::engine::對照輸入碼;
+use crate::engine::{對照輸入碼, 觸鍵方式};
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum 字幕步進 {
+    逐字,
+    逐詞,
+}
+
+impl From<觸鍵方式> for 字幕步進 {
+    fn from(source: 觸鍵方式) -> Self {
+        match source {
+            觸鍵方式::連擊 => 字幕步進::逐字,
+            觸鍵方式::並擊 => 字幕步進::逐詞,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum 字幕格式<'a> {
+    自動生成,
+    詞句(&'a str),
+    段落(字幕步進, &'a str),
+}
 
 struct 字幕指標<'a> {
     字幕: &'a str,
@@ -43,11 +65,24 @@ impl Iterator for 字幕指標<'_> {
 #[derive(Clone, PartialEq)]
 pub struct 字幕段落<'a>(pub usize, pub usize, pub Cow<'a, str>);
 
+fn 標註字序<'a>(衆段落: impl Iterator<Item = Cow<'a, str>>) -> Box<[字幕段落<'a>]> {
+    let 未有段落 = Box::new(vec![]);
+    衆段落
+        .fold((0, 未有段落), |(起, mut 已標註字序的段落), 又一段| {
+            let 止 = 起 + 字幕指標::from(又一段.as_ref()).count();
+            (*已標註字序的段落).push(字幕段落(起, 止, 又一段));
+            (止, 已標註字序的段落)
+        })
+        .1
+        .into_boxed_slice()
+}
+
 #[allow(clippy::type_complexity)]
 pub fn 字幕機關<'a>(
     當前作業: ReadSignal<作業>,
     作業進度: ReadSignal<usize>,
     輸入碼序列: Memo<Box<[對照輸入碼]>>,
+    指法: Signal<觸鍵方式>,
 ) -> (
     // 分段字幕
     Memo<Box<[字幕段落<'a>]>>,
@@ -56,30 +91,32 @@ pub fn 字幕機關<'a>(
     // 按進度顯示字幕段落
     Signal<Option<(String, String, String)>>,
 ) {
-    let 未有段落 = || Box::new(vec![]);
     let 分段字幕 = create_memo(move |_| {
-        當前作業.with(|作業| {
-            作業.字幕().map_or_else(
-                || 輸入碼序列.with(|輸入碼| 生成字幕(輸入碼)),
-                move |有字幕| {
-                    有字幕
-                        .split_whitespace()
-                        .fold(
-                            (0, 未有段落()),
-                            |(起始字序, mut 已標註字序的段落), 又一段| {
-                                let 結束字序 = 起始字序 + 字幕指標::from(又一段).count();
-                                (*已標註字序的段落).push(字幕段落(
-                                    起始字序,
-                                    結束字序,
-                                    Cow::Borrowed(又一段),
-                                ));
-                                (結束字序, 已標註字序的段落)
-                            },
-                        )
-                        .1
-                        .into_boxed_slice()
-                },
-            )
+        當前作業.with(|作業| match 作業.字幕() {
+            字幕格式::自動生成 => {
+                let 步進 = 字幕步進::from(指法());
+                輸入碼序列.with(|輸入碼| 生成字幕(步進, 輸入碼))
+            }
+            字幕格式::詞句(字幕) => {
+                標註字序(字幕.split_whitespace().map(Cow::Borrowed))
+            }
+            字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(
+                字幕
+                    .lines()
+                    .map(|每一行| 每一行.split_whitespace().collect::<Vec<_>>().join("[ ]"))
+                    .map(Cow::Owned),
+            ),
+            字幕格式::段落(字幕步進::逐詞, 字幕) => 標註字序(
+                字幕
+                    .lines()
+                    .map(|每一行| {
+                        每一行
+                            .split_whitespace()
+                            .flat_map(|每個詞| ["[", 每個詞, " ]"])
+                            .collect::<String>()
+                    })
+                    .map(Cow::Owned),
+            ),
         })
     });
 
@@ -113,20 +150,29 @@ pub fn 字幕機關<'a>(
     (分段字幕, 當前段落, 按進度顯示字幕段落)
 }
 
-fn 生成字幕<'a>(輸入碼序列: &[對照輸入碼]) -> Box<[字幕段落<'a>]> {
-    vec![字幕段落(
+fn 生成字幕<'a>(
+    步進: 字幕步進, 輸入碼序列: &[對照輸入碼]
+) -> Box<[字幕段落<'a>]> {
+    Box::new([字幕段落(
         0,
         輸入碼序列.len(),
-        Cow::Owned(輸入碼序列.iter().map(輸入碼做字幕).collect::<String>()),
-    )]
-    .into_boxed_slice()
+        Cow::Owned(
+            輸入碼序列
+                .iter()
+                .flat_map(對照輸入碼::顯示輸入碼)
+                .map(match 步進 {
+                    字幕步進::逐字 => 字幕逐字步進,
+                    字幕步進::逐詞 => 字幕逐詞步進,
+                })
+                .collect::<String>(),
+        ),
+    )])
 }
 
-fn 輸入碼做字幕(對照碼: &對照輸入碼) -> String {
-    對照碼
-        .轉寫碼原文
-        .as_ref()
-        .or(對照碼.字根碼原文.as_ref())
-        .map(|輸入碼| format!("[{輸入碼} ]"))
-        .unwrap_or_default()
+fn 字幕逐字步進<'a>(輸入碼: &'a str) -> Cow<'a, str> {
+    Cow::Borrowed(輸入碼)
+}
+
+fn 字幕逐詞步進<'a>(輸入碼: &'a str) -> Cow<'a, str> {
+    Cow::Owned(format!("[{輸入碼} ]"))
 }

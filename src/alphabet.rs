@@ -51,10 +51,10 @@ const 字母表: &[鍵的定義] = &[
 
 lazy_static! {
     static ref 字母轉鍵位: Box<[拼寫運算<'static>]> = Box::new([轉寫!(
-        "abcdefghijklmnopqrstuvwxyz",
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz ",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ␣"
     ),]);
-    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([A-Za-z]|␣)+$").deref(),]);
+    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([A-Za-z ])+$").deref(),]);
 }
 
 pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {

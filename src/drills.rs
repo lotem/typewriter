@@ -1,9 +1,12 @@
+use crate::caption::字幕格式;
+use crate::caption::字幕格式::{段落, 詞句};
+use crate::caption::字幕步進::{逐字, 逐詞};
 use crate::theory::方案選項;
 
 pub struct 練習題<'a> {
     pub 標題: &'a str,
     pub 編碼: &'a str,
-    pub 字幕: Option<&'a str>,
+    pub 字幕: 字幕格式<'a>,
 }
 
 const 各方案練習題組: &[(方案選項, &[練習題])] = &[
@@ -26,18 +29,27 @@ impl 方案選項 {
 const 字母鍵盤練習題: &[練習題] = &[
     練習題 {
         標題: "字母表",
-        編碼: "ABCD EFGH IJKL MNOPQ RSTU VWXYZ",
-        字幕: Some("ABCD EFGH IJKL MNOPQ RSTU VWXYZ"),
+        編碼: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        字幕: 詞句("ABCD EFGH IJKL MNOPQ RSTU VWXYZ"),
     },
     練習題 {
         標題: "QWERTY 鍵盤",
-        編碼: "QWERT YUIOP ASDFG HJKL ZXCVB NM",
-        字幕: Some("QWERT YUIOP ASDFG HJKL ZXCVB NM"),
+        編碼: "QWERTYUIOPASDFGHJKLZXCVBNM",
+        字幕: 詞句(
+            "QWERT YUIOP \
+             ASDFG HJKL \
+             ZXCVB NM",
+        ),
     },
     練習題 {
         標題: "洋文金句",
-        編碼: "HELLO␣WORLD THE␣QUICK␣BROWN␣FOX␣JUMPS␣OVER␣THE␣LAZY␣DOG",
-        字幕: Some("hello␣world the␣quick␣brown␣fox␣jumps␣over␣the␣lazy␣dog"),
+        編碼: "HELLO␣WORLD
+               THE␣QUICK␣BROWN␣FOX␣JUMPS␣OVER␣THE␣LAZY␣DOG",
+        字幕: 段落(
+            逐字,
+            "hello world
+             the quick brown fox jumps over the lazy dog",
+        ),
     },
 ];
 
@@ -46,7 +58,7 @@ const 宮保拼音練習題: &[練習題] = &[
         標題: "中州韻輸入法引擎",
         編碼: "zhong zhou yun shu ru fa yin qing \
                si xiang yong jian pan biao da ye xing",
-        字幕: Some("中州韻輸入法引擎 思想用鍵盤表達也行"),
+        字幕: 詞句("中州韻輸入法引擎 思想用鍵盤表達也行"),
     },
     練習題 {
         標題: "東風破早梅",
@@ -54,21 +66,41 @@ const 宮保拼音練習題: &[練習題] = &[
                xiang nuan yi zhi kai \
                bing xue wu ren jian \
                chun cong tian shang lai",
-        字幕: Some("東風破早梅 向暖一枝開 冰雪無人見 春從天上來"),
+        字幕: 詞句("東風破早梅 向暖一枝開 冰雪無人見 春從天上來"),
     },
     練習題 {
         標題: "聲母韻母練習",
-        編碼: "b p m f d t n l g k h j q x zh ch sh r z c s \
-               i u ü A=a o e ia ua uo ie üe er \
+        編碼: "b p m f d t n l \
+               g k h j q x \
+               zh ch sh r z c s \
+               i u ü \
+               A=a ia ua o uo e ie üe er \
                ai uai ei uei ao iao ou iou \
                an ian uan üan en in uen ün \
                ang iang uang eng ing ueng ong iong",
-        字幕: None,
+        字幕: 段落(逐詞,
+                   "b p m f d t n l
+                    g k h j q x
+                    zh ch sh r z c s
+                    i u ü
+                    a ia ua o uo e ie üe er
+                    ai uai ei uei ao iao ou iou
+                    an ian uan üan en in uen ün
+                    ang iang uang eng ing ueng ong iong"),
     },
     練習題 {
         標題: "音節練習",
-        編碼: "bu pu fu me de te le ne ge ke he zhi chi shi ri zi ci si er AE=<'a> A=<␣>",
-        字幕: None,
+        編碼: "bu pu fu me \
+               de te le ne \
+               ge ke he \
+               zhi chi shi ri zi ci si \
+               er AE=<'a> A=<␣>",
+        字幕: 段落(逐詞,
+                   "bu pu fu me
+                    de te le ne
+                    ge ke he
+                    zhi chi shi ri zi ci si
+                    er 'a ␣"),
     },
     練習題 {
         標題: "綜合練習一",
@@ -78,7 +110,7 @@ const 宮保拼音練習題: &[練習題] = &[
                zhu'yi'an'quan huan'yuan'fan'ying \
                sheng'ming'cai'chan shao'xiao'jun'xian \
                yuan'lai'ru'ci hou'yan'wu'chi",
-        字幕: Some("仰望星空 研究決定 自然選擇 徹底決裂 不斷發展 人民羣衆 \
+        字幕: 詞句("仰望星空 研究決定 自然選擇 徹底決裂 不斷發展 人民羣衆 \
                     注意安全 還原反應 生命財產 少校軍銜 原來如此 厚顏無恥"),
     },
     練習題 {
@@ -92,7 +124,7 @@ const 宮保拼音練習題: &[練習題] = &[
                tang'lang yuan'yang yong'yuan yong'you yuan'you yuan'wen wei'wen wen'zhang wen'dang \
                lun'wen nian'lun yan'lun duan'dian duan'lian zhuan'huan chuan'huan lun'huan \
                guan'jun guan'li'yuan chuan'yuan zhan'zhuan shan'chuan zhan'chuan",
-        字幕: Some("萬歲 解決 過程 全選 條件 原因 生產綫 \
+        字幕: 詞句("萬歲 解決 過程 全選 條件 原因 生產綫 \
                     土地 努力 合格 奇跡 突出 圖書 完全 怨言 晚宴 演員 \
                     支持 扶持 複製 服飾 四十 十四 四十四 \
                     無疑 義務 雨衣 易於 無語 雨霧 無誤 意義 遇雨 \
@@ -113,7 +145,7 @@ const 宮保拼音練習題: &[練習題] = &[
                qu'ju qu'qu qu'yu qi'yi gu'wu gu'yi ji'yi ju'yu yu'ju yu'ji \
                shuo'guo zhong'guo zui'duo huo'zhe ge'jiu'ge'wei yue'lai'yue \
                wei'shen'me zen'me'yang ke'bu'ke'yi you'mei'you",
-        字幕: Some("驚醒 恭敬 窘境 紅杏 驚恐 孔徑 穹空 窮困 \
+        字幕: 詞句("驚醒 恭敬 窘境 紅杏 驚恐 孔徑 穹空 窮困 \
                     網警 光景 礦井 狂妄 強光 強將 強項 \
                     洋相 洋槍 想象 北京 背影 悲情 飛行 \
                     北方 北洋 北非 非凡 非常 肺腑 會飛 會議 學會 \
@@ -127,7 +159,7 @@ const 宮保拼音練習題: &[練習題] = &[
         標題: "縮略碼示例",
         編碼: "SHG=<shen me> SHGUA=<shu ru fa> ZUAO=<zui hao> \
                FBUR=<wei shen me> ZFB=<mei you> BUA=<ban fa> SHGU=<shu ru> SGIAN=<shi jian>",
-        字幕: Some("[什麼] [輸入法] [最好] \
+        字幕: 詞句("[什麼] [輸入法] [最好] \
                     [爲什麼] [沒有] [辦法] [輸入] [時間]"),
     },
     練習題 {
@@ -140,7 +172,7 @@ const 宮保拼音練習題: &[練習題] = &[
                liu jian wu chong cii zhi chan \
                su ji cian zong gui jian yi \
                yin yun wan bian lie qin pan",
-        字幕: Some("宮保拼音並擊術 節奏明快又直觀 \
+        字幕: 詞句("宮保拼音並擊術 節奏明快又直觀 \
                     一擊一個中文字 能分平翹與尖團 \
                     標準設備廣兼容 六鍵無衝七指禪 \
                     速記千宗歸簡易 音韻萬變列琴盤"),
@@ -178,7 +210,7 @@ const 宮保拼音練習題: &[練習題] = &[
                kai bi yuan xi si liu yong ji \
                sin shi zui mo shi yi hui \
                bie hou ji wo wu ci yuan",
-        字幕: Some("鼠鬚管 爲物雖微情不淺 \
+        字幕: 詞句("鼠鬚管 爲物雖微情不淺 \
                     新詩醉墨時一揮 別後寄我無辭遠 \
                     酒如長虹飲滄海 筆若駿馬馳平坂 \
                     文章驚世知名早 義氣論交相得晚 \

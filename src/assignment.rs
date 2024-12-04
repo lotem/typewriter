@@ -3,6 +3,7 @@ use leptos::*;
 use std::cmp::min;
 
 use crate::action::*;
+use crate::caption::字幕格式;
 use crate::engine::{對照輸入碼, 觸鍵方式, 輸入方案定義};
 use crate::theory::方案選項;
 
@@ -47,11 +48,11 @@ impl 作業 {
             .unwrap_or("")
     }
 
-    pub fn 字幕(&self) -> Option<&'static str> {
+    pub fn 字幕(&self) -> 字幕格式<'static> {
         self.科目
             .配套練習題()
             .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
-            .and_then(|題| 題.字幕)
+            .map_or(字幕格式::自動生成, |題| 題.字幕)
     }
 
     pub fn 是否練習題(&self) -> bool {
@@ -197,7 +198,8 @@ fn 解析連擊輸入碼序列(
     輸入碼序列: &str, 方案: &輸入方案定義
 ) -> Box<[對照輸入碼]> {
     輸入碼序列
-        .split_whitespace()
+        .lines()
+        .map(str::trim)
         .flat_map(|片段| 片段.chars())
         .map(|字符| {
             let 輸入碼原文 = 字符.to_string();
