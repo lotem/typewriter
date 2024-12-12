@@ -17,7 +17,9 @@ use crate::theory::輸入方案機關;
 use crate::view::{
     caption::Rime字幕屏,
     exercise_menu::Rime練習題選單,
-    input_code::{Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 編碼欄顯示選項},
+    input_code::{
+        Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 回顯區佈局, 編碼欄顯示選項
+    },
     keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
     theory_menu::Rime方案選單,
 };
@@ -269,6 +271,10 @@ pub fn Rime打字機應用() -> impl IntoView {
             編碼欄顯示選項::無顯示
         }
     });
+    let 編碼回顯區佈局 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => 回顯區佈局::單欄,
+        觸鍵方式::並擊 => 回顯區佈局::左右對照,
+    });
     let 完成一詞 = move || {
         按進度顯示字幕段落.with(|段落| 段落.as_ref().is_some_and(|(_, 下一字, _)| 下一字 == " "))
     };
@@ -341,7 +347,7 @@ pub fn Rime打字機應用() -> impl IntoView {
             {
                 move || match 現行工作模式() {
                     工作模式::錄入 => view! {
-                        <Rime編碼回顯區 輸入碼={顯示輸入碼} 轉寫碼={顯示轉寫碼}/>
+                        <Rime編碼回顯區 佈局={編碼回顯區佈局} 輸入碼={顯示輸入碼} 轉寫碼={顯示轉寫碼}/>
                     }.into_view(),
                     工作模式::輸入反查碼 => view! {
                         <Rime反查輸入欄

@@ -2,14 +2,26 @@ use leptos::html::Div;
 use leptos::*;
 use leptos_use::on_click_outside;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum 回顯區佈局 {
+    單欄,
+    左右對照,
+}
+
 #[component]
 pub fn Rime編碼回顯區(
+    佈局: Signal<回顯區佈局>,
     輸入碼: Signal<String>,
     轉寫碼: Signal<Option<String>>,
 ) -> impl IntoView {
     view! {
-        <kbd class="raw-input">{輸入碼}</kbd>
-        <span class="translated-input">{轉寫碼}</span>
+        <kbd class="raw-input"
+            class:single-column=move || { 佈局() == 回顯區佈局::單欄 }
+            class:left-column=move || { 佈局() == 回顯區佈局::左右對照 }
+        >{輸入碼}</kbd>
+        <Show when=move || { 佈局() == 回顯區佈局::左右對照 }>
+            <span class="translated-input right-column">{轉寫碼}</span>
+        </Show>
     }
 }
 

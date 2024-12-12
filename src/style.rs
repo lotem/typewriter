@@ -38,7 +38,7 @@ pub fn 樣式() -> &'static str {
         }
         :deep(.input-code) {
             display: flex;
-            justify-content: space-evenly;
+            justify-content: flex-end;
             align-items: center;
             gap: 24px;
             width: 384px;
@@ -47,6 +47,7 @@ pub fn 樣式() -> &'static str {
             border: 1px dotted;
             border-radius: 24px;
             font-size: 2.5rem;
+            overflow: hidden;
         }
         :deep(.input-code.freeplay) {
             border-color: purple;
@@ -61,16 +62,21 @@ pub fn 樣式() -> &'static str {
             border-color: teal;
             color: teal;
         }
-        :deep(.raw-input) {
-            flex: 1;
-            text-align: right;
-        }
         :deep(.translated-input, .lookup-code, .exercises, .theories) {
-            flex: 1;
             font-family: LXGW WenKai, Inter, sans-serif;
             font-size: 2rem;
         }
-        :deep(.translated-input) {
+        :deep(.input-code .single-column) {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+        }
+        :deep(.input-code .left-column) {
+            flex: 1;
+            text-align: right;
+        }
+        :deep(.input-code .right-column) {
+            flex: 1;
             overflow: visible;
             overflow-wrap: break-word;
             white-space: nowrap;
