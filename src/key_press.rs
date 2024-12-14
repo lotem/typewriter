@@ -2,7 +2,36 @@ use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::*;
 
-use crate::engine::{對照輸入碼, 輸入方案定義, 連擊狀態};
+use crate::assignment::對照輸入碼;
+use crate::engine::輸入方案定義;
+
+#[derive(Clone, Copy, PartialEq)]
+pub struct 連擊狀態 {
+    pub 鍵碼: KeyCode,
+    pub 連擊次數: usize,
+}
+
+impl Default for 連擊狀態 {
+    fn default() -> Self {
+        Self {
+            鍵碼: KeyCode::No,
+            連擊次數: 0,
+        }
+    }
+}
+
+impl 連擊狀態 {
+    pub fn 擊發(&self, 鍵碼: KeyCode) -> 連擊狀態 {
+        let 連擊次數 = if 鍵碼 == self.鍵碼 {
+            self.連擊次數 + 1
+        } else {
+            1
+        };
+        Self {
+            鍵碼, 連擊次數
+        }
+    }
+}
 
 #[allow(clippy::type_complexity)]
 pub fn 連擊機關(

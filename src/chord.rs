@@ -1,6 +1,58 @@
+use keyberon::key_code::KeyCode;
 use leptos::*;
+use std::collections::BTreeSet;
 
-use crate::engine::{並擊狀態, 對照輸入碼, 輸入方案定義, 鍵組};
+use crate::assignment::對照輸入碼;
+use crate::engine::輸入方案定義;
+
+#[derive(Clone, PartialEq)]
+pub struct 鍵組(pub BTreeSet<KeyCode>);
+
+impl 鍵組 {
+    pub fn new() -> Self {
+        鍵組(BTreeSet::new())
+    }
+}
+
+pub struct 並擊狀態 {
+    pub 實時落鍵: 鍵組,
+    pub 累計擊鍵: 鍵組,
+}
+
+impl 並擊狀態 {
+    pub fn new() -> Self {
+        並擊狀態 {
+            實時落鍵: 鍵組::new(),
+            累計擊鍵: 鍵組::new(),
+        }
+    }
+
+    pub fn 落鍵(&mut self, 鍵碼: KeyCode) {
+        if self.實時落鍵.0.is_empty() {
+            self.並擊開始();
+        }
+        self.實時落鍵.0.insert(鍵碼);
+        self.累計擊鍵.0.insert(鍵碼);
+    }
+
+    pub fn 抬鍵(&mut self, 鍵碼: KeyCode) {
+        self.實時落鍵.0.remove(&鍵碼);
+        if self.實時落鍵.0.is_empty() {
+            self.並擊完成();
+        }
+    }
+
+    pub fn 重置(&mut self) {
+        self.實時落鍵.0.clear();
+        self.累計擊鍵.0.clear();
+    }
+
+    pub fn 並擊開始(&mut self) {
+        self.重置();
+    }
+
+    pub fn 並擊完成(&mut self) {}
+}
 
 #[allow(clippy::type_complexity)]
 pub fn 並擊機關(

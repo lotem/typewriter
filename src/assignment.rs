@@ -4,7 +4,7 @@ use std::cmp::min;
 
 use crate::action::*;
 use crate::caption::字幕格式;
-use crate::engine::{對照輸入碼, 觸鍵方式, 輸入方案定義};
+use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義};
 use crate::theory::方案選項;
 
 #[derive(Clone, PartialEq)]
@@ -69,6 +69,28 @@ impl 作業推進參數 {
         Self {
             段落: None, 迴轉
         }
+    }
+}
+
+#[derive(Clone, PartialEq)]
+pub struct 對照輸入碼 {
+    pub 字根碼原文: Option<String>,
+    pub 轉寫碼原文: Option<String>,
+}
+
+impl 對照輸入碼 {
+    pub fn 反查字根碼<'a>(&'a self, 轉寫法: &轉寫法定義<'a>) -> Option<String> {
+        self.字根碼原文.to_owned().or_else(|| {
+            self.轉寫碼原文
+                .as_deref()
+                .filter(|轉寫碼| 轉寫法.驗證拼式(轉寫碼))
+                .and_then(|轉寫碼| 轉寫法.拼式拆分爲字根碼(轉寫碼))
+        })
+    }
+
+    /// 用於顯示的輸入碼. 優先顯示轉寫碼.
+    pub fn 顯示輸入碼(&self) -> Option<&str> {
+        self.轉寫碼原文.as_deref().or(self.字根碼原文.as_deref())
     }
 }
 

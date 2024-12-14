@@ -4,8 +4,8 @@ use leptos::*;
 
 use crate::assignment::{作業, 作業推進參數, 作業機關};
 use crate::caption::{字幕機關, 字幕段落};
-use crate::chord::並擊機關;
-use crate::engine::{並擊狀態, 觸鍵方式, 鍵組};
+use crate::chord::{並擊機關, 並擊狀態, 鍵組};
+use crate::engine::觸鍵方式;
 use crate::input::{焦點事件處理機關, 輸入事件處理機關};
 use crate::key_press::連擊機關;
 use crate::layout::功能鍵::{
@@ -92,13 +92,13 @@ pub fn Rime打字機應用() -> impl IntoView {
         字幕機關(當前作業, 作業進度, 反查輸入碼序列, 指法);
 
     let (
-        連擊狀態流,
+        _連擊狀態流,
         連擊狀態變更,
         實況字根碼,
-        反查所得字根碼,
+        _反查所得字根碼,
         連擊比對成功,
         連擊輸入碼,
-        更新連擊輸入碼,
+        _更新連擊輸入碼,
         清空連擊輸入碼,
         回退連擊輸入碼,
     ) = 連擊機關(方案定義, 目標輸入碼);
@@ -110,7 +110,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         並擊所得拼音,
         反查所得並擊碼,
         反查鍵位,
-        並擊開始,
+        _並擊開始,
         並擊完成,
         並擊成功,
         重置並擊狀態,
