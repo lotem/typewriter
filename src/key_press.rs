@@ -61,7 +61,7 @@ pub fn 連擊機關(
     let _ = watch(
         連擊狀態流,
         move |連擊, _, _| {
-            if 連擊比對成功() {
+            if 目標輸入碼.with(|目標| 目標.is_none()) || 連擊比對成功() {
                 match 連擊.鍵碼 {
                     KeyCode::Space => {
                         更新連擊輸入碼(vec![空格輸入碼()]);

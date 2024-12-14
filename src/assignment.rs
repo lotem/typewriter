@@ -157,8 +157,9 @@ pub fn 作業機關(
             Err(未有())
         }
     };
+    let 有作業 = move || 輸入碼序列.with(|輸入碼| !輸入碼.is_empty());
     let 輸入碼總數 = move || 輸入碼序列.with(|輸入碼| 輸入碼.len());
-    let 作業進度完成 = Signal::derive(move || 作業進度() == 輸入碼總數());
+    let 作業進度完成 = Signal::derive(move || 有作業() && 作業進度() == 輸入碼總數());
 
     let 目標輸入碼 = Signal::derive(move || {
         with!(|輸入碼序列| {
