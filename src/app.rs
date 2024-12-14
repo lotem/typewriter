@@ -78,9 +78,10 @@ pub fn Rime打字機應用() -> impl IntoView {
     let (
         當前作業,
         佈置作業,
+        有無作業,
         作業進度,
         作業進度完成,
-        輸入碼序列,
+        反查輸入碼序列,
         目標輸入碼,
         重置作業進度,
         作業推進,
@@ -88,7 +89,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     ) = 作業機關(現行方案, 方案定義);
 
     let (分段字幕, 當前段落, 按進度顯示字幕段落) =
-        字幕機關(當前作業, 作業進度, 輸入碼序列, 指法);
+        字幕機關(當前作業, 作業進度, 反查輸入碼序列, 指法);
 
     let (
         連擊狀態流,
@@ -167,9 +168,10 @@ pub fn Rime打字機應用() -> impl IntoView {
             if 現行工作模式() == 工作模式::錄入 {
                 match 指法() {
                     觸鍵方式::連擊 => {
-                        if 作業回退().is_ok() {
-                            回退連擊輸入碼();
+                        if 有無作業() {
+                            let _不看結果 = 作業回退();
                         }
+                        回退連擊輸入碼();
                     }
                     觸鍵方式::並擊 => {
                         if 並擊完成() || 作業回退().is_ok() {
@@ -303,7 +305,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                 .map(|轉寫| format!("⟨{轉寫}⟩"))
         }
     });
-    let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().to_owned()));
+    let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().map(str::to_owned)));
     let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
     let 方案配套練習題 = Signal::derive(move || 現行方案().配套練習題().unwrap_or(&[]));
 

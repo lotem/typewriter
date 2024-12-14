@@ -39,13 +39,12 @@ impl 作業 {
         }
     }
 
-    pub fn 反查碼(&self) -> &str {
+    pub fn 反查碼(&self) -> Option<&str> {
         self.科目
             .配套練習題()
             .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
             .map(|題| 題.編碼)
             .or(self.自訂反查碼.as_deref())
-            .unwrap_or("")
     }
 
     pub fn 字幕(&self) -> 字幕格式<'static> {
@@ -82,11 +81,13 @@ pub fn 作業機關(
     ReadSignal<作業>,
     // 佈置作業
     WriteSignal<作業>,
+    // 有無作業
+    Signal<bool>,
     // 作業進度
     ReadSignal<usize>,
     // 作業進度完成
     Signal<bool>,
-    // 輸入碼序列
+    // 反查輸入碼序列
     Memo<Box<[對照輸入碼]>>,
     // 目標輸入碼
     Signal<Option<對照輸入碼>>,
@@ -110,14 +111,17 @@ pub fn 作業機關(
 
     let (作業進度, 更新作業進度) = create_signal(0);
 
-    let 輸入碼序列 = create_memo(move |_| {
-        with!(|當前作業, 方案定義| 解析輸入碼序列(當前作業.反查碼(), 方案定義))
+    let 反查輸入碼序列 = create_memo(move |_| {
+        with!(|當前作業, 方案定義| 當前作業
+            .反查碼()
+            .map(|反查碼| 解析輸入碼序列(反查碼, 方案定義))
+            .unwrap_or(Box::new([])))
     });
 
     let 重置作業進度 = move || 更新作業進度(0);
 
     let _ = watch(
-        輸入碼序列,
+        反查輸入碼序列,
         move |_, _, _| {
             重置作業進度();
         },
@@ -125,7 +129,7 @@ pub fn 作業機關(
     );
 
     let 作業推進 = move |參數: 作業推進參數| {
-        let 全文結束 = 輸入碼序列.with(|輸入碼| 輸入碼.len());
+        let 全文結束 = 反查輸入碼序列.with(|輸入碼| 輸入碼.len());
         let 推進目標位置 = match 參數.段落 {
             Some((起, 止)) => {
                 if 作業進度() < 起 {
@@ -157,18 +161,16 @@ pub fn 作業機關(
             Err(未有())
         }
     };
-    let 有作業 = move || 輸入碼序列.with(|輸入碼| !輸入碼.is_empty());
-    let 輸入碼總數 = move || 輸入碼序列.with(|輸入碼| 輸入碼.len());
-    let 作業進度完成 = Signal::derive(move || 有作業() && 作業進度() == 輸入碼總數());
+    let 有無作業 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().is_some()));
+    let 輸入碼總數 = move || 反查輸入碼序列.with(|輸入碼| 輸入碼.len());
+    let 作業進度完成 = Signal::derive(move || 有無作業() && 作業進度() == 輸入碼總數());
 
     let 目標輸入碼 = Signal::derive(move || {
-        with!(|輸入碼序列| {
-            if 輸入碼序列.is_empty() {
+        反查輸入碼序列.with(|輸入碼| {
+            if 輸入碼.is_empty() {
                 None
             } else {
-                輸入碼序列
-                    .get(min(作業進度(), 輸入碼序列.len() - 1))
-                    .cloned()
+                輸入碼.get(min(作業進度(), 輸入碼.len() - 1)).cloned()
             }
         })
     });
@@ -176,9 +178,10 @@ pub fn 作業機關(
     (
         當前作業,
         佈置作業,
+        有無作業,
         作業進度,
         作業進度完成,
-        輸入碼序列,
+        反查輸入碼序列,
         目標輸入碼,
         重置作業進度,
         作業推進,

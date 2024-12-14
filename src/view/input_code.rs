@@ -27,7 +27,7 @@ pub fn Rime編碼回顯區(
 
 #[component]
 pub fn Rime反查輸入欄(
-    反查碼: Signal<String>,
+    反查碼: Signal<Option<String>>,
     示例輸入: Signal<String>,
     反查碼變更: impl Fn(String) + 'static,
 ) -> impl IntoView {
