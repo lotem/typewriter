@@ -2,21 +2,21 @@ use keyberon::key_code::KeyCode;
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
-use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
+use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
 use crate::layout::盤面選擇碼;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
 
 macro_rules! 字母鍵 {
     ($字母: ident) => {
-        鍵的定義 {
+        鍵位定義 {
             輸入碼: stringify!($字母),
             鍵碼: KeyCode::$字母,
         }
     };
 }
 
-const 字母表: &[鍵的定義] = &[
+const 字母表: &[鍵位定義] = &[
     字母鍵!(A),
     字母鍵!(B),
     字母鍵!(C),
@@ -43,7 +43,7 @@ const 字母表: &[鍵的定義] = &[
     字母鍵!(X),
     字母鍵!(Y),
     字母鍵!(Z),
-    鍵的定義 {
+    鍵位定義 {
         輸入碼: "␣",
         鍵碼: KeyCode::Space,
     },

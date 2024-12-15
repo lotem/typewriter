@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use crate::layout::盤面選擇碼;
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 
-pub struct 鍵的定義<'a> {
+pub struct 鍵位定義<'a> {
     pub 輸入碼: &'a str,
     pub 鍵碼: KeyCode,
 }
@@ -15,7 +15,7 @@ pub struct 輸入方案定義<'a> {
     pub 名稱: &'a str,
     pub 盤面: 盤面選擇碼,
     pub 指法: 觸鍵方式,
-    pub 字根表: &'a [鍵的定義<'a>],
+    pub 字根表: &'a [鍵位定義<'a>],
     pub 轉寫法: 轉寫法定義<'a>,
 }
 
@@ -67,7 +67,7 @@ impl 判定鍵位 for KeyCode {
 }
 
 impl 輸入方案定義<'_> {
-    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵的定義> {
+    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵位定義> {
         self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
     }
 

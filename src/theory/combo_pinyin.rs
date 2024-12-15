@@ -2,93 +2,42 @@ use keyberon::key_code::KeyCode;
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
-use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
+use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
 use crate::layout::盤面選擇碼;
 use crate::spelling_algebra::拼寫運算;
 use crate::{消除, 變換, 轉寫};
 
-const S: 鍵的定義 = 鍵的定義 {
-    輸入碼: "S",
-    鍵碼: KeyCode::S,
-};
-const C: 鍵的定義 = 鍵的定義 {
-    輸入碼: "C",
-    鍵碼: KeyCode::W,
-};
-const Z: 鍵的定義 = 鍵的定義 {
-    輸入碼: "Z",
-    鍵碼: KeyCode::X,
-};
-const H: 鍵的定義 = 鍵的定義 {
-    輸入碼: "H",
-    鍵碼: KeyCode::D,
-};
-const L: 鍵的定義 = 鍵的定義 {
-    輸入碼: "L",
-    鍵碼: KeyCode::E,
-};
-const F: 鍵的定義 = 鍵的定義 {
-    輸入碼: "F",
-    鍵碼: KeyCode::C,
-};
-const G: 鍵的定義 = 鍵的定義 {
-    輸入碼: "G",
-    鍵碼: KeyCode::F,
-};
-const D: 鍵的定義 = 鍵的定義 {
-    輸入碼: "D",
-    鍵碼: KeyCode::R,
-};
-const B: 鍵的定義 = 鍵的定義 {
-    輸入碼: "B",
-    鍵碼: KeyCode::V,
-};
-const K: 鍵的定義 = 鍵的定義 {
-    輸入碼: "K",
-    鍵碼: KeyCode::G,
-};
-const T: 鍵的定義 = 鍵的定義 {
-    輸入碼: "T",
-    鍵碼: KeyCode::T,
-};
-const P: 鍵的定義 = 鍵的定義 {
-    輸入碼: "P",
-    鍵碼: KeyCode::B,
-};
-const I: 鍵的定義 = 鍵的定義 {
-    輸入碼: "I",
-    鍵碼: KeyCode::J,
-};
-const U: 鍵的定義 = 鍵的定義 {
-    輸入碼: "U",
-    鍵碼: KeyCode::U,
-};
-const Ü: 鍵的定義 = 鍵的定義 {
-    輸入碼: "Ü",
-    鍵碼: KeyCode::M,
-};
-const A: 鍵的定義 = 鍵的定義 {
-    輸入碼: "A",
-    鍵碼: KeyCode::Space,
-};
-const N: 鍵的定義 = 鍵的定義 {
-    輸入碼: "N",
-    鍵碼: KeyCode::K,
-};
-const R: 鍵的定義 = 鍵的定義 {
-    輸入碼: "R",
-    鍵碼: KeyCode::I,
-};
-const E: 鍵的定義 = 鍵的定義 {
-    輸入碼: "E",
-    鍵碼: KeyCode::L,
-};
-const O: 鍵的定義 = 鍵的定義 {
-    輸入碼: "O",
-    鍵碼: KeyCode::O,
-};
+macro_rules! 鍵位 {
+    ($輸入碼: ident => $鍵碼: path) => {
+        鍵位定義 {
+            輸入碼: stringify!($輸入碼),
+            鍵碼: $鍵碼,
+        }
+    };
+}
 
-const 並擊鍵序: &[鍵的定義] = &[S, C, Z, H, L, F, G, D, B, K, T, P, I, U, Ü, A, N, R, E, O];
+const 並擊鍵序: &[鍵位定義] = &[
+    鍵位!(S => KeyCode::S),
+    鍵位!(C => KeyCode::W),
+    鍵位!(Z => KeyCode::X),
+    鍵位!(H => KeyCode::D),
+    鍵位!(L => KeyCode::E),
+    鍵位!(F => KeyCode::C),
+    鍵位!(G => KeyCode::F),
+    鍵位!(D => KeyCode::R),
+    鍵位!(B => KeyCode::V),
+    鍵位!(K => KeyCode::G),
+    鍵位!(T => KeyCode::T),
+    鍵位!(P => KeyCode::B),
+    鍵位!(I => KeyCode::J),
+    鍵位!(U => KeyCode::U),
+    鍵位!(Ü => KeyCode::M),
+    鍵位!(A => KeyCode::Space),
+    鍵位!(N => KeyCode::K),
+    鍵位!(R => KeyCode::I),
+    鍵位!(E => KeyCode::L),
+    鍵位!(O => KeyCode::O),
+];
 
 lazy_static! {
     static ref 並擊轉拼音: Box<[拼寫運算::<'static>]> = Box::new([
