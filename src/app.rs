@@ -1,12 +1,9 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
 
-use crate::engine::{微觀引擎, 觸鍵方式};
-use crate::gear::{
-    assignment::作業,
-    chord::{並擊狀態, 鍵組},
-    mode::工作模式,
-};
+use crate::definition::{觸鍵方式, 鍵組};
+use crate::engine::微觀引擎;
+use crate::gear::{assignment::作業, chord::並擊狀態, mode::工作模式};
 use crate::layout::功能鍵::{
     回車鍵, 撇號鍵, 製表鍵, 退出鍵, 退格鍵, 重音符鍵
 };

@@ -2,7 +2,7 @@ use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::*;
 
-use crate::engine::輸入方案定義;
+use crate::definition::輸入方案定義;
 use crate::gear::assignment::對照輸入碼;
 
 #[derive(Clone, Copy, PartialEq)]

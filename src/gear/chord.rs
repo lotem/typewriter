@@ -1,18 +1,8 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
-use std::collections::BTreeSet;
 
-use crate::engine::輸入方案定義;
+use crate::definition::{輸入方案定義, 鍵組};
 use crate::gear::assignment::對照輸入碼;
-
-#[derive(Clone, PartialEq)]
-pub struct 鍵組(pub BTreeSet<KeyCode>);
-
-impl 鍵組 {
-    pub fn new() -> Self {
-        鍵組(BTreeSet::new())
-    }
-}
 
 pub struct 並擊狀態 {
     pub 實時落鍵: 鍵組,

@@ -3,7 +3,7 @@ use leptos::*;
 use std::cmp::min;
 
 use crate::action::*;
-use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義};
+use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義};
 use crate::gear::{caption::字幕格式, theory::方案選項};
 
 #[derive(Clone, PartialEq)]

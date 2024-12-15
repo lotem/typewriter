@@ -1,9 +1,8 @@
 use leptos::*;
 
 mod action;
-mod alphabet;
 mod app;
-mod combo_pinyin;
+mod definition;
 mod drills;
 mod engine;
 mod gear;
@@ -11,6 +10,7 @@ mod key_code;
 mod layout;
 mod spelling_algebra;
 mod style;
+mod theory;
 mod view;
 
 use app::Rime打字機應用;

@@ -1,7 +1,7 @@
 use leptos::*;
 use std::borrow::Cow;
 
-use crate::engine::觸鍵方式;
+use crate::definition::觸鍵方式;
 use crate::gear::assignment::{作業, 對照輸入碼};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -180,10 +180,10 @@ fn 生成字幕<'a>(
     }
 }
 
-fn 字幕逐字步進<'a>(輸入碼: &'a str) -> Cow<'a, str> {
+fn 字幕逐字步進(輸入碼: &str) -> Cow<'_, str> {
     Cow::Borrowed(輸入碼)
 }
 
-fn 字幕逐詞步進<'a>(輸入碼: &'a str) -> Cow<'a, str> {
+fn 字幕逐詞步進(輸入碼: &str) -> Cow<'_, str> {
     Cow::Owned(format!("[{輸入碼} ]"))
 }

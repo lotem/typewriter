@@ -2,7 +2,7 @@ use keyberon::key_code::KeyCode;
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
-use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
+use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵的定義};
 use crate::layout::盤面選擇碼;
 use crate::spelling_algebra::拼寫運算;
 use crate::{消除, 變換, 轉寫};

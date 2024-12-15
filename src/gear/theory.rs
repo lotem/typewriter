@@ -1,9 +1,8 @@
 use lazy_static::lazy_static;
 use leptos::*;
 
-use crate::alphabet::拉丁字母輸入方案;
-use crate::combo_pinyin::宮保拼音輸入方案;
-use crate::engine::輸入方案定義;
+use crate::definition::輸入方案定義;
+use crate::theory::{alphabet::拉丁字母輸入方案, combo_pinyin::宮保拼音輸入方案};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 方案選項 {
@@ -20,8 +19,11 @@ lazy_static! {
 
 #[allow(clippy::type_complexity)]
 pub fn 輸入方案機關() -> (
+    // 現行方案
     ReadSignal<方案選項>,
+    // 選用方案
     WriteSignal<方案選項>,
+    // 方案定義
     Signal<輸入方案定義<'static>>,
 ) {
     let (現行方案, 選用方案) = create_signal(方案選項::宮保拼音);
