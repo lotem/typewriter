@@ -71,7 +71,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         指法,
         並擊狀態流,
         現行工作模式,
-        按進度顯示字幕段落,
+        字幕段落表示,
         輸入正確,
         當前作業,
         佈置作業,
@@ -114,7 +114,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <Rime字幕屏 按進度顯示字幕={按進度顯示字幕段落}/>
+        <Rime字幕屏 按進度顯示字幕={字幕段落表示}/>
         <div class="echo-bar">
             <div title="選輸入方案">
                 <Rime鍵圖 鍵={重音符鍵.鍵碼} 標註法={標註功能鍵(重音符鍵)} 着色法={開關狀態}/>
