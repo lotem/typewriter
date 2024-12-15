@@ -3,9 +3,8 @@ use leptos::*;
 use std::cmp::min;
 
 use crate::action::*;
-use crate::caption::字幕格式;
 use crate::engine::{觸鍵方式, 輸入方案定義, 轉寫法定義};
-use crate::theory::方案選項;
+use crate::gear::{caption::字幕格式, theory::方案選項};
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {

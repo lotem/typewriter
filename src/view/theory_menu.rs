@@ -1,7 +1,7 @@
 use leptos::logging::log;
 use leptos::*;
 
-use crate::theory::{方案選單, 方案選項};
+use crate::gear::theory::{方案選單, 方案選項};
 
 #[component]
 pub fn Rime方案選單(

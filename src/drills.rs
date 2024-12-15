@@ -1,7 +1,11 @@
-use crate::caption::字幕格式;
-use crate::caption::字幕格式::{段落, 詞句};
-use crate::caption::字幕步進::{逐字, 逐詞};
-use crate::theory::方案選項;
+use crate::gear::{
+    caption::{
+        字幕格式,
+        字幕格式::{段落, 詞句},
+        字幕步進::{逐字, 逐詞},
+    },
+    theory::方案選項,
+};
 
 pub struct 練習題<'a> {
     pub 標題: &'a str,

@@ -1,8 +1,7 @@
 use leptos::*;
 
 use crate::action::*;
-use crate::assignment::作業;
-use crate::theory::方案選項;
+use crate::gear::{assignment::作業, theory::方案選項};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum 工作模式 {

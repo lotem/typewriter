@@ -2,8 +2,8 @@ use keyberon::key_code::KeyCode;
 use leptos::*;
 use std::collections::BTreeSet;
 
-use crate::assignment::對照輸入碼;
 use crate::engine::輸入方案定義;
+use crate::gear::assignment::對照輸入碼;
 
 #[derive(Clone, PartialEq)]
 pub struct 鍵組(pub BTreeSet<KeyCode>);

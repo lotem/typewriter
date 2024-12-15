@@ -3,15 +3,17 @@ use lazy_regex::Regex;
 use leptos::logging::log;
 use leptos::*;
 
-use crate::assignment::{作業, 作業推進參數, 作業機關};
-use crate::caption::{字幕機關, 字幕段落};
-use crate::chord::{並擊機關, 並擊狀態, 鍵組};
-use crate::input::{焦點事件處理機關, 輸入事件處理機關};
-use crate::key_press::連擊機關;
+use crate::gear::{
+    assignment::{作業, 作業推進參數, 作業機關},
+    caption::{字幕機關, 字幕段落},
+    chord::{並擊機關, 並擊狀態, 鍵組},
+    input::{焦點事件處理機關, 輸入事件處理機關},
+    key_press::連擊機關,
+    mode::{工作模式, 工作模式機關},
+    theory::{方案選項, 輸入方案機關},
+};
 use crate::layout::盤面選擇碼;
-use crate::mode::{工作模式, 工作模式機關};
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
-use crate::theory::{方案選項, 輸入方案機關};
 
 pub struct 鍵的定義<'a> {
     pub 輸入碼: &'a str,

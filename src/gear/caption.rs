@@ -1,8 +1,8 @@
 use leptos::*;
 use std::borrow::Cow;
 
-use crate::assignment::{作業, 對照輸入碼};
 use crate::engine::觸鍵方式;
+use crate::gear::assignment::{作業, 對照輸入碼};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 字幕步進 {
