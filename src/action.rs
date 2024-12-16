@@ -7,5 +7,8 @@ pub type 成功失敗 = Result<(), 未有>;
 pub trait 動作得一結果<R = 成功失敗>: Fn() -> R + Copy + 'static {}
 impl<R, T> 動作得一結果<R> for T where T: Fn() -> R + Copy + 'static {}
 
+pub trait 動作給一參數<P>: Fn(P) + Copy + 'static {}
+impl<P, T> 動作給一參數<P> for T where T: Fn(P) + Copy + 'static {}
+
 pub trait 動作給一參數得一結果<P, R = 成功失敗>: Fn(P) -> R + Copy + 'static {}
 impl<P, R, T> 動作給一參數得一結果<P, R> for T where T: Fn(P) -> R + Copy + 'static {}

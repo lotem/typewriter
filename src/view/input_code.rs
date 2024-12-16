@@ -2,6 +2,8 @@ use leptos::html::Div;
 use leptos::*;
 use leptos_use::on_click_outside;
 
+use crate::action::{動作, 動作給一參數};
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum 回顯區佈局 {
     單欄,
@@ -29,7 +31,7 @@ pub fn Rime編碼回顯區(
 pub fn Rime反查輸入欄(
     反查碼: Signal<Option<String>>,
     示例輸入: Signal<String>,
-    反查碼變更: impl Fn(String) + 'static,
+    反查碼變更: impl 動作給一參數<String>,
 ) -> impl IntoView {
     let 反查輸入欄的引用 = create_node_ref::<html::Input>();
     create_render_effect(move |_| {
@@ -64,8 +66,8 @@ pub enum 編碼欄顯示選項 {
 pub fn Rime編碼欄(
     顯示選項: Signal<編碼欄顯示選項>,
     輸入正確: Signal<bool>,
-    點擊動作: impl Fn() + 'static,
-    關閉輸入欄: impl Fn() + Clone + 'static,
+    點擊動作: impl 動作,
+    關閉輸入欄: impl 動作,
     children: Children,
 ) -> impl IntoView {
     let target = NodeRef::<Div>::new();

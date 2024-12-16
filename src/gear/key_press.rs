@@ -2,6 +2,7 @@ use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::*;
 
+use crate::action::動作;
 use crate::definition::輸入方案定義;
 use crate::gear::assignment::對照輸入碼;
 
@@ -53,9 +54,9 @@ pub fn 連擊機關(
     // 更新連擊輸入碼
     WriteSignal<Vec<String>>,
     // 清空連擊輸入碼
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 回退連擊輸入碼
-    impl Fn() + Copy + 'static,
+    impl 動作,
 ) {
     let (連擊狀態流, 連擊狀態變更) = create_signal(連擊狀態::default());
 

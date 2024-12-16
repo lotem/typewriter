@@ -2,6 +2,7 @@ use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::*;
 
+use crate::action::動作;
 use crate::definition::{觸鍵方式, 輸入方案定義, 鍵組};
 use crate::gear::{
     assignment::{作業, 作業推進參數, 作業機關},
@@ -44,11 +45,11 @@ pub fn 微觀引擎() -> (
     // 方案定義
     Signal<輸入方案定義<'static>>,
     // 開啓練習題選單
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 開啓反查輸入
-    impl Fn() + Copy + 'static,
+    impl 動作,
     // 關閉輸入欄
-    impl Fn() + Copy + 'static,
+    impl 動作,
 ) {
     let (現行方案, 選用方案, 方案定義) = 輸入方案機關();
 

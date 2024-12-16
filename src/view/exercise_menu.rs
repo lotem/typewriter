@@ -1,13 +1,14 @@
 use leptos::logging::log;
 use leptos::*;
 
+use crate::action::動作給一參數;
 use crate::drills::練習題;
 
 #[component]
 pub fn Rime練習題選單(
     預設練習題: Signal<&'static [練習題<'static>]>,
     當選題號: Signal<Option<usize>>,
-    選中題號: impl Fn(usize) + 'static,
+    選中題號: impl 動作給一參數<usize>,
 ) -> impl IntoView {
     let 練習題選單的引用 = create_node_ref::<html::Select>();
     create_render_effect(move |_| {

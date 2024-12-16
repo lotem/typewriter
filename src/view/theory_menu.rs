@@ -1,12 +1,13 @@
 use leptos::logging::log;
 use leptos::*;
 
+use crate::action::動作給一參數;
 use crate::gear::theory::{方案選單, 方案選項};
 
 #[component]
 pub fn Rime方案選單(
     現行方案: ReadSignal<方案選項>,
-    選中方案: impl Fn(方案選項) + 'static,
+    選中方案: impl 動作給一參數<方案選項>,
 ) -> impl IntoView {
     let 方案選單的引用 = create_node_ref::<html::Select>();
     create_render_effect(move |_| {

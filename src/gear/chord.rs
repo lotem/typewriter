@@ -1,6 +1,7 @@
 use keyberon::key_code::KeyCode;
 use leptos::*;
 
+use crate::action::動作;
 use crate::definition::{輸入方案定義, 鍵組};
 use crate::gear::assignment::對照輸入碼;
 
@@ -68,7 +69,7 @@ pub fn 並擊機關(
     // 並擊成功
     Signal<bool>,
     // 重置並擊狀態
-    impl Fn() + Copy + 'static,
+    impl 動作,
 ) {
     let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
 
