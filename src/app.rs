@@ -7,7 +7,6 @@ use crate::gear::{assignment::作業, chord::並擊狀態, mode::工作模式};
 use crate::layout::功能鍵::{
     回車鍵, 撇號鍵, 製表鍵, 退出鍵, 退格鍵, 重音符鍵
 };
-use crate::style::樣式;
 use crate::view::{
     caption::Rime字幕屏,
     exercise_menu::Rime練習題選單,
@@ -113,8 +112,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let 開關狀態 = 功能鍵開關狀態 { 現行工作模式 };
 
-    let styler_class = 樣式();
-    view! { class = styler_class,
+    view! {
         <Rime字幕屏 是否顯示光標={是否顯示光標} 按進度顯示字幕={字幕段落表示}/>
         <div class="echo-bar">
             <div title="選輸入方案">

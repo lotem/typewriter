@@ -9,7 +9,6 @@ mod gear;
 mod key_code;
 mod layout;
 mod spelling_algebra;
-mod style;
 mod theory;
 mod view;
 

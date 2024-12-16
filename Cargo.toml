@@ -13,7 +13,3 @@ lazy_static = "1.5.0"
 leptos = { version = "0.6.15", features = ["csr", "nightly"] }
 leptos-use = "0.13.5"
 maybe-owned = "0.3.4"
-stylers = "1.0.0-alpha"
-
-[build-dependencies]
-stylers = "1.0.0-alpha"

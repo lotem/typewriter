@@ -1,7 +1,2 @@
 [build]
 public_url = "/typewriter"
-
-[[hooks]]
-stage = "post_build"
-command = "sh"
-command_arguments = ["-c", "cp ./target/main.css $TRUNK_STAGING_DIR/"]
