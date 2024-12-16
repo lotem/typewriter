@@ -85,6 +85,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         關閉輸入欄,
     ) = 微觀引擎();
 
+    let 是否顯示光標 = Signal::derive(move || with!(|指法| matches!(指法, 觸鍵方式::連擊)));
     let 顯示選項 = Signal::derive(move || {
         if 反查鍵位().is_some() {
             編碼欄顯示選項::顯示反查
@@ -114,7 +115,7 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let styler_class = 樣式();
     view! { class = styler_class,
-        <Rime字幕屏 按進度顯示字幕={字幕段落表示}/>
+        <Rime字幕屏 是否顯示光標={是否顯示光標} 按進度顯示字幕={字幕段落表示}/>
         <div class="echo-bar">
             <div title="選輸入方案">
                 <Rime鍵圖 鍵={重音符鍵.鍵碼} 標註法={標註功能鍵(重音符鍵)} 着色法={開關狀態}/>

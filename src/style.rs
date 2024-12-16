@@ -27,6 +27,8 @@ pub fn 樣式() -> &'static str {
         }
         :deep(.caption .highlight) {
             color: purple;
+        }
+        :deep(.caption .cursor) {
             text-decoration: underline;
         }
         :deep(.echo-bar) {
