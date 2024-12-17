@@ -1,5 +1,6 @@
+use leptos::html;
 use leptos::logging::log;
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::action::動作給一參數;
 use crate::drills::練習題;
@@ -10,22 +11,20 @@ pub fn Rime練習題選單(
     當選題號: Signal<Option<usize>>,
     選中題號: impl 動作給一參數<usize>,
 ) -> impl IntoView {
-    let 練習題選單的引用 = create_node_ref::<html::Select>();
-    create_render_effect(move |_| {
-        let 選項序號 = 當選題號()
-            .and_then(|題號| 題號.try_into().ok())
-            .unwrap_or(-1);
-        if let Some(輸入欄) = 練習題選單的引用() {
-            let _不看結果 = 輸入欄.on_mount(move |輸入欄| {
-                輸入欄.set_selected_index(選項序號);
-                let _ = 輸入欄.focus();
-            });
+    let 練習題選單的引用 = NodeRef::<html::Select>::new();
+    let _ = Effect::new(move |_| {
+        if let Some(輸入欄) = 練習題選單的引用.get() {
+            let 選項序號 = 當選題號()
+                .and_then(|題號| 題號.try_into().ok())
+                .unwrap_or(-1);
+            輸入欄.set_selected_index(選項序號);
+            let _ = 輸入欄.focus();
         }
     });
 
     view! {
         <select class="exercises"
-            _ref=練習題選單的引用
+            node_ref=練習題選單的引用
             on:change=move |ev| {
                 let 題號 = event_target_value(&ev);
                 log!("題號: {}", 題號);

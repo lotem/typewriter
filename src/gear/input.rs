@@ -1,5 +1,5 @@
 use keyberon::key_code::KeyCode;
-use leptos::*;
+use leptos::prelude::*;
 use leptos::{
     ev::{keydown, keyup, KeyboardEvent},
     logging::log,
@@ -10,8 +10,8 @@ use crate::action::{動作, 動作給一參數, 動作給一參數得一結果};
 use crate::key_code::網頁鍵值轉換;
 
 pub fn 焦點事件處理機關(重置並擊狀態: impl 動作) {
-    let 鍵盤輸入焦點源 = create_selector(use_window_focus());
-    create_effect(move |_| {
+    let 鍵盤輸入焦點源 = Selector::new(use_window_focus());
+    Effect::new(move |_| {
         if 鍵盤輸入焦點源.selected(false) {
             重置並擊狀態();
         }

@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::action::*;
 use crate::gear::{assignment::作業, theory::方案選項};
@@ -29,7 +29,7 @@ pub fn 工作模式機關(
     // 關閉輸入欄
     impl 動作,
 ) {
-    let (現行工作模式, 設置工作模式) = create_signal(工作模式::錄入);
+    let (現行工作模式, 設置工作模式) = signal(工作模式::錄入);
 
     let 開啓反查輸入 = move || {
         if 作業進度完成() {

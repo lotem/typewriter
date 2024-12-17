@@ -1,5 +1,5 @@
-use leptos::html::Div;
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_use::on_click_outside;
 
 use crate::action::{動作, 動作給一參數};
@@ -33,18 +33,14 @@ pub fn Rime反查輸入欄(
     示例輸入: Signal<String>,
     反查碼變更: impl 動作給一參數<String>,
 ) -> impl IntoView {
-    let 反查輸入欄的引用 = create_node_ref::<html::Input>();
-    create_render_effect(move |_| {
-        if let Some(輸入欄) = 反查輸入欄的引用() {
-            let _不看結果 = 輸入欄.on_mount(|輸入欄| {
-                輸入欄.select();
-            });
-        }
+    let 反查輸入欄的引用 = NodeRef::<html::Input>::new();
+    反查輸入欄的引用.on_load(|輸入欄| {
+        輸入欄.select();
     });
 
     view! {
         <input type="text" class="lookup-code"
-            _ref=反查輸入欄的引用
+            node_ref=反查輸入欄的引用
             placeholder={示例輸入}
             value={反查碼}
             on:input=move |ev| {
@@ -70,7 +66,7 @@ pub fn Rime編碼欄(
     關閉輸入欄: impl 動作,
     children: Children,
 ) -> impl IntoView {
-    let target = NodeRef::<Div>::new();
+    let target = NodeRef::<html::Div>::new();
     let _ = on_click_outside(target, move |_| {
         關閉輸入欄();
     });

@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 use std::borrow::Cow;
 
 use crate::definition::觸鍵方式;
@@ -85,46 +85,42 @@ pub struct 字幕表示 {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn 字幕機關<'a>(
+pub fn 字幕機關(
     當前作業: ReadSignal<作業>,
     作業進度: ReadSignal<usize>,
     反查輸入碼序列: Memo<Box<[對照輸入碼]>>,
     指法: Signal<觸鍵方式>,
 ) -> (
     // 分段字幕
-    Memo<Box<[字幕段落<'a>]>>,
+    Memo<Box<[字幕段落<'static>]>>,
     // 當前段落
-    Signal<Option<字幕段落<'a>>>,
+    Signal<Option<字幕段落<'static>>>,
     // 字幕段落表示
     Signal<Option<字幕表示>>,
 ) {
-    let 分段字幕 = create_memo(move |_| {
-        當前作業.with(|作業| match 作業.字幕() {
-            字幕格式::自動生成 => {
-                let 步進 = 字幕步進::from(指法());
-                反查輸入碼序列.with(|輸入碼| 生成字幕(步進, 輸入碼))
-            }
-            字幕格式::詞句(字幕) => {
-                標註字序(字幕.split_whitespace().map(Cow::Borrowed))
-            }
-            字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(
-                字幕
-                    .lines()
-                    .map(|每一行| 每一行.split_whitespace().collect::<Vec<_>>().join("[ ]"))
-                    .map(Cow::Owned),
-            ),
-            字幕格式::段落(字幕步進::逐詞, 字幕) => 標註字序(
-                字幕
-                    .lines()
-                    .map(|每一行| {
-                        每一行
-                            .split_whitespace()
-                            .flat_map(|每個詞| ["[", 每個詞, " ]"])
-                            .collect::<String>()
-                    })
-                    .map(Cow::Owned),
-            ),
-        })
+    let 分段字幕 = Memo::new(move |_| match 當前作業.read().字幕() {
+        字幕格式::自動生成 => {
+            let 步進 = 字幕步進::from(指法());
+            生成字幕(步進, &反查輸入碼序列.read())
+        }
+        字幕格式::詞句(字幕) => 標註字序(字幕.split_whitespace().map(Cow::Borrowed)),
+        字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(
+            字幕
+                .lines()
+                .map(|每一行| 每一行.split_whitespace().collect::<Vec<_>>().join("[ ]"))
+                .map(Cow::Owned),
+        ),
+        字幕格式::段落(字幕步進::逐詞, 字幕) => 標註字序(
+            字幕
+                .lines()
+                .map(|每一行| {
+                    每一行
+                        .split_whitespace()
+                        .flat_map(|每個詞| ["[", 每個詞, " ]"])
+                        .collect::<String>()
+                })
+                .map(Cow::Owned),
+        ),
     });
 
     let 當前段落 = Signal::derive(move || {

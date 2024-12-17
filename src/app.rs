@@ -1,5 +1,5 @@
 use keyberon::key_code::KeyCode;
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::definition::{觸鍵方式, 鍵組};
 use crate::engine::微觀引擎;
@@ -26,15 +26,17 @@ struct 並擊對標動態 {
 impl 鍵面動態着色法 for 並擊對標動態 {
     fn 鍵位提示(&self, 鍵: KeyCode) -> bool {
         self.目標並擊
-            .with(|有冇| 有冇.as_ref().is_some_and(|並擊| 並擊.0.contains(&鍵)))
+            .read()
+            .as_ref()
+            .is_some_and(|並擊| 並擊.0.contains(&鍵))
     }
 
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
-        self.實況並擊.with(|並擊| 並擊.實時落鍵.0.contains(&鍵))
+        self.實況並擊.read().實時落鍵.0.contains(&鍵)
     }
 
     fn 是否擊中(&self, 鍵: KeyCode) -> bool {
-        self.實況並擊.with(|並擊| 並擊.累計擊鍵.0.contains(&鍵))
+        self.實況並擊.read().累計擊鍵.0.contains(&鍵)
     }
 }
 
@@ -84,7 +86,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         關閉輸入欄,
     ) = 微觀引擎();
 
-    let 是否顯示光標 = Signal::derive(move || with!(|指法| matches!(指法, 觸鍵方式::連擊)));
+    let 是否顯示光標 = Signal::derive(move || matches!(指法(), 觸鍵方式::連擊));
     let 顯示選項 = Signal::derive(move || {
         if 反查鍵位().is_some() {
             編碼欄顯示選項::顯示反查
@@ -98,10 +100,10 @@ pub fn Rime打字機應用() -> impl IntoView {
         觸鍵方式::連擊 => 回顯區佈局::單欄,
         觸鍵方式::並擊 => 回顯區佈局::左右對照,
     });
-    let 反查碼 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().map(str::to_owned)));
-    let 當選題號 = Signal::derive(move || 當前作業.with(|作業| 作業.題號));
+    let 反查碼 = Signal::derive(move || 當前作業.read().反查碼().map(str::to_owned));
+    let 當選題號 = Signal::derive(move || 當前作業.read().題號);
     let 方案配套練習題 = Signal::derive(move || 現行方案().配套練習題().unwrap_or(&[]));
-    let 方案指定盤面 = Signal::derive(move || 方案定義.with(|方案| 方案.盤面));
+    let 方案指定盤面 = Signal::derive(move || 方案定義.read().盤面);
 
     let 標註功能鍵 = |功能鍵| Signal::derive(move || 功能鍵);
 
@@ -129,7 +131,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                 輸入正確={輸入正確}
                 點擊動作=move || {
                     if 現行工作模式() == 工作模式::錄入 {
-                        if 當前作業.with(作業::是否練習題) {
+                        if 當前作業.read().是否練習題() {
                             開啓練習題選單();
                         } else {
                             開啓反查輸入();
@@ -142,7 +144,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                 move || match 現行工作模式() {
                     工作模式::錄入 => view! {
                         <Rime編碼回顯區 佈局={編碼回顯區佈局} 輸入碼={回顯輸入碼} 轉寫碼={回顯轉寫碼}/>
-                    }.into_view(),
+                    }.into_any(),
                     工作模式::輸入反查碼 => view! {
                         <Rime反查輸入欄
                             反查碼={反查碼}
@@ -151,7 +153,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                                 佈置作業(作業::自訂(現行方案(), 反查碼));
                             }
                         />
-                    }.into_view(),
+                    }.into_any(),
                     工作模式::選取練習題 => view! {
                         <Rime練習題選單
                             預設練習題={方案配套練習題}
@@ -161,7 +163,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                                 關閉輸入欄();
                             }
                         />
-                    }.into_view(),
+                    }.into_any(),
                     工作模式::選擇輸入方案 => view! {
                         <Rime方案選單
                             現行方案={現行方案}
@@ -170,7 +172,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                                 關閉輸入欄();
                             }
                         />
-                    }.into_view(),
+                    }.into_any(),
                 }
             }
             </Rime編碼欄>

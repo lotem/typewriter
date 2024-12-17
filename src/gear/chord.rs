@@ -1,5 +1,5 @@
 use keyberon::key_code::KeyCode;
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::action::動作;
 use crate::definition::{輸入方案定義, 鍵組};
@@ -71,30 +71,31 @@ pub fn 並擊機關(
     // 重置並擊狀態
     impl 動作,
 ) {
-    let (並擊狀態流, 並擊狀態變更) = create_signal(並擊狀態::new());
+    let (並擊狀態流, 並擊狀態變更) = signal(並擊狀態::new());
 
-    let 重置並擊狀態 = move || 並擊狀態變更.update(並擊狀態::重置);
+    let 重置並擊狀態 = move || 並擊狀態變更.write().重置();
 
     let 實況並擊碼 =
-        Signal::derive(move || with!(|方案, 並擊狀態流| 方案.寫成字根碼(&並擊狀態流.累計擊鍵)));
+        Signal::derive(move || 方案.read().寫成字根碼(&並擊狀態流.read().累計擊鍵));
     let 並擊所得拼音 =
-        create_memo(move |_| with!(|方案| 方案.轉寫法.字根碼轉寫爲拼式(&實況並擊碼())));
+        Memo::new(move |_| 方案.read().轉寫法.字根碼轉寫爲拼式(&實況並擊碼()));
 
-    let 反查所得並擊碼 = create_memo(move |_| {
-        with!(|方案, 目標輸入碼| 目標輸入碼
+    let 反查所得並擊碼 = Memo::new(move |_| {
+        目標輸入碼
+            .read()
             .as_ref()
-            .and_then(|對照碼| 對照碼.反查字根碼(&方案.轉寫法)))
+            .and_then(|對照碼| 對照碼.反查字根碼(&方案.read().轉寫法))
     });
     let 反查鍵位 = Signal::derive(move || {
-        with!(|方案, 反查所得並擊碼| 反查所得並擊碼
+        反查所得並擊碼
+            .read()
             .as_deref()
-            .map(|並擊碼| 方案.讀出鍵位(並擊碼)))
+            .map(|並擊碼| 方案.read().讀出鍵位(並擊碼))
     });
 
-    let 並擊開始 = Signal::derive(move || 並擊狀態流.with(|狀態| !狀態.實時落鍵.0.is_empty()));
-    let 並擊完成 = Signal::derive(move || {
-        並擊狀態流.with(|狀態| 狀態.實時落鍵.0.is_empty()) && !實況並擊碼().is_empty()
-    });
+    let 並擊開始 = Signal::derive(move || !並擊狀態流.read().實時落鍵.0.is_empty());
+    let 並擊完成 =
+        Signal::derive(move || 並擊狀態流.read().實時落鍵.0.is_empty() && !實況並擊碼().is_empty());
 
     let 並擊成功 = Signal::derive(move || {
         // 拼音一致即爲成功，允許並擊碼不同

@@ -1,5 +1,5 @@
 use keyberon::key_code::KeyCode;
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::layout::{
     功能鍵::衆功能鍵, 打字機鍵盤佈局, 盤面選擇碼, 鍵面刻印, 鍵面映射
@@ -79,20 +79,20 @@ impl<'a> 鍵面標註法<'a> for 鍵面映射<'a> {
 #[component]
 pub fn Rime鍵圖<T, U>(鍵: KeyCode, 標註法: Signal<T>, 着色法: U) -> impl IntoView
 where
-    T: 鍵面標註法<'static> + Copy + 'static,
-    U: 鍵面動態着色法 + Copy + 'static,
+    T: 鍵面標註法<'static> + Copy + Send + Sync + 'static,
+    U: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
         <div class="key"
-            class:empty={move || with!(|標註法| 標註法.是否空鍵())}
-            class:fallback={move || with!(|標註法| 標註法.是否後備盤面())}
-            class:function={move || with!(|標註法| 標註法.是否功能鍵())}
-            class:space={move || with!(|標註法| 標註法.是否空格())}
+            class:empty={move || 標註法.read().是否空鍵()}
+            class:fallback={move || 標註法.read().是否後備盤面()}
+            class:function={move || 標註法.read().是否功能鍵()}
+            class:space={move || 標註法.read().是否空格()}
             class:hint={move || 着色法.鍵位提示(鍵)}
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
         >
-            <kbd class="label">{move || with!(|標註法| 標註法.刻印())}</kbd>
+            <kbd class="label">{move || 標註法.read().刻印()}</kbd>
         </div>
     }
 }
@@ -100,7 +100,7 @@ where
 #[component]
 pub fn Rime鍵盤圖<T>(目標盤面: Signal<盤面選擇碼>, 着色法: T) -> impl IntoView
 where
-    T: 鍵面動態着色法 + Copy + 'static,
+    T: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
         <div class="board">

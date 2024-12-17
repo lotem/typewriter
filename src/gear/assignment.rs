@@ -1,5 +1,5 @@
 use lazy_regex::regex;
-use leptos::*;
+use leptos::prelude::*;
 use std::cmp::min;
 
 use crate::action::*;
@@ -120,9 +120,9 @@ pub fn 作業機關(
     impl 動作得一結果,
 ) {
     let 初始方案 = 現行方案.get_untracked();
-    let (當前作業, 佈置作業) = create_signal(作業::練習題(初始方案, 0));
+    let (當前作業, 佈置作業) = signal(作業::練習題(初始方案, 0));
 
-    let _ = watch(
+    let _ = Effect::watch(
         現行方案,
         move |&方案, _, _| {
             佈置作業(作業::練習題(方案, 0));
@@ -130,18 +130,19 @@ pub fn 作業機關(
         false,
     );
 
-    let (作業進度, 更新作業進度) = create_signal(0);
+    let (作業進度, 更新作業進度) = signal(0);
 
-    let 反查輸入碼序列 = create_memo(move |_| {
-        with!(|當前作業, 方案定義| 當前作業
+    let 反查輸入碼序列 = Memo::new(move |_| {
+        當前作業
+            .read()
             .反查碼()
-            .map(|反查碼| 解析輸入碼序列(反查碼, 方案定義))
-            .unwrap_or(Box::new([])))
+            .map(|反查碼| 解析輸入碼序列(反查碼, &方案定義.read()))
+            .unwrap_or(Box::new([]))
     });
 
     let 重置作業進度 = move || 更新作業進度(0);
 
-    let _ = watch(
+    let _ = Effect::watch(
         反查輸入碼序列,
         move |_, _, _| {
             重置作業進度();
@@ -150,7 +151,7 @@ pub fn 作業機關(
     );
 
     let 作業推進 = move |參數: 作業推進參數| {
-        let 全文結束 = 反查輸入碼序列.with(|輸入碼| 輸入碼.len());
+        let 全文結束 = 反查輸入碼序列.read().len();
         let 推進目標位置 = match 參數.段落 {
             Some((起, 止)) => {
                 if 作業進度() < 起 {
@@ -182,8 +183,8 @@ pub fn 作業機關(
             Err(未有())
         }
     };
-    let 有無作業 = Signal::derive(move || 當前作業.with(|作業| 作業.反查碼().is_some()));
-    let 輸入碼總數 = move || 反查輸入碼序列.with(|輸入碼| 輸入碼.len());
+    let 有無作業 = Signal::derive(move || 當前作業.read().反查碼().is_some());
+    let 輸入碼總數 = move || 反查輸入碼序列.read().len();
     let 作業進度完成 = Signal::derive(move || 有無作業() && 作業進度() == 輸入碼總數());
 
     let 目標輸入碼 = Signal::derive(move || {
