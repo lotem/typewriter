@@ -2,7 +2,10 @@ use leptos::prelude::*;
 use std::borrow::Cow;
 
 use crate::definition::觸鍵方式;
-use crate::gear::assignment::{作業, 對照輸入碼};
+use crate::gear::{
+    assignment::{作業機關輸出信號, 對照輸入碼},
+    theory::輸入方案機關輸出信號,
+};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 字幕步進 {
@@ -84,20 +87,22 @@ pub struct 字幕表示 {
     pub 未完成: String,
 }
 
-#[allow(clippy::type_complexity)]
+#[derive(Clone, Copy)]
+pub struct 字幕機關輸出信號 {
+    pub 分段字幕: Memo<Box<[字幕段落<'static>]>>,
+    pub 當前段落: Memo<Option<字幕段落<'static>>>,
+    pub 段落表示: Signal<Option<字幕表示>>,
+}
+
 pub fn 字幕機關(
-    當前作業: ReadSignal<作業>,
-    作業進度: ReadSignal<usize>,
-    反查輸入碼序列: Memo<Box<[對照輸入碼]>>,
-    指法: Signal<觸鍵方式>,
-) -> (
-    // 分段字幕
-    Memo<Box<[字幕段落<'static>]>>,
-    // 當前段落
-    Signal<Option<字幕段落<'static>>>,
-    // 字幕段落表示
-    Signal<Option<字幕表示>>,
-) {
+    方案: &輸入方案機關輸出信號,
+    作業: &作業機關輸出信號,
+) -> 字幕機關輸出信號 {
+    let 指法 = 方案.指法;
+    let 當前作業 = 作業.當前作業;
+    let 作業進度 = 作業.作業進度;
+    let 反查輸入碼序列 = 作業.反查輸入碼序列;
+
     let 分段字幕 = Memo::new(move |_| match 當前作業.read().字幕() {
         字幕格式::自動生成 => {
             let 步進 = 字幕步進::from(指法());
@@ -123,7 +128,7 @@ pub fn 字幕機關(
         ),
     });
 
-    let 當前段落 = Signal::derive(move || {
+    let 當前段落 = Memo::new(move |_| {
         分段字幕.with(|衆段落| {
             let 全文進度 = 作業進度();
             let 當前段落號 =
@@ -139,7 +144,7 @@ pub fn 字幕機關(
         })
     });
 
-    let 字幕段落表示 = Signal::derive(move || {
+    let 段落表示 = Signal::derive(move || {
         當前段落().map(|字幕段落(段落起始, _, 段落文字)| {
             let 全文進度 = 作業進度();
             let 段落進度 = 全文進度 - 段落起始;
@@ -161,7 +166,11 @@ pub fn 字幕機關(
         })
     });
 
-    (分段字幕, 當前段落, 字幕段落表示)
+    字幕機關輸出信號 {
+        分段字幕,
+        當前段落,
+        段落表示,
+    }
 }
 
 fn 生成字幕<'a>(

@@ -1,7 +1,11 @@
 use leptos::prelude::*;
 
 use crate::action::*;
-use crate::gear::{assignment::作業, theory::方案選項};
+use crate::engine::輸入動作;
+use crate::gear::{
+    assignment::{作業, 作業機關輸出信號},
+    theory::輸入方案機關輸出信號,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum 工作模式 {
@@ -11,24 +15,31 @@ pub enum 工作模式 {
     選擇輸入方案,
 }
 
+pub type 開啓反查輸入動作 = impl 動作;
+pub type 開啓練習題選單動作 = impl 動作;
+pub type 開啓方案選單動作 = impl 動作;
+pub type 關閉輸入欄動作 = impl 動作;
+
+#[derive(Clone)]
+pub struct 工作模式機關輸出信號 {
+    pub 現行工作模式: ReadSignal<工作模式>,
+    pub 開啓反查輸入: 開啓反查輸入動作,
+    pub 開啓練習題選單: 開啓練習題選單動作,
+    pub 開啓方案選單: 開啓方案選單動作,
+    pub 關閉輸入欄: 關閉輸入欄動作,
+}
+
 pub fn 工作模式機關(
-    現行方案: ReadSignal<方案選項>,
-    作業進度完成: Signal<bool>,
-    佈置作業: WriteSignal<作業>,
-    重置作業進度: impl 動作,
-    重置輸入狀態: impl 動作,
-) -> (
-    // 現行工作模式
-    ReadSignal<工作模式>,
-    // 開啓反查輸入
-    impl 動作,
-    // 開啓練習題選單
-    impl 動作,
-    // 開啓方案選單
-    impl 動作,
-    // 關閉輸入欄
-    impl 動作,
-) {
+    方案: &輸入方案機關輸出信號,
+    作業: &作業機關輸出信號,
+    輸入: &輸入動作,
+) -> 工作模式機關輸出信號 {
+    let 現行方案 = 方案.現行方案;
+    let 佈置作業 = 作業.佈置作業;
+    let 重置作業進度 = 作業.重置作業進度;
+    let 作業進度完成 = 作業.作業進度完成;
+    let 重置輸入狀態 = 輸入.重置輸入狀態;
+
     let (現行工作模式, 設置工作模式) = signal(工作模式::錄入);
 
     let 開啓反查輸入 = move || {
@@ -53,11 +64,11 @@ pub fn 工作模式機關(
         設置工作模式(工作模式::錄入);
     };
 
-    (
+    工作模式機關輸出信號 {
         現行工作模式,
         開啓反查輸入,
         開啓練習題選單,
         開啓方案選單,
         關閉輸入欄,
-    )
+    }
 }

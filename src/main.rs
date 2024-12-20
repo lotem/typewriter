@@ -1,3 +1,5 @@
+#![feature(type_alias_impl_trait)]
+
 use leptos::prelude::*;
 
 mod action;

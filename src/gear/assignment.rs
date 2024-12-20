@@ -4,7 +4,10 @@ use std::cmp::min;
 
 use crate::action::*;
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義};
-use crate::gear::{caption::字幕格式, theory::方案選項};
+use crate::gear::{
+    caption::字幕格式,
+    theory::{方案選項, 輸入方案機關輸出信號},
+};
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
@@ -58,6 +61,7 @@ impl 作業 {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct 作業推進參數 {
     pub 段落: Option<(usize, usize)>,
     pub 迴轉: bool,
@@ -93,32 +97,27 @@ impl 對照輸入碼 {
     }
 }
 
-#[allow(clippy::type_complexity)]
-pub fn 作業機關(
-    現行方案: ReadSignal<方案選項>,
-    方案定義: Signal<輸入方案定義<'static>>,
-) -> (
-    // 當前作業
-    ReadSignal<作業>,
-    // 佈置作業
-    WriteSignal<作業>,
-    // 有無作業
-    Signal<bool>,
-    // 作業進度
-    ReadSignal<usize>,
-    // 作業進度完成
-    Signal<bool>,
-    // 反查輸入碼序列
-    Memo<Box<[對照輸入碼]>>,
-    // 目標輸入碼
-    Signal<Option<對照輸入碼>>,
-    // 重置作業進度
-    impl 動作,
-    // 作業推進
-    impl 動作給一參數得一結果<作業推進參數>,
-    // 作業回退
-    impl 動作得一結果,
-) {
+pub type 重置作業進度動作 = impl 動作;
+pub type 作業推進動作 = impl 動作給一參數得一結果<作業推進參數>;
+pub type 作業回退動作 = impl 動作得一結果;
+
+#[derive(Clone)]
+pub struct 作業機關輸出信號 {
+    pub 當前作業: ReadSignal<作業>,
+    pub 佈置作業: WriteSignal<作業>,
+    pub 作業進度: ReadSignal<usize>,
+    pub 重置作業進度: 重置作業進度動作,
+    pub 反查輸入碼序列: Memo<Box<[對照輸入碼]>>,
+    pub 目標輸入碼: Memo<Option<對照輸入碼>>,
+    pub 作業推進: 作業推進動作,
+    pub 作業回退: 作業回退動作,
+    pub 有無作業: Signal<bool>,
+    pub 作業進度完成: Signal<bool>,
+}
+
+pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸出信號 {
+    let 現行方案 = 方案.現行方案;
+    let 方案定義 = 方案.方案定義;
     let 初始方案 = 現行方案.get_untracked();
     let (當前作業, 佈置作業) = signal(作業::練習題(初始方案, 0));
 
@@ -132,6 +131,10 @@ pub fn 作業機關(
 
     let (作業進度, 更新作業進度) = signal(0);
 
+    let 重置作業進度 = move || {
+        更新作業進度(0);
+    };
+
     let 反查輸入碼序列 = Memo::new(move |_| {
         當前作業
             .read()
@@ -140,8 +143,6 @@ pub fn 作業機關(
             .unwrap_or(Box::new([]))
     });
 
-    let 重置作業進度 = move || 更新作業進度(0);
-
     let _ = Effect::watch(
         反查輸入碼序列,
         move |_, _, _| {
@@ -149,6 +150,16 @@ pub fn 作業機關(
         },
         false,
     );
+
+    let 目標輸入碼 = Memo::new(move |_| {
+        反查輸入碼序列.with(|輸入碼| {
+            if 輸入碼.is_empty() {
+                None
+            } else {
+                輸入碼.get(min(作業進度(), 輸入碼.len() - 1)).cloned()
+            }
+        })
+    });
 
     let 作業推進 = move |參數: 作業推進參數| {
         let 全文結束 = 反查輸入碼序列.read().len();
@@ -176,39 +187,33 @@ pub fn 作業機關(
     };
 
     let 作業回退 = move || {
-        if 作業進度() > 0 {
-            更新作業進度(作業進度() - 1);
+        let 進度 = 作業進度();
+        if 進度 > 0 {
+            更新作業進度(進度 - 1);
             Ok(())
         } else {
             Err(未有())
         }
     };
+
     let 有無作業 = Signal::derive(move || 當前作業.read().反查碼().is_some());
+
     let 輸入碼總數 = move || 反查輸入碼序列.read().len();
+
     let 作業進度完成 = Signal::derive(move || 有無作業() && 作業進度() == 輸入碼總數());
 
-    let 目標輸入碼 = Signal::derive(move || {
-        反查輸入碼序列.with(|輸入碼| {
-            if 輸入碼.is_empty() {
-                None
-            } else {
-                輸入碼.get(min(作業進度(), 輸入碼.len() - 1)).cloned()
-            }
-        })
-    });
-
-    (
+    作業機關輸出信號 {
         當前作業,
         佈置作業,
-        有無作業,
         作業進度,
-        作業進度完成,
+        重置作業進度,
         反查輸入碼序列,
         目標輸入碼,
-        重置作業進度,
         作業推進,
         作業回退,
-    )
+        有無作業,
+        作業進度完成,
+    }
 }
 
 fn 解析輸入碼序列(
