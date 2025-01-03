@@ -162,9 +162,11 @@ const 宮保拼音練習題: &[練習題] = &[
     練習題 {
         標題: "縮略碼示例",
         編碼: "SHG=<shen me> SHGUA=<shu ru fa> ZUAO=<zui hao> \
-               FBUR=<wei shen me> ZFB=<mei you> BUA=<ban fa> SHGU=<shu ru> SGIAN=<shi jian>",
+               FBUR=<wei shen me> ZFB=<mei you> BUA=<ban fa> SHGU=<shu ru> SGIAN=<shi jian> \
+               xian wen SHB=<shi bu shi> zai wen FBUR=<wei shen me>",
         字幕: 詞句("[什麼] [輸入法] [最好] \
-                    [爲什麼] [沒有] [辦法] [輸入] [時間]"),
+                    [爲什麼] [沒有] [辦法] [輸入] [時間] \
+                    先問[是不是] 再問[爲什麼]"),
     },
     練習題 {
         標題: "宮保拼音並擊術",
