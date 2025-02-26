@@ -185,12 +185,18 @@ const 宮保拼音練習題: &[練習題] = &[
     },
     練習題 {
         標題: "鼠鬚管",
-        編碼: "shu sü guan \
+        編碼: "zhuo jun yi jing zhou yu zhen zhi ziao \
+               zeng jun yi süan cheng shu sü zhi guan \
+               ziu ru chang hong yin cang hai \
+               bi ruo zün ma chi ping ban \
+               yu zhen ziao \
+               yi ju shi fen dang fu zhan \
+               shu sü guan \
                wei wu sui wei cing bu cian \
                sin shi zui mo shi yi hui \
                bie hou ji wo wu ci yuan \
-               ziu ru chang hong yin cang hai \
-               bi ruo zün ma chi ping ban \
+               ai jun shang shao li fang hao \
+               zie wo jiu shuai huan zian sian \
                wen zhang jing shi zhi ming zao \
                yi qi lun jiao siang de wan \
                cang jie gong zhuan shi \
@@ -216,10 +222,13 @@ const 宮保拼音練習題: &[練習題] = &[
                kai bi yuan xi si liu yong ji \
                sin shi zui mo shi yi hui \
                bie hou ji wo wu ci yuan",
-        字幕: 詞句("鼠鬚管 爲物雖微情不淺 \
-                    新詩醉墨時一揮 別後寄我無辭遠 \
+        字幕: 詞句("酌君以荊州魚枕之蕉 贈君以宣城䑕須之管 \
                     酒如長虹飲滄海 筆若駿馬馳平坂 \
-                    文章驚世知名早 義氣論交相得晚 \
+                    魚枕蕉 一舉十分當覆盞 \
+                    䑕須管 為物雖㣲情不淺 \
+                    新詩醉墨時一揮 別後寄我無辭逺 \
+                    愛君尚少力方豪 嗟我久衰歡漸鮮 \
+                    文章驚世知名早 意氣論交相得晚 \
                     蒼頡公轉世 巧匠出河陰 中州韻豈言是凡品 \
                     大道至簡亦玄奧高深 運用妙法存乎一心 \
                     縱情漁獵字海詞林 會不會某天穿越古今 \
@@ -230,6 +239,6 @@ const 宮保拼音練習題: &[練習題] = &[
                     書法程式 不蹈陳規 今音古韻 演繹類推 \
                     寄思中土 心懷主義 迭代寒暑 打造神器 \
                     代碼不羈 指令犀利 開彼源兮 斯流永繼 \
-                    新詩醉墨時一揮 別後寄我無辭遠"),
+                    新詩醉墨時一揮 別後寄我無辭逺"),
     },
 ];
