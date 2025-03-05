@@ -22,11 +22,12 @@ impl From<觸鍵方式> for 字幕步進 {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum 字幕格式<'a> {
     自動生成,
-    詞句(&'a str),
-    段落(字幕步進, &'a str),
+    自訂(&'a str),
+    詞句(&'static str),
+    段落(字幕步進, &'static str),
 }
 
 struct 字幕指標<'a> {
@@ -101,12 +102,15 @@ pub fn 字幕機關(
     let 指法 = 方案.指法;
     let 當前作業 = 作業.當前作業;
     let 作業進度 = 作業.作業進度;
-    let 反查輸入碼序列 = 作業.反查輸入碼序列;
+    let 目標輸入碼序列 = 作業.目標輸入碼序列;
 
     let 分段字幕 = Memo::new(move |_| match 當前作業.read().字幕() {
         字幕格式::自動生成 => {
             let 步進 = 字幕步進::from(指法());
-            生成字幕(步進, &反查輸入碼序列.read())
+            生成字幕(步進, &目標輸入碼序列.read())
+        }
+        字幕格式::自訂(字幕) => {
+            標註字序(字幕.split_whitespace().map(String::from).map(Cow::Owned))
         }
         字幕格式::詞句(字幕) => 標註字序(字幕.split_whitespace().map(Cow::Borrowed)),
         字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(

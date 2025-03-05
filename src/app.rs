@@ -98,7 +98,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 作業機關輸出信號 {
         當前作業,
         佈置作業,
-        目標輸入碼,
+        目標輸入碼片段,
         ..
     } = 作業;
     let 字幕機關輸出信號 { 段落表示, .. } = 字幕;
@@ -168,14 +168,20 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 回顯轉寫碼 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => None,
         觸鍵方式::並擊 => {
-            目標輸入碼()
+            目標輸入碼片段()
                 .and_then(|輸入碼| 輸入碼.轉寫碼原文)
                 .or_else(並擊所得拼音)
                 // 加尖括弧表示拉丁文轉寫
                 .map(|轉寫| format!("⟨{轉寫}⟩"))
         }
     });
-    let 反查碼 = Signal::derive(move || 當前作業.read().反查碼().map(str::to_owned));
+    let 反查碼 = Signal::derive(move || {
+        當前作業
+            .read()
+            .自訂反查碼
+            .clone()
+            .or_else(|| 當前作業.read().目標輸入碼().map(str::to_owned))
+    });
     let 反查碼變更動作 = move |反查碼: String| {
         佈置作業(作業::自訂(現行方案(), 反查碼));
     };

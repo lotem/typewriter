@@ -51,13 +51,13 @@ pub fn 連擊機關(
     作業: &作業機關輸出信號,
 ) -> 連擊機關輸出信號 {
     let 方案 = 方案.方案定義;
-    let 目標輸入碼 = 作業.目標輸入碼;
+    let 目標輸入碼片段 = 作業.目標輸入碼片段;
 
     let (連擊狀態流, 連擊狀態變更) = signal(連擊狀態::default());
 
     let 實況字根碼 = Signal::derive(move || 方案.read().寫成字根碼(連擊狀態流.read().鍵碼));
     let 反查所得字根碼 = move || {
-        目標輸入碼
+        目標輸入碼片段
             .read()
             .as_ref()
             .and_then(|對照碼| 對照碼.反查字根碼(&方案.read().轉寫法))
@@ -76,7 +76,7 @@ pub fn 連擊機關(
     };
 
     let 編輯連擊輸入碼 = move |鍵碼: KeyCode| {
-        let 自由輸入 = 目標輸入碼.read().is_none();
+        let 自由輸入 = 目標輸入碼片段.read().is_none();
         let 擊鍵正確 = 連擊比對成功();
         if 自由輸入 || 擊鍵正確 {
             match 鍵碼 {

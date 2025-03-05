@@ -41,19 +41,36 @@ impl 作業 {
         }
     }
 
-    pub fn 反查碼(&self) -> Option<&str> {
+    fn 自訂編碼(&self) -> Option<&str> {
+        self.自訂反查碼.as_ref().and_then(|反查碼| {
+            反查碼
+                .split_once("//")
+                .map(|(編碼, _字幕)| 編碼.trim())
+                .or(Some(反查碼.as_str()))
+        })
+    }
+
+    fn 自訂字幕(&self) -> Option<&str> {
+        self.自訂反查碼
+            .as_ref()
+            .and_then(|反查碼| 反查碼.split_once("//").map(|(_編碼, 字幕)| 字幕.trim()))
+    }
+
+    pub fn 目標輸入碼(&self) -> Option<&str> {
         self.科目
             .配套練習題()
             .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
             .map(|題| 題.編碼)
-            .or(self.自訂反查碼.as_deref())
+            .or(self.自訂編碼())
     }
 
-    pub fn 字幕(&self) -> 字幕格式<'static> {
+    pub fn 字幕(&self) -> 字幕格式 {
         self.科目
             .配套練習題()
             .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
-            .map_or(字幕格式::自動生成, |題| 題.字幕)
+            .map(|題| 題.字幕.clone())
+            .or_else(|| self.自訂字幕().map(字幕格式::自訂))
+            .unwrap_or(字幕格式::自動生成)
     }
 
     pub fn 是否練習題(&self) -> bool {
@@ -107,8 +124,8 @@ pub struct 作業機關輸出信號 {
     pub 佈置作業: WriteSignal<作業>,
     pub 作業進度: ReadSignal<usize>,
     pub 重置作業進度: 重置作業進度動作,
-    pub 反查輸入碼序列: Memo<Box<[對照輸入碼]>>,
-    pub 目標輸入碼: Memo<Option<對照輸入碼>>,
+    pub 目標輸入碼序列: Memo<Box<[對照輸入碼]>>,
+    pub 目標輸入碼片段: Memo<Option<對照輸入碼>>,
     pub 作業推進: 作業推進動作,
     pub 作業回退: 作業回退動作,
     pub 有無作業: Signal<bool>,
@@ -135,24 +152,24 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         更新作業進度(0);
     };
 
-    let 反查輸入碼序列 = Memo::new(move |_| {
+    let 目標輸入碼序列 = Memo::new(move |_| {
         當前作業
             .read()
-            .反查碼()
-            .map(|反查碼| 解析輸入碼序列(反查碼, &方案定義.read()))
+            .目標輸入碼()
+            .map(|輸入碼| 解析輸入碼序列(輸入碼, &方案定義.read()))
             .unwrap_or(Box::new([]))
     });
 
     let _ = Effect::watch(
-        反查輸入碼序列,
+        目標輸入碼序列,
         move |_, _, _| {
             重置作業進度();
         },
         false,
     );
 
-    let 目標輸入碼 = Memo::new(move |_| {
-        反查輸入碼序列.with(|輸入碼| {
+    let 目標輸入碼片段 = Memo::new(move |_| {
+        目標輸入碼序列.with(|輸入碼| {
             if 輸入碼.is_empty() {
                 None
             } else {
@@ -162,7 +179,7 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
     });
 
     let 作業推進 = move |參數: 作業推進參數| {
-        let 全文結束 = 反查輸入碼序列.read().len();
+        let 全文結束 = 目標輸入碼序列.read().len();
         let 推進目標位置 = match 參數.段落 {
             Some((起, 止)) => {
                 if 作業進度() < 起 {
@@ -196,9 +213,9 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         }
     };
 
-    let 有無作業 = Signal::derive(move || 當前作業.read().反查碼().is_some());
+    let 有無作業 = Signal::derive(move || 當前作業.read().目標輸入碼().is_some());
 
-    let 輸入碼總數 = move || 反查輸入碼序列.read().len();
+    let 輸入碼總數 = move || 目標輸入碼序列.read().len();
 
     let 作業進度完成 = Signal::derive(move || 有無作業() && 作業進度() == 輸入碼總數());
 
@@ -207,8 +224,8 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         佈置作業,
         作業進度,
         重置作業進度,
-        反查輸入碼序列,
-        目標輸入碼,
+        目標輸入碼序列,
+        目標輸入碼片段,
         作業推進,
         作業回退,
         有無作業,
