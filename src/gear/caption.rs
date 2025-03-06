@@ -81,6 +81,10 @@ fn 標註字序<'a>(衆段落: impl Iterator<Item = Cow<'a, str>>) -> Box<[字�
         .into_boxed_slice()
 }
 
+fn 所屬段落序號(衆段落: &[字幕段落], 進度: usize) -> usize {
+    衆段落.partition_point(|字幕段落(_, 段落結束, _)| *段落結束 <= 進度)
+}
+
 #[derive(Clone)]
 pub struct 字幕表示 {
     pub 已完成: String,
@@ -92,6 +96,7 @@ pub struct 字幕表示 {
 pub struct 字幕機關輸出信號 {
     pub 分段字幕: Memo<Box<[字幕段落<'static>]>>,
     pub 當前段落: Memo<Option<字幕段落<'static>>>,
+    pub 前序段落: Signal<Option<字幕段落<'static>>>,
     pub 段落表示: Signal<Option<字幕表示>>,
 }
 
@@ -135,8 +140,7 @@ pub fn 字幕機關(
     let 當前段落 = Memo::new(move |_| {
         分段字幕.with(|衆段落| {
             let 全文進度 = 作業進度();
-            let 當前段落號 =
-                衆段落.partition_point(|字幕段落(_, 段落結束, _)| *段落結束 <= 全文進度);
+            let 當前段落號 = 所屬段落序號(衆段落, 全文進度);
             衆段落
                 .get(當前段落號)
                 .or_else(|| {
@@ -145,6 +149,18 @@ pub fn 字幕機關(
                         .filter(|字幕段落(_, 全文結束, _)| *全文結束 == 全文進度)
                 })
                 .cloned()
+        })
+    });
+
+    let 前序段落 = Signal::derive(move || {
+        分段字幕.with(|衆段落| {
+            let 全文進度 = 作業進度();
+            let 當前段落號 = 所屬段落序號(衆段落, 全文進度);
+            if 當前段落號 == 0 {
+                None
+            } else {
+                衆段落.get(當前段落號 - 1).cloned()
+            }
         })
     });
 
@@ -173,6 +189,7 @@ pub fn 字幕機關(
     字幕機關輸出信號 {
         分段字幕,
         當前段落,
+        前序段落,
         段落表示,
     }
 }

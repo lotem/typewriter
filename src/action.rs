@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub trait 動作: Fn() + Copy + 'static {}
 impl<T> 動作 for T where T: Fn() + Copy + 'static {}
 

@@ -14,15 +14,34 @@ pub fn 焦點事件處理機關(重置並擊狀態: impl 動作) {
     });
 }
 
+#[allow(dead_code)]
+pub struct 檔位 {
+    pub shift: bool,
+    pub ctrl: bool,
+    pub alt: bool,
+    pub meta: bool,
+}
+
+pub struct 觸鍵消息 {
+    pub 鍵碼: KeyCode,
+    pub 檔位: 檔位,
+}
+
 pub fn 輸入事件處理機關(
-    處理功能鍵: impl 動作給一參數得一結果<KeyCode, bool>,
+    處理功能鍵: impl 動作給一參數得一結果<觸鍵消息, bool>,
     既然落鍵: impl 動作給一參數<KeyCode>,
     既然抬鍵: impl 動作給一參數<KeyCode>,
 ) {
     let keydown_handle = window_event_listener(ev::keydown, move |ev| {
         log!("落鍵 key = {}, code = {}", &ev.key(), ev.code());
         let 鍵碼 = 網頁鍵值轉換(&ev.code());
-        if 處理功能鍵(鍵碼) {
+        let 檔位 = 檔位 {
+            shift: ev.shift_key(),
+            ctrl: ev.ctrl_key(),
+            alt: ev.alt_key(),
+            meta: ev.meta_key(),
+        };
+        if 處理功能鍵(觸鍵消息 { 鍵碼, 檔位 }) {
             ev.prevent_default();
         }
         既然落鍵(鍵碼);
