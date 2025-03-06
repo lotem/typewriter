@@ -214,9 +214,7 @@ const 宮保拼音練習題: &[練習題] = &[
                ji si zhong tu sin huai zhu yi \
                die dai han shu da zao shen qi \
                dai ma bu ji zhi ling sii li \
-               kai bi yuan xi si liu yong ji \
-               sin shi zui mo shi yi hui \
-               bie hou ji wo wu ci yuan",
+               kai bi yuan xi si liu yong ji",
         字幕: 詞句("揮毫擊鍵 殊途同歸 文字精妙 機巧生輝 \
                     書法程式 不蹈陳規 今音古韻 演繹類推 \
                     寄思中土 心懷主義 迭代寒暑 打造神器 \
