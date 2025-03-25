@@ -60,6 +60,7 @@ pub struct 並擊機關輸出信號 {
     pub 並擊成功: Memo<bool>,
 }
 
+#[define_opaque(並擊重置動作)]
 pub fn 並擊機關(
     方案: &輸入方案機關輸出信號,
     作業: &作業機關輸出信號,
