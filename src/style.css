@@ -136,6 +136,18 @@ kbd {
     justify-content: center;
     gap: 16px;
 }
+.board.staggered .row:nth-child(1) {
+    padding-left: 20px;
+    padding-right: 60px;
+}
+.board.staggered .row:nth-child(2) {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+.board.staggered .row:nth-child(3) {
+    padding-left: 80px;
+    padding-right: 0px;
+}
 .row {
     display: flex;
     flex-direction: row;
