@@ -103,7 +103,7 @@ where
     T: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
-        <div class="board staggered">
+        <div class="board ortholinear split">
         { 打字機鍵盤佈局.矩陣.iter().map(|行| view! {
             <div class="row">
             { 行.iter().map(|&鍵| {
