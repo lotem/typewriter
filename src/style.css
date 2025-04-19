@@ -13,6 +13,7 @@
         --accent-color-hint: green;
         --function-key-opacity: 15%;
         --function-key-opacity-keydown: 33%;
+        --function-key-opacity-hint: 50%;
         --insignificant-key-opacity: 33%;
         --color-mix-percentage-done: 15%;
         --color-mix-percentage-hint: 10%;
@@ -180,6 +181,16 @@ kbd {
 .key.keydown, .key.hint.keydown {
     color: var(--accent-color-active);
     background-color: color-mix(in srgb, var(--accent-color-active) var(--color-mix-percentage-active), transparent);
+}
+.function.key.hint {
+    color: var(--inverted-fg-color);
+    background-color: var(--accent-color-hint);
+    opacity: var(--function-key-opacity-hint);
+}
+.function.key.hint.pressed {
+    color: var(--inverted-fg-color);
+    background-color: var(--accent-color-done);
+    opacity: var(--function-key-opacity-hint);
 }
 .key.fallback, .key.empty {
     opacity: var(--insignificant-key-opacity);

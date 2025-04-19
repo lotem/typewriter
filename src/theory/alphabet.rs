@@ -47,6 +47,10 @@ const 字母表: &[鍵位定義] = &[
         輸入碼: "␣",
         鍵碼: KeyCode::Space,
     },
+    鍵位定義 {
+        輸入碼: "'",
+        鍵碼: KeyCode::Quote,
+    }
 ];
 
 lazy_static! {
@@ -54,7 +58,7 @@ lazy_static! {
         "abcdefghijklmnopqrstuvwxyz ",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ␣"
     ),]);
-    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([A-Za-z ])+$").deref(),]);
+    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([A-Za-z '])+$").deref(),]);
 }
 
 pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
