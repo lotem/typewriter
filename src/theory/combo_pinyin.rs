@@ -57,6 +57,10 @@ lazy_static! {
 
         轉寫!("BPFDTLGKHZCS", "bpfdtlgkhzcs"),
 
+        // 通摄三等精組、泥來併入一等，須在尖團音規則前變換
+        // 濃龍蹤從松 ⟨niong/liong/ziong/ciong/siong -> nong/long/zong/cong/song⟩
+        變換!("^([nlzcs])(IRO|ÜNE)$", "${1}ong"),
+
         // G,K,H 接 I/Ü 作 ⟨ji/ju, qi/qu, xi/xu⟩
         // 若分尖團，也可用 Z,C,S 與 I/Ü 相拼
         變換!("^[gz](I|Ü)", "j$1"),
@@ -219,7 +223,7 @@ lazy_static! {
         regex!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$").deref(),
         regex!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$").deref(),
         regex!(
-            "^([nl])([iuv]|i?a|[iuv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|ong)$"
+            "^([nl])([iuv]|i?a|[iuv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|i?ong)$"
         ).deref(),
         regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
         regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
