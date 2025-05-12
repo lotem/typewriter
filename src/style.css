@@ -180,6 +180,12 @@ kbd {
     height: 80px;
     width: 80px;
 }
+.board .row:nth-child(3) .key:nth-child(4) kbd.label,
+.board .row:nth-child(3) .key:nth-child(7) kbd.label {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--secondary-fg-color) 66%, transparent);
+    text-underline-offset: 16px;
+}
 .function.key, .function.key.pressed {
     color: var(--inverted-fg-color);
     background-color: var(--inverted-bg-color);
