@@ -1,13 +1,13 @@
 use keyberon::key_code::KeyCode;
 use leptos::prelude::*;
 
-use crate::layout::{
-    功能鍵::衆功能鍵, 打字機鍵盤佈局, 盤面選擇碼, 鍵面刻印, 鍵面映射
+use crate::gear::layout::{
+    功能鍵::衆功能鍵, 盤面選擇碼, 矩陣座標, 配列, 鍵盤佈局, 鍵面刻印, 鍵面映射,
 };
 
-pub trait 鍵面標註法<'a> {
+pub trait 鍵面標註法 {
     fn 鍵碼(&self) -> KeyCode;
-    fn 刻印(&self) -> Option<&'a str>;
+    fn 刻印(&self) -> Option<&'static str>;
     fn 是否空鍵(&self) -> bool;
     fn 是否後備盤面(&self) -> bool;
     fn 是否功能鍵(&self) -> bool {
@@ -25,47 +25,56 @@ pub trait 鍵面動態着色法 {
 }
 
 #[derive(Clone, Copy)]
-struct 選擇鍵面<'a> {
+struct 選擇鍵面 {
+    佈局: 鍵盤佈局,
     鍵碼: KeyCode,
     目標盤面: 盤面選擇碼,
-    有效盤面: Option<(usize, 鍵面刻印<'a>)>,
+    座標: 矩陣座標,
 }
 
-impl 選擇鍵面<'_> {
-    fn new(鍵碼: KeyCode, 目標盤面: 盤面選擇碼) -> Self {
+impl 選擇鍵面 {
+    fn new(
+        佈局: 鍵盤佈局, 鍵碼: KeyCode, 目標盤面: 盤面選擇碼, 座標: 矩陣座標
+    ) -> Self {
         Self {
+            佈局,
             鍵碼,
             目標盤面,
-            有效盤面: 打字機鍵盤佈局.選擇盤面(鍵碼, 目標盤面),
+            座標,
         }
+    }
+
+    fn 有效盤面(&self) -> Option<(usize, 鍵面刻印)> {
+        self.佈局.選擇盤面(self.目標盤面, self.座標)
     }
 }
 
-impl<'a> 鍵面標註法<'a> for 選擇鍵面<'a> {
+impl 鍵面標註法 for 選擇鍵面 {
     fn 鍵碼(&self) -> KeyCode {
         self.鍵碼
     }
-    fn 刻印(&self) -> Option<&'a str> {
-        self.有效盤面.and_then(|(_, 刻印)| match 刻印 {
+    fn 刻印(&self) -> Option<&'static str> {
+        self.有效盤面().and_then(move |(_, 刻印)| match 刻印 {
             鍵面刻印::有刻(刻印文字) => Some(刻印文字),
             _ => None,
         })
     }
     fn 是否空鍵(&self) -> bool {
-        self.有效盤面
-            .is_some_and(|(_, 刻印)| !matches!(刻印, 鍵面刻印::有刻(_)))
+        !self
+            .有效盤面()
+            .is_some_and(|(_, 刻印)| matches!(刻印, 鍵面刻印::有刻(_)))
     }
     fn 是否後備盤面(&self) -> bool {
-        self.有效盤面
+        self.有效盤面()
             .is_some_and(|(盤面, _)| 盤面 != self.目標盤面.頂層盤面())
     }
 }
 
-impl<'a> 鍵面標註法<'a> for 鍵面映射<'a> {
+impl 鍵面標註法 for 鍵面映射 {
     fn 鍵碼(&self) -> KeyCode {
         self.鍵碼
     }
-    fn 刻印(&self) -> Option<&'a str> {
+    fn 刻印(&self) -> Option<&'static str> {
         self.刻印.刻印文字()
     }
     fn 是否空鍵(&self) -> bool {
@@ -79,7 +88,7 @@ impl<'a> 鍵面標註法<'a> for 鍵面映射<'a> {
 #[component]
 pub fn Rime鍵圖<T, U>(鍵: KeyCode, 標註法: Signal<T>, 着色法: U) -> impl IntoView
 where
-    T: 鍵面標註法<'static> + Copy + Send + Sync + 'static,
+    T: 鍵面標註法 + Copy + Send + Sync + 'static,
     U: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
@@ -98,16 +107,30 @@ where
 }
 
 #[component]
-pub fn Rime鍵盤圖<T>(目標盤面: Signal<盤面選擇碼>, 着色法: T) -> impl IntoView
+pub fn Rime鍵盤圖<T>(
+    配列: ReadSignal<配列>,
+    鍵盤佈局: Signal<鍵盤佈局>,
+    目標盤面: Signal<盤面選擇碼>,
+    着色法: T,
+) -> impl IntoView
 where
     T: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
-        <div class="board ortholinear split">
-        { 打字機鍵盤佈局.矩陣.iter().map(|行| view! {
+        <div
+            class="board"
+            class=("size-60", move || 配列.read().規格() == 60)
+            class=("size-30", move || 配列.read().規格() == 30)
+            class:ortholinear={move || 配列.read().直列()}
+            class:split={move || 配列.read().分體()}
+            class:staggered={move || 配列.read().橫向交錯()}
+        >
+        { move || 配列.read().矩陣().iter().enumerate().map(|(行座標, 行)| view! {
             <div class="row">
-            { 行.iter().map(|&鍵| {
-                let 標註法 = Signal::derive(move || 選擇鍵面::new(鍵, 目標盤面()));
+            { 行.iter().enumerate()
+              .filter(|(_, &鍵)| 鍵 != KeyCode::No)
+              .map(|(列座標, &鍵)| {
+                let 標註法 = Signal::derive(move || 選擇鍵面::new(鍵盤佈局(), 鍵, 目標盤面(), 矩陣座標(行座標, 列座標)));
                 view! {
                     <Rime鍵圖 鍵={鍵} 標註法={標註法} 着色法={着色法}/>
                 }

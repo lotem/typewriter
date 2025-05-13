@@ -44,13 +44,17 @@ pub fn 輸入事件處理機關(
         if 處理功能鍵(觸鍵消息 { 鍵碼, 檔位 }) {
             ev.prevent_default();
         }
-        既然落鍵(鍵碼);
+        if 鍵碼 != KeyCode::No {
+            既然落鍵(鍵碼);
+        }
     });
 
     let keyup_handle = window_event_listener(ev::keyup, move |ev| {
         log!("抬鍵 key = {}, code = {}", &ev.key(), &ev.code());
         let 鍵碼 = 網頁鍵值轉換(&ev.code());
-        既然抬鍵(鍵碼);
+        if 鍵碼 != KeyCode::No {
+            既然抬鍵(鍵碼);
+        }
     });
 
     on_cleanup(move || {

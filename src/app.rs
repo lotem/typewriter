@@ -8,11 +8,12 @@ use crate::gear::{
     caption::{字幕機關輸出信號, 字幕表示},
     chord::{並擊機關輸出信號, 並擊狀態},
     key_press::連擊機關輸出信號,
+    layout::{
+        功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
+        配列機關輸出信號,
+    },
     mode::{工作模式, 工作模式機關輸出信號},
     theory::輸入方案機關輸出信號,
-};
-use crate::layout::功能鍵::{
-    回車鍵, 製表鍵, 退出鍵, 退格鍵
 };
 use crate::view::{
     caption::Rime字幕屏,
@@ -21,6 +22,7 @@ use crate::view::{
         Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 回顯區佈局, 編碼欄顯示選項
     },
     keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
+    layout_menu::Rime配列選單,
     theory_menu::Rime方案選單,
 };
 
@@ -76,6 +78,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 微觀引擎輸出信號 {
         方案,
         模式,
+        配列,
         作業,
         字幕,
         連擊,
@@ -88,6 +91,9 @@ pub fn Rime打字機應用() -> impl IntoView {
         指法,
         ..
     } = 方案;
+    let 配列機關輸出信號 {
+        已選配列, 選用配列
+    } = 配列;
     let 工作模式機關輸出信號 {
         現行工作模式,
         開啓反查輸入,
@@ -194,8 +200,13 @@ pub fn Rime打字機應用() -> impl IntoView {
         選用方案(選中項);
         關閉輸入欄();
     };
+    let 選用配列動作 = move |選中項| {
+        選用配列(選中項);
+        關閉輸入欄();
+    };
     let 方案配套練習題 = Signal::derive(move || 現行方案.get().配套練習題().unwrap_or(&[]));
-    let 方案指定盤面 = Signal::derive(move || 方案定義.read().盤面);
+    let 方案指定佈局 = Signal::derive(move || *方案定義.read().佈局);
+    let 方案指定盤面 = Signal::derive(move || 方案指定佈局().默認盤面);
 
     let 標註功能鍵 = |功能鍵| Signal::derive(move || 功能鍵);
 
@@ -246,6 +257,12 @@ pub fn Rime打字機應用() -> impl IntoView {
                             選中方案={選中方案動作}
                         />
                     }.into_any(),
+                    工作模式::選擇配列 => view! {
+                        <Rime配列選單
+                            已選配列={已選配列}
+                            選用配列={選用配列動作}
+                        />
+                    }.into_any(),
                 }
             }
             </Rime編碼欄>
@@ -256,6 +273,6 @@ pub fn Rime打字機應用() -> impl IntoView {
                 <Rime鍵圖 鍵={退格鍵.鍵碼} 標註法={標註功能鍵(退格鍵)} 着色法={並擊動態}/>
             </div>
         </div>
-        <Rime鍵盤圖 目標盤面={方案指定盤面} 着色法={並擊動態}/>
+        <Rime鍵盤圖 鍵盤佈局={方案指定佈局} 目標盤面={方案指定盤面} 配列={已選配列} 着色法={並擊動態}/>
     }
 }

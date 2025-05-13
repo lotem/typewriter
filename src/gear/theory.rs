@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use leptos::prelude::*;
 
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義};
-use crate::layout::盤面選擇碼;
+use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::theory::{alphabet::拉丁字母輸入方案, combo_pinyin::宮保拼音輸入方案};
 
 #[derive(Clone, Copy, Default, PartialEq)]
@@ -21,7 +21,7 @@ lazy_static! {
 
 const 未定義方案: 輸入方案定義<'static> = 輸入方案定義 {
     名稱: "未定義",
-    盤面: 盤面選擇碼(0),
+    佈局: &拉丁字母鍵盤佈局,
     指法: 觸鍵方式::連擊,
     字根表: &[],
     轉寫法: 轉寫法定義 {

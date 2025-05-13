@@ -3,7 +3,7 @@ use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
-use crate::layout::盤面選擇碼;
+use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
 
@@ -68,7 +68,7 @@ lazy_static! {
 pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
     輸入方案定義 {
         名稱: "拉丁字母",
-        盤面: 盤面選擇碼(2),
+        佈局: &拉丁字母鍵盤佈局,
         指法: 觸鍵方式::連擊,
         字根表: 字母表,
         轉寫法: 轉寫法定義 {

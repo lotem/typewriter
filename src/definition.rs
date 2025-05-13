@@ -2,7 +2,7 @@ use keyberon::key_code::KeyCode;
 use lazy_regex::Regex;
 use std::collections::BTreeSet;
 
-use crate::layout::盤面選擇碼;
+use crate::gear::layout::鍵盤佈局;
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 
 pub struct 鍵位定義<'a> {
@@ -13,7 +13,7 @@ pub struct 鍵位定義<'a> {
 #[derive(Clone, Copy)]
 pub struct 輸入方案定義<'a> {
     pub 名稱: &'a str,
-    pub 盤面: 盤面選擇碼,
+    pub 佈局: &'a 鍵盤佈局,
     pub 指法: 觸鍵方式,
     pub 字根表: &'a [鍵位定義<'a>],
     pub 轉寫法: 轉寫法定義<'a>,

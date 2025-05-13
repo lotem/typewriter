@@ -105,7 +105,7 @@ kbd {
     border-color: var(--accent-color-done);
     color: var(--accent-color-done);
 }
-.translated-input, .lookup-code, .exercises, .theories {
+.translated-input, .lookup-code, .exercises, .theories, .layouts {
     font-family: Maple Mono, LXGW WenKai, Maple Mono CN, Fantasque Sans Mono, Inter, sans-serif;
     font-size: 2rem;
 }
@@ -124,7 +124,7 @@ kbd {
     overflow-wrap: break-word;
     white-space: nowrap;
 }
-.lookup-code, .exercises, .theories {
+.lookup-code, .exercises, .theories, .layouts {
     border: 1px dotted var(--accent-color-hint);
     border-radius: 10px;
     margin: auto 18px;
@@ -136,20 +136,34 @@ kbd {
     justify-content: center;
     gap: 16px;
 }
-.board.ortholinear.split .row:nth-child(-n+3) .key:nth-child(6) {
+.board .row:last-child .key {
+    border-radius: 10% / 30%;
+    height: 80px;
+    width: 384px;
+}
+.board.ortholinear.split .row:last-child .key {
+    border-radius: 20% / 40%;
+    height: 80px;
+    width: 184px;
+}
+.board.staggered .row:last-child .key {
+    border-radius: 5% / 30%;
+    height: 80px;
+    width: 486px;
+}
+.board.ortholinear.split .row:nth-child(-n+4) .key:nth-child(6),
+.board.ortholinear.split .row:last-child .key:last-child {
     margin-left: 80px;
 }
-.board.staggered .row:nth-child(1) {
-    padding-left: 20px;
-    padding-right: 60px;
+.board.size-30.staggered .row:nth-child(3) .key:first-child,
+.board.size-30.staggered .row:nth-child(4) .key:first-child {
+    margin-left: 51px;
 }
-.board.staggered .row:nth-child(2) {
-    padding-left: 40px;
-    padding-right: 40px;
+.board.size-60.staggered .row:nth-child(3) .key:first-child {
+    margin-left: 51px;
 }
-.board.staggered .row:nth-child(3) {
-    padding-left: 80px;
-    padding-right: 0px;
+.board.size-60.staggered .row:nth-child(4) .key:first-child {
+    margin-left: -51px;
 }
 .row {
     display: flex;
@@ -175,11 +189,6 @@ kbd {
     color: var(--inverted-fg-color);
     background-color: var(--inverted-bg-color);
     opacity: var(--function-key-opacity-keydown);
-}
-.space.key {
-    border-radius: 10% / 30%;
-    height: 80px;
-    width: 384px;
 }
 .key.hint {
     color: var(--accent-color-hint);

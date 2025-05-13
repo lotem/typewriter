@@ -9,7 +9,6 @@ mod drills;
 mod engine;
 mod gear;
 mod key_code;
-mod layout;
 mod spelling_algebra;
 mod theory;
 mod view;
