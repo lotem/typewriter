@@ -1,8 +1,8 @@
-use keyberon::key_code::KeyCode;
 use lazy_regex::Regex;
 use std::collections::BTreeSet;
 
 use crate::gear::layout::鍵盤佈局;
+use crate::key_code::KeyCode;
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 
 pub struct 鍵位定義<'a> {

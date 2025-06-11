@@ -1,9 +1,9 @@
-use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::prelude::*;
 
 use crate::action::{動作, 動作給一參數};
 use crate::gear::{assignment::作業機關輸出信號, theory::輸入方案機關輸出信號};
+use crate::key_code::KeyCode;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct 連擊狀態 {

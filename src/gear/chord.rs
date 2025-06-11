@@ -1,9 +1,9 @@
-use keyberon::key_code::KeyCode;
 use leptos::prelude::*;
 
 use crate::action::動作;
 use crate::definition::鍵組;
 use crate::gear::{assignment::作業機關輸出信號, theory::輸入方案機關輸出信號};
+use crate::key_code::KeyCode;
 
 pub struct 並擊狀態 {
     pub 實時落鍵: 鍵組,

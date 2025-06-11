@@ -1,4 +1,3 @@
-use keyberon::key_code::KeyCode;
 use leptos::prelude::*;
 
 use crate::definition::{觸鍵方式, 鍵組};
@@ -15,6 +14,7 @@ use crate::gear::{
     mode::{工作模式, 工作模式機關輸出信號},
     theory::輸入方案機關輸出信號,
 };
+use crate::key_code::KeyCode;
 use crate::view::{
     caption::Rime字幕屏,
     exercise_menu::Rime練習題選單,

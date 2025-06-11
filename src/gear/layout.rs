@@ -5,10 +5,11 @@
 //! - 盤面 :: 也稱層, 定義在盤面選擇碼指定的狀態下各鍵碼映射到哪些字符
 //! - 鍵面刻印 :: 鍵面顯示的文字
 
-use crate::gear::theory::輸入方案機關輸出信號;
-use keyberon::key_code::KeyCode;
 use leptos::prelude::*;
 use strum::{Display, EnumIter};
+
+use crate::gear::theory::輸入方案機關輸出信號;
+use crate::key_code::KeyCode;
 
 #[derive(Clone, Copy, Default)]
 pub struct 盤面選擇碼(pub u64);
@@ -162,32 +163,32 @@ impl 鍵盤佈局 {
 
 macro_rules! 矩陣 {
     [ $( [ $( $鍵:ident )* ] $(,)? )* ] => {
-        &[ $( &[ $( keyberon::key_code::KeyCode::$鍵, )* ], )* ]
+        &[ $( &[ $( crate::key_code::KeyCode::$鍵, )* ], )* ]
     };
 }
 
 const 主鍵盤區矩陣: 鍵盤矩陣<'static> = 矩陣![
     // ISO/IEC 9995-2 規定字母數字區至少包含 47 個用於輸入字符的鍵位
     // 以下是協調 48 文字鍵盤佈局的一種實現, 不用鍵位 E00 而選用鍵位 C12, E13
-    [Kb1 Kb2 Kb3 Kb4 Kb5 Kb6 Kb7 Kb8 Kb9 Kb0 Minus Equal Grave],  // E01 - E13
-    [Q W E R T Y U I O P LBracket RBracket],                      // D01 - D12
-    [A S D F G H J K L SColon Quote Bslash],                      // C01 - C12
+    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0 Minus Equal Grave],  // E01 - E13
+    [Q W E R T Y U I O P LeftBracket RightBracket],               // D01 - D12
+    [A S D F G H J K L Semicolon Quote Backslash],                // C01 - C12
     [Z X C V B N M Comma Dot Slash],                              // B01 - B10
     [Space]                                                       // A03
 ];
 
 const 字母鍵盤矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [],                          // E01
-    [Q W E R T Y U I O P],       // D01 - D10
-    [A S D F G H J K L SColon],  // C01 - C10
-    [Z X C V B N M Comma Dot],   // B01 - B09
-    [Space]                      // A03
+    [],                             // E01
+    [Q W E R T Y U I O P],          // D01 - D10
+    [A S D F G H J K L Semicolon],  // C01 - C10
+    [Z X C V B N M Comma Dot],      // B01 - B09
+    [Space]                         // A03
 ];
 
 const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
     [],                               // E01
     [Q W E R T Y U I O P],            // D01 - D10
-    [A S D F G H J K L SColon],       // C01 - C10
+    [A S D F G H J K L Semicolon],    // C01 - C10
     [Z X C V B N M Comma Dot Slash],  // B01 - B10
     [Space]                           // A03
 ];
@@ -195,23 +196,23 @@ const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
 const 直列分體矩陣: 鍵盤矩陣<'static> = 矩陣![
     [],                               // E01
     [Q W E R T Y U I O P],            // D01 - D10
-    [A S D F G H J K L SColon],       // C01 - C10
+    [A S D F G H J K L Semicolon],    // C01 - C10
     [Z X C V B N M Comma Dot Slash],  // B01 - B10
     [No Space Space]                  // A03 - A05
 ];
 
 const 正交直列帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [Kb1 Kb2 Kb3 Kb4 Kb5 Kb6 Kb7 Kb8 Kb9 Kb0],  // E01 - E10
+    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
     [Q W E R T Y U I O P],                      // D01 - D10
-    [A S D F G H J K L SColon],                 // C01 - C10
+    [A S D F G H J K L Semicolon],              // C01 - C10
     [Z X C V B N M Comma Dot Slash],            // B01 - B10
     [Space]                                     // A03
 ];
 
 const 直列分體帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [Kb1 Kb2 Kb3 Kb4 Kb5 Kb6 Kb7 Kb8 Kb9 Kb0],  // E01 - E10
+    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
     [Q W E R T Y U I O P],                      // D01 - D10
-    [A S D F G H J K L SColon],                 // C01 - C10
+    [A S D F G H J K L Semicolon],              // C01 - C10
     [Z X C V B N M Comma Dot Slash],            // B01 - B10
     [No Space Space]                            // A03 - A05
 ];
@@ -293,7 +294,7 @@ pub mod 功能鍵 {
         刻印: 鍵面刻印::有刻("製表"),
     };
     pub const 退格鍵: 鍵面映射 = 鍵面映射 {
-        鍵碼: KeyCode::BSpace,
+        鍵碼: KeyCode::Backspace,
         刻印: 鍵面刻印::有刻("退格"),
     };
     pub const 回車鍵: 鍵面映射 = 鍵面映射 {

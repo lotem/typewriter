@@ -1,9 +1,9 @@
-use keyberon::key_code::KeyCode;
 use leptos::prelude::*;
 
 use crate::gear::layout::{
     功能鍵::衆功能鍵, 盤面選擇碼, 矩陣座標, 配列, 鍵盤佈局, 鍵面刻印, 鍵面映射,
 };
+use crate::key_code::KeyCode;
 
 pub trait 鍵面標註法 {
     fn 鍵碼(&self) -> KeyCode;

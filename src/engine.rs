@@ -1,4 +1,3 @@
-use keyberon::key_code::KeyCode;
 use leptos::logging::log;
 use leptos::prelude::*;
 
@@ -14,6 +13,7 @@ use crate::gear::{
     mode::{工作模式, 工作模式機關, 工作模式機關輸出信號},
     theory::{輸入方案機關, 輸入方案機關輸出信號},
 };
+use crate::key_code::KeyCode;
 
 #[derive(Clone)]
 pub struct 微觀引擎輸出信號 {
@@ -146,7 +146,7 @@ pub fn 微觀引擎() -> 微觀引擎輸出信號 {
             }
             true
         }
-        KeyCode::BSpace => {
+        KeyCode::Backspace => {
             if 現行工作模式() == 工作模式::錄入 {
                 match 指法() {
                     觸鍵方式::連擊 => {

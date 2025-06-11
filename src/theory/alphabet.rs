@@ -1,9 +1,9 @@
-use keyberon::key_code::KeyCode;
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
 use crate::gear::layout::拉丁字母鍵盤佈局;
+use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
 
