@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 console_error_panic_hook = "0.1.7"
-lazy-regex = "3.3.0"
+lazy-regex = "3.4.1"
 lazy_static = "1.5.0"
 leptos = { version = "0.7.8", features = ["csr", "nightly"] }
-leptos-use = "0.14.0"
+leptos-use = "0.15.7"
 maybe-owned = "0.3.4"
 strum = { version = "0.27.1", features = ["derive"] }
