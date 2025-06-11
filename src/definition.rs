@@ -67,7 +67,7 @@ impl 判定鍵位 for KeyCode {
 }
 
 impl 輸入方案定義<'_> {
-    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵位定義> {
+    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵位定義<'_>> {
         self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
     }
 

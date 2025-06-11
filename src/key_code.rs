@@ -1,6 +1,7 @@
 // Stolen from https://github.com/HaoboGu/rmk
 // Included under The MIT License (https://github.com/HaoboGu/rmk/blob/main/LICENSE-MIT)
 /// KeyCode is the internal representation of all keycodes, keyboard operations, etc.
+#[allow(dead_code)]
 #[repr(u16)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum KeyCode {

@@ -65,7 +65,7 @@ impl 作業 {
             .or(self.自訂編碼())
     }
 
-    pub fn 字幕(&self) -> 字幕格式 {
+    pub fn 字幕(&self) -> 字幕格式<'_> {
         self.科目
             .配套練習題()
             .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))

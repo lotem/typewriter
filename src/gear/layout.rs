@@ -39,13 +39,13 @@ impl std::fmt::Display for 矩陣座標 {
             i @ 0..=3 => {
                 let 行號 = char::from_u32('E' as u32 - i as u32).ok_or(std::fmt::Error {})?;
                 let 列號 = self.1 + 1;
-                write!(f, "{}{}", 行號, 列號)
+                write!(f, "{行號}{列號}")
             }
             // (4, 0) -> A03
             4 => {
                 let 行號 = 'A';
                 let 列號 = self.1 + 3;
-                write!(f, "{}{}", 行號, 列號)
+                write!(f, "{行號}{列號}")
             }
             _ => Err(std::fmt::Error {}),
         }
