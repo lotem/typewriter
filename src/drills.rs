@@ -107,6 +107,25 @@ const 宮保拼音練習題: &[練習題] = &[
                     er 'a ␣"),
     },
     練習題 {
+        標題: "單字練習",
+        編碼: "yi er san si wu liu qi ba jiu shi \
+               ren kou shou shang zhong xia ri yue shui huo shan shi tian tu \
+               mu he mi zhu dao gong che zhou qian hou zuo you er mu she ya \
+               tou zu zuo li zou chi cun yuan jiao fen \
+               da xiao duo shao jin liang ma niu yang mao pi \
+               niao chong yu zhua zi wei ba kai men guan chu ru lai qu \
+               fang xiang dong nan xi bei bai tian hei ye yun dian feng yu \
+               fu qin mu er nü ba ma",
+        字幕: 詞句("一二三四五 六七八九十 \
+                    人口手 上中下 日月水火 山石田土 \
+                    木禾米竹 刀弓車舟 前後左右 耳目舌牙 \
+                    頭足坐立走 尺寸元角分 \
+                    大小多少斤兩 馬牛羊毛皮 \
+                    鳥蟲魚爪子尾巴 開門關出入來去 \
+                    方向東南西北 白天黑夜雲電風雨 \
+                    父親母兒女爸媽"),
+    },
+    練習題 {
         標題: "綜合練習一",
         編碼: "yang'wang'xing'kong yan'jiu'jue'ding \
                zi'ran'xuan'ze che'di'jue'lie \
