@@ -2,10 +2,12 @@ use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
-use crate::gear::layout::宮保拼音鍵盤佈局;
+use crate::gear::layout::{
+    上檔盤面, 基本盤面, 大寫字母盤面, 盤面定義, 盤面選擇碼, 配列, 鍵盤佈局, 鍵面刻印,
+};
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
-use crate::{消除, 變換, 轉寫};
+use crate::{消除, 盤面, 變換, 轉寫, 鍵面};
 
 macro_rules! 鍵位 {
     ($輸入碼: ident => $鍵碼: path) => {
@@ -238,6 +240,20 @@ lazy_static! {
         regex!("^-?([iuv]|[iu]?[ao]|[iuv]?e|üe?|u?[ae]i|ui|i?ao|i?ou|iu|[iuv]?an|üa?n|[iuv]n|u?en|[iu]?ang|ing|u?eng|i?ong)?$").deref(),
     ]);
 }
+
+const 宮保拼音盤面: 盤面定義<'static> = 盤面![
+    [ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ],
+    [ 空 C L D T 空 U R O 空 _ _ ],
+    [ 空 S H G K 空 I N E _ _ _ ],
+    [ 空 Z F B P 空 Ü _ _ _ ],
+    [ A _ A ]
+];
+
+const 宮保拼音鍵盤佈局: 鍵盤佈局 = 鍵盤佈局 {
+    盤面: &[基本盤面, 上檔盤面, 大寫字母盤面, 宮保拼音盤面],
+    默認盤面: 盤面選擇碼(4),
+    首選配列: 配列::正交直列,
+};
 
 pub fn 宮保拼音輸入方案() -> 輸入方案定義<'static> {
     輸入方案定義 {
