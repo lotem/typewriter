@@ -3,19 +3,34 @@ use leptos::prelude::*;
 
 use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義};
 use crate::gear::layout::拉丁字母鍵盤佈局;
-use crate::theory::{alphabet::拉丁字母輸入方案, combo_pinyin::宮保拼音輸入方案};
+use crate::theory::{
+    alphabet::拉丁字母輸入方案, combo_pinyin::宮保拼音輸入方案,
+    early_middle_chinese::早期中古漢語輸入方案, late_middle_chinese::晚期中古漢語輸入方案,
+    modern_chinese::現代漢語輸入方案, old_chinese::上古漢語輸入方案,
+    old_mandarin::近古漢語輸入方案,
+};
 
 #[derive(Clone, Copy, Default, PartialEq)]
 pub enum 方案選項 {
     #[default]
     宮保拼音,
     拉丁字母,
+    上古漢語,
+    早期中古漢語,
+    晚期中古漢語,
+    近古漢語,
+    現代漢語,
 }
 
 lazy_static! {
     pub static ref 方案選單: Vec<(方案選項, 輸入方案定義<'static>)> = vec![
         (方案選項::宮保拼音, 宮保拼音輸入方案()),
         (方案選項::拉丁字母, 拉丁字母輸入方案()),
+        (方案選項::上古漢語, 上古漢語輸入方案()),
+        (方案選項::早期中古漢語, 早期中古漢語輸入方案()),
+        (方案選項::晚期中古漢語, 晚期中古漢語輸入方案()),
+        (方案選項::近古漢語, 近古漢語輸入方案()),
+        (方案選項::現代漢語, 現代漢語輸入方案()),
     ];
 }
 
@@ -25,8 +40,9 @@ const 未定義方案: 輸入方案定義<'static> = 輸入方案定義 {
     指法: 觸鍵方式::連擊,
     字根表: &[],
     轉寫法: 轉寫法定義 {
-        輸入碼格式: &[],
-        正字法規則: &[],
+        輸入碼表示: &[],
+        輸入碼鍵位: &[],
+        拼式轉寫規則: &[],
         字根拆分規則: &[],
         拼式驗證規則: &[],
     },

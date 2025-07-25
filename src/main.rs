@@ -1,4 +1,6 @@
 #![feature(type_alias_impl_trait)]
+#![allow(confusable_idents)]
+#![allow(uncommon_codepoints)]
 
 use leptos::prelude::*;
 
