@@ -273,11 +273,14 @@ fn 解析連擊輸入碼序列(
 /// - 用大寫字母連書並擊碼, 如 `ZFURO`
 /// - 寫明並擊碼和對應的拼音, 如 `SHGUA=shu'ru'fa`
 /// - 寫明並擊碼並將對應的拼音寫在尖括號中, 如 `SHGUA=<shu ru fa>`
+/// - 非大寫字母的並擊碼，寫在方括號中，如 `[端定]=<泥>`
 fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Box<[對照輸入碼]> {
     let 輸入碼片段模式 = regex!(
         r"(?x)
-        (?P<chord> \p{Uppercase}+ )
         (?:
+            (?P<chord> \p{Uppercase}+ ) |
+            \[ (?P<non_ascii_chord> [^\]]+ ) \]
+        )(?:
             = (?P<eq_code> [\w'] )+ |
             =< (?P<eq_quoted_code> [^<>]* ) >
         )? |
@@ -288,7 +291,10 @@ fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Box<[對照輸入碼]> 
     輸入碼片段模式
         .captures_iter(輸入碼序列)
         .map(|片段| {
-            let 並擊碼原文 = 片段.name("chord").map(|m| m.as_str().to_owned());
+            let 並擊碼原文 = 片段
+                .name("chord")
+                .or_else(|| 片段.name("non_ascii_chord"))
+                .map(|m| m.as_str().to_owned());
             let 轉寫碼原文 = 片段
                 .name("code")
                 .or_else(|| 片段.name("quoted_code"))
