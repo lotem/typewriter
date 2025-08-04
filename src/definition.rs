@@ -1,4 +1,5 @@
 use lazy_regex::Regex;
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use crate::gear::layout::鍵盤佈局;
@@ -27,8 +28,15 @@ pub enum 觸鍵方式 {
 
 #[derive(Clone, Copy)]
 pub struct 轉寫法定義<'a> {
+    /// 將按鍵序列轉換成慣用的表示形式，如字母與附標符號合字
+    pub 輸入碼表示: &'a [拼寫運算<'a>],
+    /// 將輸入碼的表示形式轉換成按鍵序列
+    pub 輸入碼鍵位: &'a [拼寫運算<'a>],
+    /// 將輸入碼轉寫成符合詞典規範的編碼
     pub 拼式轉寫規則: &'a [拼寫運算<'a>],
+    /// 將詞典碼拆分爲按鍵序列
     pub 字根拆分規則: &'a [拼寫運算<'a>],
+    /// 定義若干識別有效詞典碼的規則。若未定義任何規則，則不做驗證
     pub 拼式驗證規則: &'a [&'a Regex],
 }
 
@@ -72,10 +80,13 @@ impl 輸入方案定義<'_> {
     }
 
     pub fn 讀出鍵位(&self, 字根碼: &str) -> 鍵組 {
+        let 鍵碼序列 = 施展拼寫運算(字根碼, self.轉寫法.輸入碼鍵位)
+            .map(Cow::Owned)
+            .unwrap_or(Cow::Borrowed(字根碼));
         鍵組(
             self.字根表
                 .iter()
-                .filter(|鍵| 字根碼.contains(鍵.輸入碼))
+                .filter(|鍵| 鍵碼序列.contains(鍵.輸入碼))
                 .map(|鍵| 鍵.鍵碼)
                 .collect(),
         )
@@ -85,11 +96,13 @@ impl 輸入方案定義<'_> {
         if !鍵位.有無鍵位() {
             String::new()
         } else {
-            self.字根表
+            let 字根碼 = self
+                .字根表
                 .iter()
                 .filter(|鍵| 鍵位.包含鍵位(&鍵.鍵碼))
                 .map(|鍵| 鍵.輸入碼)
-                .collect::<String>()
+                .collect::<String>();
+            施展拼寫運算(&字根碼, self.轉寫法.輸入碼表示).unwrap_or(字根碼)
         }
     }
 }
