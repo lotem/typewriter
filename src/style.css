@@ -106,7 +106,7 @@ kbd {
     color: var(--accent-color-done);
 }
 .translated-input, .lookup-code, .exercises, .theories, .layouts {
-    font-family: Maple Mono, LXGW WenKai, Maple Mono CN, Fantasque Sans Mono, Inter, sans-serif;
+    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Fantasque Sans Mono, Inter, sans-serif;
     font-size: 2rem;
 }
 .input-code .single-column {
