@@ -3,7 +3,7 @@ use leptos::logging::log;
 use leptos::prelude::*;
 
 use crate::action::動作給一參數;
-use crate::drills::練習題;
+use crate::drill::練習題;
 
 #[component]
 pub fn Rime練習題選單(

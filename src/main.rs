@@ -5,7 +5,7 @@ use leptos::prelude::*;
 mod action;
 mod app;
 mod definition;
-mod drills;
+mod drill;
 mod engine;
 mod gear;
 mod key_code;
