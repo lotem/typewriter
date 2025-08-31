@@ -7,7 +7,7 @@ use crate::gear::layout::{
 };
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
-use crate::{盤面, 變換, 鍵面, 轉寫};
+use crate::{盤面, 變換, 轉寫, 鍵面};
 
 macro_rules! 鍵位 {
     ($輸入碼: ident => $鍵碼: path) => {
