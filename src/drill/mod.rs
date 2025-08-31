@@ -1,11 +1,13 @@
 mod alphabet;
 mod ancient_chinese;
+mod cantonese;
 mod combo_pinyin;
 
 use alphabet::字母鍵盤練習題;
 use ancient_chinese::{
     上古漢語練習題, 早期中古漢語練習題, 晚期中古漢語練習題, 現代漢語練習題, 近古漢語練習題,
 };
+use cantonese::粵語練習題;
 use combo_pinyin::宮保拼音練習題;
 
 use crate::gear::{caption::字幕格式, theory::方案選項};
@@ -24,6 +26,7 @@ const 各方案練習題組: &[(方案選項, &[練習題])] = &[
     (方案選項::晚期中古漢語, 晚期中古漢語練習題),
     (方案選項::近古漢語, 近古漢語練習題),
     (方案選項::現代漢語, 現代漢語練習題),
+    (方案選項::粵語, 粵語練習題),
 ];
 
 impl 方案選項 {
