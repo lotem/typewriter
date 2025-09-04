@@ -52,17 +52,76 @@ impl std::fmt::Display for 矩陣座標 {
     }
 }
 
+#[derive(Clone, Copy, Default, PartialEq)]
+pub struct 刻印說明 {
+    pub 中: Option<&'static str>,
+    pub 上: Option<&'static str>,
+    pub 下: Option<&'static str>,
+    pub 左: Option<&'static str>,
+    pub 右: Option<&'static str>,
+}
+
+impl 刻印說明 {
+    pub const fn 居中(文字: &'static str) -> Self {
+        Self {
+            中: Some(文字),
+            上: None,
+            下: None,
+            左: None,
+            右: None,
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum 鍵面刻印 {
     透明,
     無刻,
-    有刻(&'static str),
+    有刻(刻印說明),
 }
 
 impl 鍵面刻印 {
-    pub fn 刻印文字(&self) -> Option<&'static str> {
+    pub fn 居中刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(文字) => Some(文字),
+            鍵面刻印::有刻(刻印說明 {
+                中: 有冇刻印, ..
+            }) => *有冇刻印,
+            _ => None,
+        }
+    }
+
+    pub fn 上方刻印文字(&self) -> Option<&'static str> {
+        match self {
+            鍵面刻印::有刻(刻印說明 {
+                上: 有冇刻印, ..
+            }) => *有冇刻印,
+            _ => None,
+        }
+    }
+
+    pub fn 下方刻印文字(&self) -> Option<&'static str> {
+        match self {
+            鍵面刻印::有刻(刻印說明 {
+                下: 有冇刻印, ..
+            }) => *有冇刻印,
+            _ => None,
+        }
+    }
+
+    pub fn 左側刻印文字(&self) -> Option<&'static str> {
+        match self {
+            鍵面刻印::有刻(刻印說明 {
+                左: 有冇刻印, ..
+            }) => *有冇刻印,
+            _ => None,
+        }
+    }
+
+    pub fn 右側刻印文字(&self) -> Option<&'static str> {
+        match self {
+            鍵面刻印::有刻(刻印說明 {
+                右: 有冇刻印, ..
+            }) => *有冇刻印,
             _ => None,
         }
     }
@@ -233,10 +292,34 @@ macro_rules! 鍵面 {
         鍵面刻印::無刻
     };
     ( $字符:literal ) => {
-        鍵面刻印::有刻($字符)
+        鍵面刻印::有刻($crate::gear::layout::刻印說明::居中($字符))
     };
     ( $字母:ident ) => {
-        鍵面刻印::有刻(stringify!($字母))
+        鍵面刻印::有刻($crate::gear::layout::刻印說明::居中(
+            stringify!($字母),
+        ))
+    };
+    ( { 中: $居中:tt, 上: $居上:tt, 下: $居下:tt, 左: $居左:tt, 右: $居右:tt } ) => {
+        鍵面刻印::有刻($crate::gear::layout::刻印說明 {
+            中: $crate::標註!($居中),
+            上: $crate::標註!($居上),
+            下: $crate::標註!($居下),
+            左: $crate::標註!($居左),
+            右: $crate::標註!($居右),
+        })
+    };
+}
+
+#[macro_export]
+macro_rules! 標註 {
+    (_) => {
+        None
+    };
+    ($字符:literal) => {
+        Some($字符)
+    };
+    ($字符:ident) => {
+        Some(stringify!($字符))
     };
 }
 
@@ -275,19 +358,19 @@ pub mod 功能鍵 {
 
     pub const 退出鍵: 鍵面映射 = 鍵面映射 {
         鍵碼: KeyCode::Escape,
-        刻印: 鍵面刻印::有刻("退出"),
+        刻印: 鍵面刻印::有刻(刻印說明::居中("退出")),
     };
     pub const 製表鍵: 鍵面映射 = 鍵面映射 {
         鍵碼: KeyCode::Tab,
-        刻印: 鍵面刻印::有刻("製表"),
+        刻印: 鍵面刻印::有刻(刻印說明::居中("製表")),
     };
     pub const 退格鍵: 鍵面映射 = 鍵面映射 {
         鍵碼: KeyCode::Backspace,
-        刻印: 鍵面刻印::有刻("退格"),
+        刻印: 鍵面刻印::有刻(刻印說明::居中("退格")),
     };
     pub const 回車鍵: 鍵面映射 = 鍵面映射 {
         鍵碼: KeyCode::Enter,
-        刻印: 鍵面刻印::有刻("回車"),
+        刻印: 鍵面刻印::有刻(刻印說明::居中("回車")),
     };
 
     pub const 衆功能鍵: &[鍵面映射] = &[退出鍵, 製表鍵, 退格鍵, 回車鍵];

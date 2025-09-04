@@ -7,7 +7,7 @@ use crate::key_code::KeyCode;
 
 pub trait 鍵面標註法 {
     fn 鍵碼(&self) -> KeyCode;
-    fn 刻印(&self) -> Option<&'static str>;
+    fn 刻印(&self) -> 鍵面刻印;
     fn 是否空鍵(&self) -> bool;
     fn 是否後備盤面(&self) -> bool;
     fn 是否功能鍵(&self) -> bool {
@@ -53,16 +53,14 @@ impl 鍵面標註法 for 選擇鍵面 {
     fn 鍵碼(&self) -> KeyCode {
         self.鍵碼
     }
-    fn 刻印(&self) -> Option<&'static str> {
-        self.有效盤面().and_then(move |(_, 刻印)| match 刻印 {
-            鍵面刻印::有刻(刻印文字) => Some(刻印文字),
-            _ => None,
-        })
+    fn 刻印(&self) -> 鍵面刻印 {
+        self.有效盤面()
+            .map_or(鍵面刻印::透明, move |(_, 刻印)| 刻印)
     }
     fn 是否空鍵(&self) -> bool {
         !self
             .有效盤面()
-            .is_some_and(|(_, 刻印)| matches!(刻印, 鍵面刻印::有刻(_)))
+            .is_some_and(|(_, 刻印)| matches!(刻印, 鍵面刻印::有刻 { .. }))
     }
     fn 是否後備盤面(&self) -> bool {
         self.有效盤面()
@@ -74,8 +72,8 @@ impl 鍵面標註法 for 鍵面映射 {
     fn 鍵碼(&self) -> KeyCode {
         self.鍵碼
     }
-    fn 刻印(&self) -> Option<&'static str> {
-        self.刻印.刻印文字()
+    fn 刻印(&self) -> 鍵面刻印 {
+        self.刻印
     }
     fn 是否空鍵(&self) -> bool {
         self.刻印 == 鍵面刻印::無刻
@@ -101,7 +99,11 @@ where
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
         >
-            <kbd class="label">{move || 標註法.read().刻印()}</kbd>
+            <kbd class="label secondary">{move || 標註法.read().刻印().上方刻印文字()}</kbd>
+            <kbd class="label secondary">{move || 標註法.read().刻印().左側刻印文字()}</kbd>
+            <kbd class="label">{move || 標註法.read().刻印().居中刻印文字()}</kbd>
+            <kbd class="label secondary">{move || 標註法.read().刻印().右側刻印文字()}</kbd>
+            <kbd class="label secondary">{move || 標註法.read().刻印().下方刻印文字()}</kbd>
         </div>
     }
 }

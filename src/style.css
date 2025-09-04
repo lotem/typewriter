@@ -236,3 +236,6 @@ kbd {
 .function.key .label {
     font-size: 1.2rem;
 }
+.key .label.secondary {
+    position: absolute;
+}
