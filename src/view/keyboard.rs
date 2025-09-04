@@ -90,7 +90,7 @@ where
     U: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
     view! {
-        <div class="key"
+        <div class="key horizontal-box"
             class:empty={move || 標註法.read().是否空鍵()}
             class:fallback={move || 標註法.read().是否後備盤面()}
             class:function={move || 標註法.read().是否功能鍵()}
@@ -99,11 +99,13 @@ where
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
         >
-            <kbd class="label secondary">{move || 標註法.read().刻印().上方刻印文字()}</kbd>
             <kbd class="label secondary">{move || 標註法.read().刻印().左側刻印文字()}</kbd>
-            <kbd class="label">{move || 標註法.read().刻印().居中刻印文字()}</kbd>
+            <div class="vertical-box">
+                <kbd class="label secondary">{move || 標註法.read().刻印().上方刻印文字()}</kbd>
+                <kbd class="label primary">{move || 標註法.read().刻印().居中刻印文字()}</kbd>
+                <kbd class="label secondary">{move || 標註法.read().刻印().下方刻印文字()}</kbd>
+            </div>
             <kbd class="label secondary">{move || 標註法.read().刻印().右側刻印文字()}</kbd>
-            <kbd class="label secondary">{move || 標註法.read().刻印().下方刻印文字()}</kbd>
         </div>
     }
 }

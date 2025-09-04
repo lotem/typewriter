@@ -11,6 +11,7 @@
         --accent-color-active: purple;
         --accent-color-done: teal;
         --accent-color-hint: green;
+        --secondary-label-opacity: 33%;
         --function-key-opacity: 15%;
         --function-key-opacity-keydown: 33%;
         --function-key-opacity-hint: 50%;
@@ -30,6 +31,7 @@
         --accent-color-active: violet;
         --accent-color-done: cyan;
         --accent-color-hint: lightgreen;
+        --secondary-label-opacity: 50%;
         --function-key-opacity: 33%;
         --function-key-opacity-keydown: 50%;
         --insignificant-key-opacity: 33%;
@@ -174,14 +176,11 @@ kbd {
 .key {
     border: 3px solid;
     border-radius: 40% 40% 20% 20% / 50% 50% 30% 30%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 80px;
     width: 80px;
 }
-.board .row:nth-child(3) .key:nth-child(4) kbd.label,
-.board .row:nth-child(3) .key:nth-child(7) kbd.label {
+.board .row:nth-child(3) .key:nth-child(4) kbd.label.primary,
+.board .row:nth-child(3) .key:nth-child(7) kbd.label.primary {
     text-decoration: underline;
     text-decoration-color: color-mix(in srgb, var(--secondary-fg-color) 66%, transparent);
     text-underline-offset: 16px;
@@ -232,10 +231,36 @@ kbd {
     font-size: 2.2rem;
     margin: auto;
     vertical-align: middle;
+    text-align: center;
+    line-height: 1;
+    flex: 1;
 }
 .function.key .label {
     font-size: 1.2rem;
 }
 .key .label.secondary {
-    position: absolute;
+    font-size: 1.2rem;
+    opacity: var(--secondary-label-opacity);
+}
+.vertical-box, .horizontal-box {
+    display: flex;
+    justify-content: center;
+}
+.vertical-box {
+    flex-direction: column;
+}
+.horizontal-box {
+    flex-direction: row;
+}
+.vertical-box:first-child > .label.secondary {
+    margin-bottom: auto;
+}
+.vertical-box:last-child > .label.secondary {
+    margin-top: auto;
+}
+.horizontal-box:first-child > .label.secondary {
+    margin-right: auto;
+}
+.horizontal-box:last-child > .label.secondary {
+    margin-left: auto;
 }
