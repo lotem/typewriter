@@ -9,6 +9,7 @@ use crate::gear::{
     caption::字幕格式,
     theory::{方案選項, 輸入方案機關輸出信號},
 };
+use crate::spelling_algebra::施展拼寫運算;
 
 #[derive(Clone, PartialEq)]
 pub struct 作業 {
@@ -92,6 +93,7 @@ impl 對照輸入碼 {
                 .as_deref()
                 .filter(|轉寫碼| 轉寫法.驗證拼式(轉寫碼))
                 .and_then(|轉寫碼| 轉寫法.拼式拆分爲字根碼(轉寫碼))
+                .and_then(|字根碼| 施展拼寫運算(&字根碼, 轉寫法.輸入碼表示).or(Some(字根碼)))
         })
     }
 

@@ -45,7 +45,7 @@ pub trait 判定鍵位 {
     fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool;
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct 鍵組(pub BTreeSet<KeyCode>);
 
 impl 鍵組 {
