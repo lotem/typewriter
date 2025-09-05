@@ -1,5 +1,6 @@
 pub mod alphabet;
 pub mod cantonese;
+pub mod combo_jyutping;
 pub mod combo_pinyin;
 pub mod early_middle_chinese;
 pub mod late_middle_chinese;
