@@ -7,3 +7,4 @@ pub mod late_middle_chinese;
 pub mod modern_chinese;
 pub mod old_chinese;
 pub mod old_mandarin;
+pub mod zhuyin;

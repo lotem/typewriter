@@ -9,7 +9,7 @@ use crate::theory::{
     alphabet::拉丁字母輸入方案, cantonese::粵語輸入方案, combo_jyutping::宮保粵拼輸入方案,
     combo_pinyin::宮保拼音輸入方案, early_middle_chinese::早期中古漢語輸入方案,
     late_middle_chinese::晚期中古漢語輸入方案, modern_chinese::現代漢語輸入方案,
-    old_chinese::上古漢語輸入方案, old_mandarin::近古漢語輸入方案,
+    old_chinese::上古漢語輸入方案, old_mandarin::近古漢語輸入方案, zhuyin::注音輸入方案,
 };
 
 #[derive(Clone, Copy, Default, PartialEq)]
@@ -24,6 +24,7 @@ pub enum 方案選項 {
     現代漢語,
     粵語,
     宮保粵拼,
+    注音,
 }
 
 lazy_static! {
@@ -37,6 +38,7 @@ lazy_static! {
         (方案選項::現代漢語, 現代漢語輸入方案()),
         (方案選項::粵語, 粵語輸入方案()),
         (方案選項::宮保粵拼, 宮保粵拼輸入方案()),
+        (方案選項::注音, 注音輸入方案()),
     ];
 }
 
