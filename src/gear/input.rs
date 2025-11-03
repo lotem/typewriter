@@ -7,7 +7,7 @@ use crate::key_code::{KeyCode, 網頁鍵值轉換};
 pub fn 焦點事件處理機關(重置並擊狀態: impl 動作) {
     let 鍵盤輸入焦點源 = Selector::new(use_window_focus());
     Effect::new(move |_| {
-        if 鍵盤輸入焦點源.selected(false) {
+        if 鍵盤輸入焦點源.selected(&false) {
             重置並擊狀態();
         }
     });
