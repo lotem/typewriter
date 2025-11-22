@@ -1,0 +1,72 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read      # 讀取代碼 (checkout 需要)
+  pages: write        # GitHub Pages 需要
+  id-token: write     # OIDC 需要
+  deployments: write  # 允許 Cloudflare 寫入部署狀態
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. 安裝 Rust Nightly
+      - name: Install nightly Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      # 2. 緩存 Cargo (加速構建)
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # 3. 安裝 Binaryen (提供 wasm-opt)
+      - name: Install binaryen
+        run: sudo apt-get update && sudo apt-get install -y binaryen
+
+      # 4. 下載 Trunk 二進制文件 (速度快)
+      - name: Download Trunk binary
+        run: wget -qO- https://github.com/trunk-rs/trunk/releases/download/v0.21.5/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+
+      # 5. 代碼檢查 (可選)
+      - name: lint
+        run: cargo clippy -- -D warnings && cargo fmt -- --check
+
+      # 6. 構建 (Build)
+      # --dist dist/typewriter: 將產物放在子目錄，為了適配 rime.io/typewriter/ 結構
+      # --public-url "/typewriter/": 確保資源引用路徑正確
+      - name: Build with Trunk
+        run: ./trunk build --release --dist dist/typewriter --public-url "/typewriter/"
+
+      # 7. 配置 Cloudflare 重定向
+      # 讓訪問 rime.io (根路徑) 的用戶自動跳轉到 rime.io/typewriter/
+      - name: Create _redirects for Cloudflare
+        run: echo "/ /typewriter 301" > dist/_redirects
+
+      # 8. 發布到 Cloudflare Pages
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: typewriter
+          directory: dist # 上傳整個 dist 目錄 (包含 _redirects 和 typewriter 子目錄)
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
