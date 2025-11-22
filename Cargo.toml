@@ -13,3 +13,10 @@ leptos = { version = "0.8", features = ["csr", "nightly"] }
 leptos-use = "0.16"
 maybe-owned = "0.3.4"
 strum = { version = "0.27.1", features = ["derive"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "z"
+panic = "abort"  # 去掉 panic 展開邏輯能省不少
+strip = true     # 去除符號表
