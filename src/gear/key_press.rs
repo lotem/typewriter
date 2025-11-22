@@ -81,6 +81,7 @@ pub fn 連擊機關(
         let 擊鍵正確 = 連擊比對成功();
         if 自由輸入 || 擊鍵正確 {
             match 鍵碼 {
+                // 在方案中指定分隔符及終止鍵
                 KeyCode::Space => {
                     let 空格 = 方案.read().寫成字根碼(KeyCode::Space);
                     更新連擊輸入碼(vec![空格]);
