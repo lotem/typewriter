@@ -276,3 +276,55 @@ kbd {
 .horizontal-box:last-child > .label.secondary {
     margin-left: auto;
 }
+
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: max(32px, calc(var(--u) * 0.5));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: calc(var(--u) * 0.4);
+    background-color: transparent;
+    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
+    font-size: max(12px, calc(var(--u) * 0.2));
+    opacity: 0.3;
+    transition: opacity 0.2s ease-in-out;
+    user-select: none;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.status-bar:hover {
+    opacity: 1.0;
+    pointer-events: auto;
+}
+
+.status-item {
+    cursor: pointer;
+    display: flex;
+    gap: calc(var(--u) * 0.1);
+    align-items: center;
+    pointer-events: auto;
+    transition: color 0.15s;
+}
+
+.status-item:hover {
+    color: var(--accent-color-active);
+}
+
+.status-label {
+    color: var(--secondary-fg-color);
+    font-size: max(11px, calc(var(--u) * 0.18));
+}
+
+.status-value {
+    font-weight: bold;
+    color: var(--primary-fg-color);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+}

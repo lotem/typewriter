@@ -23,6 +23,7 @@ use crate::view::{
     },
     keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
     layout_menu::Rime配列選單,
+    status_bar::Rime狀態欄,
     theory_menu::Rime方案選單,
 };
 
@@ -99,6 +100,8 @@ pub fn Rime打字機應用() -> impl IntoView {
         開啓反查輸入,
         開啓練習題選單,
         關閉輸入欄,
+        開啓方案選單,
+        開啓配列選單,
         ..
     } = 模式;
     let 作業機關輸出信號 {
@@ -274,5 +277,12 @@ pub fn Rime打字機應用() -> impl IntoView {
             </div>
         </div>
         <Rime鍵盤圖 鍵盤佈局={方案指定佈局} 目標盤面={方案指定盤面} 配列={已選配列} 着色法={並擊動態}/>
+
+        <Rime狀態欄
+            現行方案={現行方案}
+            已選配列={已選配列}
+            點擊方案={move || 開啓方案選單()}
+            點擊配列={move || 開啓配列選單()}
+        />
     }
 }
