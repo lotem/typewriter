@@ -1,5 +1,7 @@
 :root {
     color-scheme: light dark;
+    --u: min(80px, 6.5vw, 12vh);
+    --gap: calc(var(--u) * 0.2);
 }
 @media (prefers-color-scheme: light) {
     :root {
@@ -51,15 +53,16 @@ kbd {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 24px;
-    min-height: 120px;
+    height: 18vh;
+    margin: 2vh 24px;
 }
 .caption {
     //border: 1px dotted;
     //border-radius: 32px;
     color: var(--secondary-fg-color);
     font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
-    font-size: 3.5rem;
+    font-size: max(24px, calc(var(--u) * 0.7));
+    line-height: 1.4;
     padding: 16px 32px;
     text-align: center;
     width: fit-content;
@@ -77,21 +80,21 @@ kbd {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 16px;
-    margin: 24px 0;
-    height: 80px;
+    gap: var(--gap);
+    margin: calc(var(--u) * 0.2) 0;
+    height: var(--u);
 }
 .input-code {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 24px;
-    width: 384px;
-    height: 80px;
+    width: calc(var(--u) * 4.8);
+    height: var(--u);
     margin: 2px;
     border: 1px dotted;
     border-radius: 24px;
-    font-size: 2.2rem;
+    font-size: calc(var(--u) * 0.4);
     overflow: hidden;
 }
 .input-code.freeplay {
@@ -109,7 +112,7 @@ kbd {
 }
 .translated-input, .lookup-code, .exercises, .theories, .layouts {
     font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
-    font-size: 2rem;
+    font-size: calc(var(--u) * 0.4);
 }
 .input-code .single-column {
     flex: 1;
@@ -136,48 +139,53 @@ kbd {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 16px;
+
+    gap: var(--gap);
+    font-size: calc(var(--u) * 0.4);
+    padding: 10px;
+    box-sizing: border-box;
 }
 .board .row:last-child .key {
+    width: calc(var(--u) * 4.6);
+    height: var(--u);
     border-radius: 10% / 30%;
-    height: 80px;
-    width: 384px;
 }
 .board.ortholinear.split .row:last-child .key {
+    width: calc(var(--u) * 2.2);
+    height: var(--u);
     border-radius: 20% / 40%;
-    height: 80px;
-    width: 184px;
 }
 .board.staggered .row:last-child .key {
+    width: calc(var(--u) * 5.8);
+    height: var(--u);
     border-radius: 5% / 30%;
-    height: 80px;
-    width: 486px;
 }
 .board.ortholinear.split .row:nth-child(-n+4) .key:nth-child(6),
 .board.ortholinear.split .row:last-child .key:last-child {
-    margin-left: 80px;
+    margin-left: var(--u);
 }
 .board.size-30.staggered .row:nth-child(3) .key:first-child,
 .board.size-30.staggered .row:nth-child(4) .key:first-child {
-    margin-left: 51px;
+    margin-left: calc(var(--u) * 0.6375);
 }
 .board.size-60.staggered .row:nth-child(3) .key:first-child {
-    margin-left: 51px;
+    margin-left: calc(var(--u) * 0.6375);
 }
 .board.size-60.staggered .row:nth-child(4) .key:first-child {
-    margin-left: -51px;
+    margin-left: calc(var(--u) * -0.6375);
 }
 .row {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 16px;
+    gap: var(--gap);
 }
 .key {
     border: 3px solid;
     border-radius: 40% 40% 20% 20% / 50% 50% 30% 30%;
-    height: 80px;
-    width: 80px;
+    width: var(--u);
+    height: var(--u);
+    box-sizing: border-box;
 }
 .board .row:nth-child(3) .key:nth-child(4) kbd.label.primary,
 .board .row:nth-child(3) .key:nth-child(7) kbd.label.primary {
@@ -228,19 +236,23 @@ kbd {
     visibility: hidden;
 }
 .key .label {
-    font-size: 2.2rem;
+    font-size: 1em;
     margin: auto;
     vertical-align: middle;
     text-align: center;
     line-height: 1;
     flex: 1;
 }
-.function.key .label {
-    font-size: 1.2rem;
-}
 .key .label.secondary {
-    font-size: 1.2rem;
+    font-size: 0.6em;
     opacity: var(--secondary-label-opacity);
+}
+.function.key .label {
+    font-size: calc(var(--u) * 0.24);
+    line-height: 1;
+}
+.function.key .label.secondary {
+    font-size: calc(var(--u) * 0.16);
 }
 .vertical-box, .horizontal-box {
     display: flex;
