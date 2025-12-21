@@ -45,7 +45,7 @@ body {
     background-color: var(--primary-bg-color);
 }
 kbd {
-    font-family: Maple Mono, LXGW WenKai, Maple Mono CN, Fantasque Sans Mono, Inter, monospace;
+    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
 }
 .text-box {
     display: flex;
@@ -58,7 +58,7 @@ kbd {
     //border: 1px dotted;
     //border-radius: 32px;
     color: var(--secondary-fg-color);
-    font-family: Maple Mono, LXGW WenKai, Maple Mono CN, Fantasque Sans Mono, Inter, sans-serif;
+    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
     font-size: 3.5rem;
     padding: 16px 32px;
     text-align: center;
@@ -108,7 +108,7 @@ kbd {
     color: var(--accent-color-done);
 }
 .translated-input, .lookup-code, .exercises, .theories, .layouts {
-    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Fantasque Sans Mono, Inter, sans-serif;
+    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
     font-size: 2rem;
 }
 .input-code .single-column {
