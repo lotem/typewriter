@@ -45,6 +45,9 @@
 body {
     color: var(--primary-fg-color);
     background-color: var(--primary-bg-color);
+    padding-bottom: calc(var(--u) * 0.8);
+    box-sizing: border-box;
+    min-height: 100vh;
 }
 kbd {
     font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
