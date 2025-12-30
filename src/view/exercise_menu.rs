@@ -36,7 +36,7 @@ pub fn Rime練習題選單(
             }
         >
         {
-            預設練習題().iter().enumerate().map(|(題號, 題)| view! {
+            move || 預設練習題().iter().enumerate().map(|(題號, 題)| view! {
                 <option value={題號}>{題.標題}</option>
             }).collect_view()
         }

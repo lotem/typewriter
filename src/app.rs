@@ -207,7 +207,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         選用配列(選中項);
         關閉輸入欄();
     };
-    let 方案配套練習題 = Signal::derive(move || 現行方案.get().配套練習題().unwrap_or(&[]));
+    let 方案配套練習題 = Signal::derive(move || 現行方案().配套練習題().unwrap_or(&[]));
     let 方案指定佈局 = Signal::derive(move || *方案定義.read().佈局);
     let 方案指定盤面 = Signal::derive(move || 方案指定佈局().默認盤面);
 
