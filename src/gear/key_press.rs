@@ -63,8 +63,15 @@ pub fn 連擊機關(
             .as_ref()
             .and_then(|對照碼| 對照碼.反查字根碼(&方案.read().轉寫法))
     };
-    let 連擊比對成功 =
-        Memo::new(move |_| 反查所得字根碼().is_some_and(|查得| 查得 == 實況字根碼()));
+    let 實錄分隔鍵 = move || {
+        let 實錄鍵碼 = 連擊狀態流.read().鍵碼;
+        方案.read().查分隔鍵(move |鍵位| 鍵位.鍵碼 == 實錄鍵碼)
+    };
+    let 連擊比對成功 = Memo::new(move |_| {
+        反查所得字根碼().is_some_and(|查得| {
+            查得 == 實況字根碼() || 實錄分隔鍵().is_some_and(|分隔鍵| 查得 == 分隔鍵.輸入碼)
+        })
+    });
 
     let (連擊輸入碼, 更新連擊輸入碼) = signal(Vec::<String>::new());
 
@@ -76,27 +83,27 @@ pub fn 連擊機關(
         更新連擊輸入碼.write().pop();
     };
 
+    let 位於碼段邊界 = move || {
+        let 輸入碼 = 連擊輸入碼.read();
+        輸入碼.is_empty()
+            || 輸入碼
+                .last()
+                .and_then(|末位輸入碼| 方案.read().查分隔鍵(|鍵位| 鍵位.輸入碼 == 末位輸入碼))
+                .is_some()
+    };
+
     let 編輯連擊輸入碼 = move |鍵碼: KeyCode| {
         let 自由輸入 = 目標輸入碼片段.read().is_none();
         let 擊鍵正確 = 連擊比對成功();
         if 自由輸入 || 擊鍵正確 {
-            match 鍵碼 {
-                KeyCode::Space => {
-                    let 空格 = 方案.read().寫成字根碼(KeyCode::Space);
-                    更新連擊輸入碼(vec![空格]);
-                }
-                鍵碼 => {
-                    let 字根碼 = 方案.read().寫成字根碼(鍵碼);
-                    if !字根碼.is_empty() {
-                        log!("更新連擊輸入碼 {字根碼}");
-                        let 空格 = 方案.read().寫成字根碼(KeyCode::Space);
-                        if *連擊輸入碼.read() == [空格] {
-                            更新連擊輸入碼(vec![字根碼]);
-                        } else {
-                            更新連擊輸入碼.write().push(字根碼);
-                        }
-                    }
-                }
+            if 實錄分隔鍵().is_some() || 位於碼段邊界() {
+                log!("清空碼段");
+                更新連擊輸入碼.write().clear();
+            }
+            let 字根碼 = 方案.read().寫成字根碼(鍵碼);
+            if !字根碼.is_empty() {
+                log!("更新連擊輸入碼 {字根碼}");
+                更新連擊輸入碼.write().push(字根碼);
             }
         }
     };

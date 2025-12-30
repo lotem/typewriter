@@ -21,8 +21,8 @@ pub const 字母鍵盤練習題: &[練習題] = &[
     },
     練習題 {
         標題: "洋文金句",
-        編碼: "HELLO␣WORLD
-               THE␣QUICK␣BROWN␣FOX␣JUMPS␣OVER␣THE␣LAZY␣DOG",
+        編碼: "hello world
+               the quick brown fox jumps over the lazy dog",
         字幕: 段落(
             逐字,
             "hello world

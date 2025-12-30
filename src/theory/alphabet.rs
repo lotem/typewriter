@@ -1,11 +1,18 @@
 use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
-use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
+use crate::definition::{
+    觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則, 鍵位定義
+};
 use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
+
+const 空格鍵: 鍵位定義 = 鍵位定義 {
+    輸入碼: "␣",
+    鍵碼: KeyCode::Space,
+};
 
 macro_rules! 字母鍵 {
     ($字母: ident) => {
@@ -43,10 +50,7 @@ const 字母表: &[鍵位定義] = &[
     字母鍵!(X),
     字母鍵!(Y),
     字母鍵!(Z),
-    鍵位定義 {
-        輸入碼: "␣",
-        鍵碼: KeyCode::Space,
-    },
+    空格鍵,
     鍵位定義 {
         輸入碼: "'",
         鍵碼: KeyCode::Quote,
@@ -57,12 +61,19 @@ const 字母表: &[鍵位定義] = &[
     },
 ];
 
+const 用空格分詞: 邊界判定規則 = 邊界判定規則 {
+    分隔鍵: &[空格鍵],
+    起始鍵: &[],
+    終止鍵: &[],
+};
+
 lazy_static! {
     static ref 字母轉鍵位: Box<[拼寫運算<'static>]> = Box::new([轉寫!(
         "abcdefghijklmnopqrstuvwxyz ",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ␣"
     ),]);
-    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([-A-Za-z '])+$").deref(),]);
+    static ref 驗證拉丁文: Box<[&'static Regex]> =
+        Box::new([regex!("^([-A-Za-z'])+$").deref(), regex!("^ $").deref(),]);
 }
 
 pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
@@ -77,6 +88,7 @@ pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
             拼式轉寫規則: &[],
             字根拆分規則: &字母轉鍵位,
             拼式驗證規則: &驗證拉丁文,
+            邊界判定: 用空格分詞,
         },
     }
 }

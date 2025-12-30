@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use leptos::prelude::*;
 
-use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義};
+use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則};
 use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::theory::{
     alphabet::拉丁字母輸入方案, cantonese::粵語輸入方案, combo_jyutping::宮保粵拼輸入方案,
@@ -49,6 +49,11 @@ const 未定義方案: 輸入方案定義<'static> = 輸入方案定義 {
         拼式轉寫規則: &[],
         字根拆分規則: &[],
         拼式驗證規則: &[],
+        邊界判定: 邊界判定規則 {
+            分隔鍵: &[],
+            起始鍵: &[],
+            終止鍵: &[],
+        },
     },
 };
 
