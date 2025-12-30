@@ -22,11 +22,25 @@ pub const 字母鍵盤練習題: &[練習題] = &[
     練習題 {
         標題: "洋文金句",
         編碼: "hello world
-               the quick brown fox jumps over the lazy dog",
+the quick brown fox jumps over the lazy dog
+black sheep wall
+food for thought
+operation cwal
+power overwhelming
+show me the money
+something for nothing
+there is no cow level",
         字幕: 段落(
             逐字,
             "hello world
-             the quick brown fox jumps over the lazy dog",
+the quick brown fox jumps over the lazy dog
+black sheep wall
+food for thought
+operation cwal
+power overwhelming
+show me the money
+something for nothing
+there is no cow level",
         ),
     },
 ];
