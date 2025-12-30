@@ -29,7 +29,7 @@ pub fn Rime狀態欄(
             <span style="color: var(--secondary-fg-color); opacity: 0.2">"|"</span>
             <div class="status-item" on:click=move |_| 點擊配列() title="切換鍵盤佈局">
                 <span class="status-label">佈局</span>
-                <span class="status-value">{已選配列.read().to_string()}</span>
+                <span class="status-value">{move || 已選配列.read().to_string()}</span>
             </div>
         </div>
     }
