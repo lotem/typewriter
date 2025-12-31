@@ -3,41 +3,42 @@ use leptos::logging::log;
 use leptos::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::action::動作給一參數;
-use crate::gear::layout::配列;
+use crate::action::动作给一参数;
+use crate::gear::layout::键盘配列;
 
 #[component]
-pub fn Rime配列選單(
-    已選配列: ReadSignal<配列>,
-    選用配列: impl 動作給一參數<配列>,
+pub fn Rime配列选单(
+    已选配列: ReadSignal<键盘配列>,
+    选用配列: impl 动作给一参数<键盘配列>
 ) -> impl IntoView {
-    let 配列選單的引用 = NodeRef::<html::Select>::new();
+    let 配列选单的引用 = NodeRef::<html::Select>::new();
     let _ = Effect::new(move |_| {
-        if let Some(輸入欄) = 配列選單的引用.get() {
-            let 選項序號: i32 = 配列::iter()
-                .position(|配列| 配列 == 已選配列())
-                .and_then(|序號| 序號.try_into().ok())
+        if let Some(输入栏) = 配列选单的引用.get() {
+            let 选项序号: i32 = 键盘配列
+                ::iter()
+                .position(|键盘配列| 键盘配列 == 已选配列())
+                .and_then(|序号| 序号.try_into().ok())
                 .unwrap_or(-1);
-            輸入欄.set_selected_index(選項序號);
-            let _ = 輸入欄.focus();
+            输入栏.set_selected_index(选项序号);
+            let _ = 输入栏.focus();
         }
     });
 
     view! {
         <select class="layouts"
-            node_ref=配列選單的引用
+            node_ref=配列选单的引用
             on:change=move |ev| {
-                if let Ok(選中第幾項) = event_target_value(&ev).parse::<usize>() {
-                    if let Some(配列) = 配列::iter().nth(選中第幾項) {
-                        log!("選用配列[{}]: {}", 選中第幾項, 配列);
-                        選用配列(配列);
+                if let Ok(选中第几项) = event_target_value(&ev).parse::<usize>() {
+                    if let Some(键盘配列) = 键盘配列::iter().nth(选中第几项) {
+                        log!("选用配列[{}]: {}", 选中第几项, 键盘配列);
+                        选用配列(键盘配列);
                     }
                 }
             }
         >
         {
-            配列::iter().enumerate().map(|(配列序號, 配列)| view! {
-                <option value={配列序號}>{配列.to_string()}</option>
+            键盘配列::iter().enumerate().map(|(配列序号, 键盘配列)| view! {
+                <option value={配列序号}>{键盘配列.to_string()}</option>
             }).collect_view()
         }
         </select>

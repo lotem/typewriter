@@ -2,121 +2,141 @@ use lazy_regex::Regex;
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 
-use crate::gear::layout::鍵盤佈局;
+use crate::gear::layout::键盘布局;
 use crate::key_code::KeyCode;
-use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
+use crate::spelling_algebra::{ 拼写运算, 施展拼写运算 };
 
-pub struct 鍵位定義<'a> {
-    pub 輸入碼: &'a str,
-    pub 鍵碼: KeyCode,
+pub struct 键位映射定义<'a> {
+    pub 输入码: &'a str,
+    pub 键码: KeyCode,
 }
 
 #[derive(Clone, Copy)]
-pub struct 輸入方案定義<'a> {
-    pub 名稱: &'a str,
-    pub 佈局: &'a 鍵盤佈局,
-    pub 指法: 觸鍵方式,
-    pub 字根表: &'a [鍵位定義<'a>],
-    pub 轉寫法: 轉寫法定義<'a>,
+pub struct 输入方案定义<'a> {
+    pub 名称: &'a str,
+    pub 布局: &'a 键盘布局,
+    pub 指法: 击键方式,
+    pub 键位映射: &'a [键位映射定义<'a>],
+    pub 转写: 转写定义<'a>,
 }
 
-#[derive(Clone, Copy, PartialEq)]
-pub enum 觸鍵方式 {
-    連擊,
-    並擊,
+#[derive(Clone, Copy, Default, PartialEq)]
+pub enum 击键方式 {
+    #[default]
+    连击,
+    并击,
 }
 
 #[derive(Clone, Copy)]
-pub struct 轉寫法定義<'a> {
-    /// 將按鍵序列轉換成慣用的表示形式，如字母與附標符號合字
-    pub 輸入碼表示: &'a [拼寫運算<'a>],
-    /// 將輸入碼的表示形式轉換成按鍵序列
-    pub 輸入碼鍵位: &'a [拼寫運算<'a>],
-    /// 將輸入碼轉寫成符合詞典規範的編碼
-    pub 拼式轉寫規則: &'a [拼寫運算<'a>],
-    /// 將詞典碼拆分爲按鍵序列
-    pub 字根拆分規則: &'a [拼寫運算<'a>],
-    /// 定義若干識別有效詞典碼的規則。若未定義任何規則，則不做驗證
-    pub 拼式驗證規則: &'a [&'a Regex],
+pub struct 转写定义<'a> {
+    /// 将按键序列转换成惯用的表示形式，如字母与附标符号合字
+    pub 编码预览: &'a [拼写运算<'a>],
+    /// 将输入码的表示形式转换成按键序列
+    pub 键位提示: &'a [拼写运算<'a>],
+    /// 将输入码转写成符合词典规范的编码
+    pub 输入棱镜: &'a [拼写运算<'a>],
+    /// 将词典码拆分为按键序列
+    pub 词库棱镜: &'a [拼写运算<'a>],
+    /// 定义若干识别有效词典码的规则。若未定义任何规则，则不做验证
+    pub 拼式验证规则: &'a [&'a Regex],
 }
 
-pub trait 判定鍵位 {
-    fn 有無鍵位(&self) -> bool;
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool;
+pub trait 判定键位 {
+    fn 有无键位(&self) -> bool;
+    fn 包含键位(&self, 键码: &KeyCode) -> bool;
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct 鍵組(pub BTreeSet<KeyCode>);
+pub struct 键组(pub BTreeSet<KeyCode>);
 
-impl 鍵組 {
+impl 键组 {
     pub fn new() -> Self {
-        鍵組(BTreeSet::new())
+        键组(BTreeSet::new())
     }
 }
 
-impl 判定鍵位 for &鍵組 {
-    fn 有無鍵位(&self) -> bool {
+impl 判定键位 for &键组 {
+    fn 有无键位(&self) -> bool {
         !self.0.is_empty()
     }
 
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
-        self.0.contains(鍵碼)
+    fn 包含键位(&self, 键码: &KeyCode) -> bool {
+        self.0.contains(键码)
     }
 }
 
-impl 判定鍵位 for KeyCode {
-    fn 有無鍵位(&self) -> bool {
+impl 判定键位 for KeyCode {
+    fn 有无键位(&self) -> bool {
         *self != KeyCode::No
     }
 
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
-        self == 鍵碼
+    fn 包含键位(&self, 键码: &KeyCode) -> bool {
+        self == 键码
     }
 }
 
-impl 輸入方案定義<'_> {
-    pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵位定義<'_>> {
-        self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
+impl 输入方案定义<'_> {
+    pub fn 寻得字根(&self, 字根: &str) -> Option<&键位映射定义<'_>> {
+        self.键位映射.iter().find(|键| 键.输入码 == 字根)
     }
 
-    pub fn 讀出鍵位(&self, 字根碼: &str) -> 鍵組 {
-        let 鍵碼序列 = 施展拼寫運算(字根碼, self.轉寫法.輸入碼鍵位)
+    pub fn 读出键位(&self, 字根码: &str) -> 键组 {
+        let 键码序列 = 施展拼写运算(字根码, self.转写.键位提示)
             .map(Cow::Owned)
-            .unwrap_or(Cow::Borrowed(字根碼));
-        鍵組(
-            self.字根表
+            .unwrap_or(Cow::Borrowed(字根码));
+        键组(
+            self.键位映射
                 .iter()
-                .filter(|鍵| 鍵碼序列.contains(鍵.輸入碼))
-                .map(|鍵| 鍵.鍵碼)
-                .collect(),
+                .filter(|键| 键码序列.contains(键.输入码))
+                .map(|键| 键.键码)
+                .collect()
         )
     }
 
-    pub fn 寫成字根碼(&self, 鍵位: impl 判定鍵位) -> String {
-        if !鍵位.有無鍵位() {
+    pub fn 写成字根码(&self, 键位: impl 判定键位) -> String {
+        if !键位.有无键位() {
             String::new()
         } else {
-            let 字根碼 = self
-                .字根表
+            let 字根码 = self.键位映射
                 .iter()
-                .filter(|鍵| 鍵位.包含鍵位(&鍵.鍵碼))
-                .map(|鍵| 鍵.輸入碼)
+                .filter(|键| 键位.包含键位(&键.键码))
+                .map(|键| 键.输入码)
                 .collect::<String>();
-            施展拼寫運算(&字根碼, self.轉寫法.輸入碼表示).unwrap_or(字根碼)
+            施展拼写运算(&字根码, self.转写.编码预览).unwrap_or(字根码)
         }
     }
 }
 
-impl 轉寫法定義<'_> {
-    pub fn 字根碼轉寫爲拼式(&self, 字根碼: &str) -> Option<String> {
-        施展拼寫運算(字根碼, self.拼式轉寫規則)
+impl 转写定义<'_> {
+    pub fn 字根码转写为拼式(&self, 字根码: &str) -> Option<String> {
+        施展拼写运算(字根码, self.输入棱镜)
     }
 
-    pub fn 拼式拆分爲字根碼(&self, 轉寫碼: &str) -> Option<String> {
-        施展拼寫運算(轉寫碼, self.字根拆分規則)
+    pub fn 拼式拆分为字根码(&self, 转写码: &str) -> Option<String> {
+        施展拼写运算(转写码, self.词库棱镜)
     }
 
-    pub fn 驗證拼式(&self, 待驗證拼式: &str) -> bool {
-        self.拼式驗證規則.iter().any(|r| r.is_match(待驗證拼式))
+    pub fn 验证拼式(&self, 待验证拼式: &str) -> bool {
+        self.拼式验证规则.iter().any(|r| r.is_match(待验证拼式))
     }
+}
+
+#[macro_export]
+macro_rules! 默认映射 {
+    ($字母:ident) => {
+        键位映射定义 {
+            输入码: stringify!($字母),
+            键码: KeyCode::$字母,
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! 键位映射 {
+    ($输入码:ident => $键码:path) => {
+        键位映射定义 {
+            输入码: stringify!($输入码),
+            键码: $键码,
+        }
+    };
 }

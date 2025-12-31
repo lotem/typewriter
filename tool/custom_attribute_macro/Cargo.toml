@@ -1,0 +1,21 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "custom_attribute_macro"
+edition = "2021"
+version = "0.0.1"
+
+[package.metadata]
+update_date = "2025-12-31"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+parse_cargo_toml = { path = "../parse_cargo_toml" }
+
+chrono = "0.4"
+proc-macro2 = "1.0"
+quote = "1.0"
+semver = "1.0"
+syn = "2.0"

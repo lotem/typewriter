@@ -51,13 +51,13 @@ jobs:
         run: cargo clippy -- -D warnings && cargo fmt -- --check
 
       # 6. 構建 (Build)
-      # --dist dist/typewriter: 將產物放在子目錄，為了適配 rime.io/typewriter/ 結構
+      # --dist dist/typewriter: 将產物放在子目錄，為了適配 rime.io/typewriter/ 結構
       # --public-url "/typewriter/": 確保資源引用路徑正確
       - name: Build with Trunk
         run: ./trunk build --release --dist dist/typewriter --public-url "/typewriter/"
 
       # 7. 配置 Cloudflare 重定向
-      # 讓訪問 rime.io (根路徑) 的用戶自動跳轉到 rime.io/typewriter/
+      # 讓訪問 rime.io (根路徑) 的用戶自動跳转到 rime.io/typewriter/
       - name: Create _redirects for Cloudflare
         run: echo "/ /typewriter 301" > dist/_redirects
 
