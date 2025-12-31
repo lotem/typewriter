@@ -27,17 +27,17 @@ pub enum KeyCode {
     /// `f` and `F`
     F = 0x0009,
     /// `g` and `G`
-    G = 0x000A,
+    G = 0x000a,
     /// `h` and `H`
-    H = 0x000B,
+    H = 0x000b,
     /// `i` and `I`
-    I = 0x000C,
+    I = 0x000c,
     /// `j` and `J`
-    J = 0x000D,
+    J = 0x000d,
     /// `k` and `K`
-    K = 0x000E,
+    K = 0x000e,
     /// `l` and `L`
-    L = 0x000F,
+    L = 0x000f,
     /// `m` and `M`
     M = 0x0010,
     /// `n` and `N`
@@ -59,17 +59,17 @@ pub enum KeyCode {
     /// `v` and `V`
     V = 0x0019,
     /// `w` and `W`
-    W = 0x001A,
+    W = 0x001a,
     /// `x` and `X`
-    X = 0x001B,
+    X = 0x001b,
     /// `y` and `Y`
-    Y = 0x001C,
+    Y = 0x001c,
     /// `z` and `Z`
-    Z = 0x001D,
+    Z = 0x001d,
     /// `1` and `!`
-    Kc1 = 0x001E,
+    Kc1 = 0x001e,
     /// `2` and `@`
-    Kc2 = 0x001F,
+    Kc2 = 0x001f,
     /// `3` and `#`
     Kc3 = 0x0020,
     /// `4` and `$`
@@ -91,17 +91,17 @@ pub enum KeyCode {
     /// `Esc`
     Escape = 0x0029,
     /// `Backspace`
-    Backspace = 0x002A,
+    Backspace = 0x002a,
     /// `Tab`
-    Tab = 0x002B,
+    Tab = 0x002b,
     /// `Space`
-    Space = 0x002C,
+    Space = 0x002c,
     /// `-` and `_`
-    Minus = 0x002D,
+    Minus = 0x002d,
     /// `=` and `+`
-    Equal = 0x002E,
+    Equal = 0x002e,
     /// `[` and `{`
-    LeftBracket = 0x002F,
+    LeftBracket = 0x002f,
     /// `]` and `}`
     RightBracket = 0x0030,
     /// `\` and `|`
@@ -123,17 +123,17 @@ pub enum KeyCode {
     /// `CapsLock`
     CapsLock = 0x0039,
     /// `F1`
-    F1 = 0x003A,
+    F1 = 0x003a,
     /// `F2`
-    F2 = 0x003B,
+    F2 = 0x003b,
     /// `F3`
-    F3 = 0x003C,
+    F3 = 0x003c,
     /// `F4`
-    F4 = 0x003D,
+    F4 = 0x003d,
     /// `F5`
-    F5 = 0x003E,
+    F5 = 0x003e,
     /// `F6`
-    F6 = 0x003F,
+    F6 = 0x003f,
     /// `F7`
     F7 = 0x0040,
     /// `F8`
@@ -155,17 +155,17 @@ pub enum KeyCode {
     /// Insert
     Insert = 0x0049,
     /// Home
-    Home = 0x004A,
+    Home = 0x004a,
     /// Page Up
-    PageUp = 0x004B,
+    PageUp = 0x004b,
     /// Delete
-    Delete = 0x004C,
+    Delete = 0x004c,
     /// End
-    End = 0x004D,
+    End = 0x004d,
     /// Page Down
-    PageDown = 0x004E,
+    PageDown = 0x004e,
     /// Right arrow
-    Right = 0x004F,
+    Right = 0x004f,
     /// Left arrow
     Left = 0x0050,
     /// Down arrow
@@ -187,17 +187,17 @@ pub enum KeyCode {
     /// `1` on keypad
     Kp1 = 0x0059,
     /// `2` on keypad
-    Kp2 = 0x005A,
+    Kp2 = 0x005a,
     /// `3` on keypad
-    Kp3 = 0x005B,
+    Kp3 = 0x005b,
     /// `4` on keypad
-    Kp4 = 0x005C,
+    Kp4 = 0x005c,
     /// `5` on keypad
-    Kp5 = 0x005D,
+    Kp5 = 0x005d,
     /// `6` on keypad
-    Kp6 = 0x005E,
+    Kp6 = 0x005e,
     /// `7` on keypad
-    Kp7 = 0x005F,
+    Kp7 = 0x005f,
     /// `8` on keypad
     Kp8 = 0x0060,
     /// `9` on keypad
@@ -219,17 +219,17 @@ pub enum KeyCode {
     /// `F14`
     F14 = 0x0069,
     /// `F15`
-    F15 = 0x006A,
+    F15 = 0x006a,
     /// `F16`
-    F16 = 0x006B,
+    F16 = 0x006b,
     /// `F17`
-    F17 = 0x006C,
+    F17 = 0x006c,
     /// `F18`
-    F18 = 0x006D,
+    F18 = 0x006d,
     /// `F19`
-    F19 = 0x006E,
+    F19 = 0x006e,
     /// `F20`
-    F20 = 0x006F,
+    F20 = 0x006f,
     /// `F21`
     F21 = 0x0070,
     /// `F22`
@@ -244,13 +244,13 @@ pub enum KeyCode {
     Select = 0x0077,
     Stop = 0x0078,
     Again = 0x0079,
-    Undo = 0x007A,
-    Cut = 0x007B,
-    Copy = 0x007C,
-    Paste = 0x007D,
-    Find = 0x007E,
+    Undo = 0x007a,
+    Cut = 0x007b,
+    Copy = 0x007c,
+    Paste = 0x007d,
+    Find = 0x007e,
     /// Mute
-    KbMute = 0x007F,
+    KbMute = 0x007f,
     /// Volume Up
     KbVolumeUp = 0x0080,
     /// Volume Down
@@ -266,12 +266,12 @@ pub enum KeyCode {
     International1 = 0x0087,
     International2 = 0x0088,
     International3 = 0x0089,
-    International4 = 0x008A,
-    International5 = 0x008B,
-    International6 = 0x008C,
-    International7 = 0x008D,
-    International8 = 0x008E,
-    International9 = 0x008F,
+    International4 = 0x008a,
+    International5 = 0x008b,
+    International6 = 0x008c,
+    International7 = 0x008d,
+    International8 = 0x008e,
+    International9 = 0x008f,
     Language1 = 0x0090,
     Language2 = 0x0091,
     Language3 = 0x0092,
@@ -282,97 +282,97 @@ pub enum KeyCode {
     Language8 = 0x0097,
     Language9 = 0x0098,
     AlternateErase = 0x0099,
-    SystemRequest = 0x009A,
-    Cancel = 0x009B,
-    Clear = 0x009C,
-    Prior = 0x009D,
-    Return = 0x009E,
-    Separator = 0x009F,
-    Out = 0x00A0,
-    Oper = 0x00A1,
-    ClearAgain = 0x00A2,
-    Crsel = 0x00A3,
-    Exsel = 0x00A4,
-    SystemPower = 0x00A5,
-    SystemSleep = 0x00A6,
-    SystemWake = 0x00A7,
-    AudioMute = 0x00A8,
-    AudioVolUp = 0x00A9,
-    AudioVolDown = 0x00AA,
-    MediaNextTrack = 0x00AB,
-    MediaPrevTrack = 0x00AC,
-    MediaStop = 0x00AD,
-    MediaPlayPause = 0x00AE,
-    MediaSelect = 0x00AF,
-    MediaEject = 0x00B0,
-    Mail = 0x00B1,
-    Calculator = 0x00B2,
-    MyComputer = 0x00B3,
-    WwwSearch = 0x00B4,
-    WwwHome = 0x00B5,
-    WwwBack = 0x00B6,
-    WwwForward = 0x00B7,
-    WwwStop = 0x00B8,
-    WwwRefresh = 0x00B9,
-    WwwFavorites = 0x00BA,
-    MediaFastForward = 0x00BB,
-    MediaRewind = 0x00BC,
+    SystemRequest = 0x009a,
+    Cancel = 0x009b,
+    Clear = 0x009c,
+    Prior = 0x009d,
+    Return = 0x009e,
+    Separator = 0x009f,
+    Out = 0x00a0,
+    Oper = 0x00a1,
+    ClearAgain = 0x00a2,
+    Crsel = 0x00a3,
+    Exsel = 0x00a4,
+    SystemPower = 0x00a5,
+    SystemSleep = 0x00a6,
+    SystemWake = 0x00a7,
+    AudioMute = 0x00a8,
+    AudioVolUp = 0x00a9,
+    AudioVolDown = 0x00aa,
+    MediaNextTrack = 0x00ab,
+    MediaPrevTrack = 0x00ac,
+    MediaStop = 0x00ad,
+    MediaPlayPause = 0x00ae,
+    MediaSelect = 0x00af,
+    MediaEject = 0x00b0,
+    Mail = 0x00b1,
+    Calculator = 0x00b2,
+    MyComputer = 0x00b3,
+    WwwSearch = 0x00b4,
+    WwwHome = 0x00b5,
+    WwwBack = 0x00b6,
+    WwwForward = 0x00b7,
+    WwwStop = 0x00b8,
+    WwwRefresh = 0x00b9,
+    WwwFavorites = 0x00ba,
+    MediaFastForward = 0x00bb,
+    MediaRewind = 0x00bc,
     /// Brightness Up
-    BrightnessUp = 0x00BD,
+    BrightnessUp = 0x00bd,
     /// Brightness Down
-    BrightnessDown = 0x00BE,
-    ControlPanel = 0x00BF,
-    Assistant = 0x00C0,
-    MissionControl = 0x00C1,
-    Launchpad = 0x00C2,
+    BrightnessDown = 0x00be,
+    ControlPanel = 0x00bf,
+    Assistant = 0x00c0,
+    MissionControl = 0x00c1,
+    Launchpad = 0x00c2,
     /// Mouse Up
-    MouseUp = 0x00CD,
+    MouseUp = 0x00cd,
     /// Mouse Down
-    MouseDown = 0x00CE,
+    MouseDown = 0x00ce,
     /// Mouse Left
-    MouseLeft = 0x00CF,
+    MouseLeft = 0x00cf,
     /// Mouse Right
-    MouseRight = 0x00D0,
+    MouseRight = 0x00d0,
     /// Mouse Button 1(Left)
-    MouseBtn1 = 0x00D1,
+    MouseBtn1 = 0x00d1,
     /// Mouse Button 2(Right)
-    MouseBtn2 = 0x00D2,
+    MouseBtn2 = 0x00d2,
     /// Mouse Button 3(Middle)
-    MouseBtn3 = 0x00D3,
+    MouseBtn3 = 0x00d3,
     /// Mouse Button 4(Back)
-    MouseBtn4 = 0x00D4,
+    MouseBtn4 = 0x00d4,
     /// Mouse Button 5(Forward)
-    MouseBtn5 = 0x00D5,
-    MouseBtn6 = 0x00D6,
-    MouseBtn7 = 0x00D7,
-    MouseBtn8 = 0x00D8,
-    MouseWheelUp = 0x00D9,
-    MouseWheelDown = 0x00DA,
-    MouseWheelLeft = 0x00DB,
-    MouseWheelRight = 0x00DC,
-    MouseAccel0 = 0x00DD,
-    MouseAccel1 = 0x00DE,
-    MouseAccel2 = 0x00DF,
+    MouseBtn5 = 0x00d5,
+    MouseBtn6 = 0x00d6,
+    MouseBtn7 = 0x00d7,
+    MouseBtn8 = 0x00d8,
+    MouseWheelUp = 0x00d9,
+    MouseWheelDown = 0x00da,
+    MouseWheelLeft = 0x00db,
+    MouseWheelRight = 0x00dc,
+    MouseAccel0 = 0x00dd,
+    MouseAccel1 = 0x00de,
+    MouseAccel2 = 0x00df,
     /// Left Control
-    LCtrl = 0x00E0,
+    LCtrl = 0x00e0,
     /// Left Shift
-    LShift = 0x00E1,
+    LShift = 0x00e1,
     /// Left Alt
-    LAlt = 0x00E2,
+    LAlt = 0x00e2,
     /// Left GUI
-    LGui = 0x00E3,
+    LGui = 0x00e3,
     /// Right Control
-    RCtrl = 0x00E4,
+    RCtrl = 0x00e4,
     /// Right Shift
-    RShift = 0x00E5,
+    RShift = 0x00e5,
     /// Right Alt
-    RAlt = 0x00E6,
+    RAlt = 0x00e6,
     /// Right GUI
-    RGui = 0x00E7,
+    RGui = 0x00e7,
 }
 
-pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
-    match 鍵值 {
+pub fn 网页键值转换(键值: &str) -> KeyCode {
+    match 键值 {
         "KeyA" => KeyCode::A,
         "KeyB" => KeyCode::B,
         "KeyC" => KeyCode::C,

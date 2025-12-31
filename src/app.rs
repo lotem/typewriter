@@ -1,288 +1,265 @@
 use leptos::prelude::*;
 
-use crate::definition::{觸鍵方式, 鍵組};
-use crate::engine::{微觀引擎, 微觀引擎輸出信號};
+use crate::definition::{ 击键方式, 键组 };
+use crate::engine::{ 微观引擎, 微观引擎输出信号 };
 use crate::gear::{
-    assignment::{作業, 作業機關輸出信號},
-    caption::{字幕機關輸出信號, 字幕表示},
-    chord::{並擊機關輸出信號, 並擊狀態},
-    key_press::連擊機關輸出信號,
-    layout::{
-        功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
-        配列機關輸出信號,
-    },
-    mode::{工作模式, 工作模式機關輸出信號},
-    theory::輸入方案機關輸出信號,
+    assignment::{ 作业模式输出信号, 作业 },
+    caption::{ 字幕机关输出信号, 字幕表示 },
+    chord::{ 并击模式输出信号, 并击状态 },
+    key_press::连击模式输出信号,
+    layout::{ 功能键::{ 制表键, 回车键, 退出键, 退格键 }, 键盘配列输出信号 },
+    mode::{ 工作模式, 工作模式输出信号 },
+    theory::输入方案输出信号,
 };
 use crate::key_code::KeyCode;
 use crate::view::{
     caption::Rime字幕屏,
-    exercise_menu::Rime練習題選單,
-    input_code::{
-        Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 回顯區佈局, 編碼欄顯示選項
-    },
-    keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
-    layout_menu::Rime配列選單,
-    status_bar::Rime狀態欄,
-    theory_menu::Rime方案選單,
+    exercise_menu::Rime练习题选单,
+    input_code::{ Rime反查输入栏, Rime编码回显区, Rime编码栏, 回显区布局, 编码栏显示选项 },
+    keyboard::{ Rime键图, Rime键盘图, 键面动态着色法 },
+    layout_menu::Rime配列选单,
+    status_bar::Rime状态栏,
+    theory_menu::Rime方案选单,
 };
 
 #[derive(Clone, Copy)]
-struct 並擊對標動態 {
-    目標並擊: Signal<Option<鍵組>>,
-    實況並擊: Signal<並擊狀態>,
+struct 并击对标动态 {
+    目标并击: Signal<Option<键组>>,
+    实况并击: Signal<并击状态>,
 }
 
-impl 鍵面動態着色法 for 並擊對標動態 {
-    fn 鍵位提示(&self, 鍵: KeyCode) -> bool {
-        self.目標並擊
+impl 键面动态着色法 for 并击对标动态 {
+    fn 键位提示(&self, 键: KeyCode) -> bool {
+        self.目标并击
             .read()
             .as_ref()
-            .is_some_and(|並擊| 並擊.0.contains(&鍵))
+            .is_some_and(|并击| 并击.0.contains(&键))
     }
 
-    fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
-        self.實況並擊.read().實時落鍵.0.contains(&鍵)
+    fn 是否落键(&self, 键: KeyCode) -> bool {
+        self.实况并击.read().实时击键.0.contains(&键)
     }
 
-    fn 是否擊中(&self, 鍵: KeyCode) -> bool {
-        self.實況並擊.read().累計擊鍵.0.contains(&鍵)
+    fn 是否击中(&self, 键: KeyCode) -> bool {
+        self.实况并击.read().累计击键.0.contains(&键)
     }
 }
 
 #[derive(Clone, Copy)]
-struct 功能鍵開關狀態 {
-    現行工作模式: ReadSignal<工作模式>,
+struct 功能键开关状态 {
+    现行工作模式: ReadSignal<工作模式>,
 }
 
-impl 鍵面動態着色法 for 功能鍵開關狀態 {
-    fn 鍵位提示(&self, _鍵: KeyCode) -> bool {
+impl 键面动态着色法 for 功能键开关状态 {
+    fn 键位提示(&self, _键: KeyCode) -> bool {
         false
     }
 
-    fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
-        match 鍵 {
-            KeyCode::Enter => self.現行工作模式.get() == 工作模式::輸入反查碼,
-            KeyCode::Escape => self.現行工作模式.get() == 工作模式::選取練習題,
-            KeyCode::Grave => self.現行工作模式.get() == 工作模式::選擇輸入方案,
+    fn 是否落键(&self, 键: KeyCode) -> bool {
+        match 键 {
+            KeyCode::Enter => self.现行工作模式.get() == 工作模式::输入反查码,
+            KeyCode::Escape => self.现行工作模式.get() == 工作模式::选取练习题,
+            KeyCode::Grave => self.现行工作模式.get() == 工作模式::选择输入方案,
             _ => false,
         }
     }
 
-    fn 是否擊中(&self, _鍵: KeyCode) -> bool {
+    fn 是否击中(&self, _键: KeyCode) -> bool {
         false
     }
 }
 
 #[component]
-pub fn Rime打字機應用() -> impl IntoView {
-    let 微觀引擎輸出信號 {
-        方案,
-        模式,
-        配列,
-        作業,
-        字幕,
-        連擊,
-        並擊,
-    } = 微觀引擎();
-    let 輸入方案機關輸出信號 {
-        現行方案,
-        選用方案,
-        方案定義,
-        指法,
-        ..
-    } = 方案;
-    let 配列機關輸出信號 {
-        已選配列, 選用配列
-    } = 配列;
-    let 工作模式機關輸出信號 {
-        現行工作模式,
-        開啓反查輸入,
-        開啓練習題選單,
-        關閉輸入欄,
-        開啓方案選單,
-        開啓配列選單,
+pub fn Rime打字机应用() -> impl IntoView {
+    let 微观引擎输出信号 { 方案, 模式, 键盘配列, 作业, 字幕, 连击, 并击 } = 微观引擎();
+    let 输入方案输出信号 { 当前方案, 选用方案, 方案定义, 指法, .. } = 方案;
+    let 键盘配列输出信号 { 已选配列, 选用配列 } = 键盘配列;
+    let 工作模式输出信号 {
+        现行工作模式,
+        开启反查输入,
+        开启练习题选单,
+        关闭输入栏,
+        开启方案选单,
+        开启配列选单,
         ..
     } = 模式;
-    let 作業機關輸出信號 {
-        當前作業,
-        佈置作業,
-        目標輸入碼片段,
+    let 作业模式输出信号 { 当前作业, 布置作业, 目标输入码片段, .. } = 作业;
+    let 字幕机关输出信号 { 段落表示, .. } = 字幕;
+    let 连击模式输出信号 { 连击输入码, 实况字根码, .. } = 连击;
+    let 并击模式输出信号 {
+        并击状态流,
+        反查键位,
+        反查所得并击码,
+        实际并击码,
+        并击所得拼音,
+        并击完成,
+        并击成功,
         ..
-    } = 作業;
-    let 字幕機關輸出信號 { 段落表示, .. } = 字幕;
-    let 連擊機關輸出信號 {
-        連擊輸入碼,
-        實況字根碼,
-        ..
-    } = 連擊;
-    let 並擊機關輸出信號 {
-        並擊狀態流,
-        反查鍵位,
-        反查所得並擊碼,
-        實況並擊碼,
-        並擊所得拼音,
-        並擊完成,
-        並擊成功,
-        ..
-    } = 並擊;
+    } = 并击;
 
-    let 是否顯示光標 = Signal::derive(move || matches!(指法(), 觸鍵方式::連擊));
-    let 有無輸入碼 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => !實況字根碼.read().is_empty(),
-        觸鍵方式::並擊 => !實況並擊碼.read().is_empty(),
+    let 是否显示光标 = Signal::derive(move || matches!(指法(), 击键方式::连击));
+    let 有无输入码 = Signal::derive(move || {
+        match 指法() {
+            击键方式::连击 => !实况字根码.read().is_empty(),
+            击键方式::并击 => !实际并击码.read().is_empty(),
+        }
     });
-    let 顯示選項 = Signal::derive(move || {
-        if 反查鍵位.read().is_some() {
-            編碼欄顯示選項::顯示反查
-        } else if 有無輸入碼() {
-            編碼欄顯示選項::顯示實況
+    let 显示选项 = Signal::derive(move || {
+        if 反查键位.read().is_some() {
+            编码栏显示选项::显示反查
+        } else if 有无输入码() {
+            编码栏显示选项::显示实况
         } else {
-            編碼欄顯示選項::無顯示
+            编码栏显示选项::无显示
         }
     });
-    let 完成一詞 = move || {
-        段落表示
-            .read()
+    let 完成一词 = move || {
+        段落表示.read()
             .as_ref()
-            .is_some_and(|字幕表示 { 指標文字, .. }| ["", " "].contains(&指標文字.as_str()))
+            .is_some_and(|字幕表示 { 指标文字, .. }| ["", " "].contains(&指标文字.as_str()))
     };
-    let 輸入正確 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => 完成一詞(),
-        觸鍵方式::並擊 => 並擊完成() && 並擊成功(),
+    let 输入正确 = Signal::derive(move || {
+        match 指法() {
+            击键方式::连击 => 完成一词(),
+            击键方式::并击 => 并击完成() && 并击成功(),
+        }
     });
-    let 點擊編碼欄動作 = move || {
-        if 現行工作模式() == 工作模式::錄入 {
-            if 當前作業.read().是否練習題() {
-                開啓練習題選單();
+    let 点击编码栏动作 = move || {
+        if 现行工作模式() == 工作模式::录入 {
+            if 当前作业.read().是否练习题() {
+                开启练习题选单();
             } else {
-                開啓反查輸入();
+                开启反查输入();
             }
         }
     };
-    let 編碼回顯區佈局 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => 回顯區佈局::單欄,
-        觸鍵方式::並擊 => 回顯區佈局::左右對照,
+    let 编码回显区布局 = Signal::derive(move || {
+        match 指法() {
+            击键方式::连击 => 回显区布局::单栏,
+            击键方式::并击 => 回显区布局::左右对照,
+        }
     });
-    let 回顯輸入碼 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => {
-            let 輸入碼 = 連擊輸入碼.read().join("");
-            match 輸入碼.as_str() {
-                "" | "␣" => 輸入碼,
-                _ => 輸入碼 + "‸",
+    let 回显输入码 = Signal::derive(move || {
+        match 指法() {
+            击键方式::连击 => {
+                let 输入码 = 连击输入码.read().join("");
+                match 输入码.as_str() {
+                    "" | "␣" => 输入码,
+                    _ => 输入码 + "‸",
+                }
+            }
+            击键方式::并击 => 反查所得并击码().unwrap_or_else(实际并击码),
+        }
+    });
+    let 回显转写码 = Signal::derive(move || {
+        match 指法() {
+            击键方式::连击 => None,
+            击键方式::并击 => {
+                目标输入码片段()
+                    .and_then(|输入码| 输入码.转写码原文)
+                    .or_else(并击所得拼音)
+                    // 加尖括弧表示拉丁文转写
+                    .map(|转写| format!("⟨{转写}⟩"))
             }
         }
-        觸鍵方式::並擊 => 反查所得並擊碼().unwrap_or_else(實況並擊碼),
     });
-    let 回顯轉寫碼 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => None,
-        觸鍵方式::並擊 => {
-            目標輸入碼片段()
-                .and_then(|輸入碼| 輸入碼.轉寫碼原文)
-                .or_else(並擊所得拼音)
-                // 加尖括弧表示拉丁文轉寫
-                .map(|轉寫| format!("⟨{轉寫}⟩"))
-        }
+    let 反查码 = Signal::derive(move || {
+        当前作业.read()
+            .自定义反查码.clone()
+            .or_else(|| 当前作业.read().目标输入码().map(str::to_owned))
     });
-    let 反查碼 = Signal::derive(move || {
-        當前作業
-            .read()
-            .自訂反查碼
-            .clone()
-            .or_else(|| 當前作業.read().目標輸入碼().map(str::to_owned))
-    });
-    let 反查碼變更動作 = move |反查碼: String| {
-        佈置作業(作業::自訂(現行方案(), 反查碼));
+    let 反查码变更动作 = move |反查码: String| {
+        布置作业(作业::自定义(当前方案(), 反查码));
     };
-    let 當選題號 = Signal::derive(move || 當前作業.read().題號);
-    let 選中題號動作 = move |題號| {
-        佈置作業(作業::練習題(現行方案(), 題號));
-        關閉輸入欄();
+    let 当前题号 = Signal::derive(move || 当前作业.read().题号);
+    let 选中题号动作 = move |题号| {
+        布置作业(作业::练习题(当前方案(), 题号));
+        关闭输入栏();
     };
-    let 選中方案動作 = move |選中項| {
-        選用方案(選中項);
-        關閉輸入欄();
+    let 选中方案动作 = move |选中项| {
+        选用方案(选中项);
+        关闭输入栏();
     };
-    let 選用配列動作 = move |選中項| {
-        選用配列(選中項);
-        關閉輸入欄();
+    let 选用配列动作 = move |选中项| {
+        选用配列(选中项);
+        关闭输入栏();
     };
-    let 方案配套練習題 = Signal::derive(move || 現行方案.get().配套練習題().unwrap_or(&[]));
-    let 方案指定佈局 = Signal::derive(move || *方案定義.read().佈局);
-    let 方案指定盤面 = Signal::derive(move || 方案指定佈局().默認盤面);
+    let 方案配套练习题 = Signal::derive(move || 当前方案.get().配套练习题().unwrap_or(&[]));
+    let 方案指定布局 = Signal::derive(move || *方案定义.read().布局);
+    let 方案指定盘面 = Signal::derive(move || 方案指定布局().默认盘面);
 
-    let 標註功能鍵 = |功能鍵| Signal::derive(move || 功能鍵);
+    let 标注功能键 = |功能键| Signal::derive(move || 功能键);
 
-    let 並擊動態 = 並擊對標動態 {
-        目標並擊: 反查鍵位,
-        實況並擊: 並擊狀態流.into(),
+    let 并击动态 = 并击对标动态 {
+        目标并击: 反查键位,
+        实况并击: 并击状态流.into(),
     };
 
-    let 開關狀態 = 功能鍵開關狀態 { 現行工作模式 };
+    let 开关状态 = 功能键开关状态 { 现行工作模式 };
 
     view! {
-        <Rime字幕屏 是否顯示光標={是否顯示光標} 按進度顯示字幕={字幕.段落表示}/>
+        <Rime字幕屏 是否显示光标={是否显示光标} 按进度显示字幕={字幕.段落表示}/>
         <div class="echo-bar">
-            <div title="重新錄入／選練習題">
-                <Rime鍵圖 鍵={退出鍵.鍵碼} 標註法={標註功能鍵(退出鍵)} 着色法={開關狀態}/>
+            <div title="重新录入／选练习题">
+                <Rime键图 键={退出键.键码} 标注法={标注功能键(退出键)} 着色法={开关状态}/>
             </div>
-            <div title="下一題">
-                <Rime鍵圖 鍵={製表鍵.鍵碼} 標註法={標註功能鍵(製表鍵)} 着色法={並擊動態}/>
+            <div title="下一题">
+                <Rime键图 键={制表键.键码} 标注法={标注功能键(制表键)} 着色法={并击动态}/>
             </div>
-            <Rime編碼欄
-                顯示選項={顯示選項}
-                輸入正確={輸入正確}
-                點擊動作={點擊編碼欄動作}
-                關閉輸入欄={關閉輸入欄}
+            <Rime编码栏
+                显示选项={显示选项}
+                输入正确={输入正确}
+                点击动作={点击编码栏动作}
+                关闭输入栏={关闭输入栏}
             >
             {
-                move || match 現行工作模式() {
-                    工作模式::錄入 => view! {
-                        <Rime編碼回顯區 佈局={編碼回顯區佈局} 輸入碼={回顯輸入碼} 轉寫碼={回顯轉寫碼}/>
+                move || match 现行工作模式() {
+                    工作模式::录入 => view! {
+                        <Rime编码回显区 布局={编码回显区布局} 输入码={回显输入码} 转写码={回显转写码}/>
                     }.into_any(),
-                    工作模式::輸入反查碼 => view! {
-                        <Rime反查輸入欄
-                            反查碼={反查碼}
-                            示例輸入={Signal::derive(|| String::from("qing shu ru pin yin"))}
-                            反查碼變更={反查碼變更動作}
+                    工作模式::输入反查码 => view! {
+                        <Rime反查输入栏
+                            反查码={反查码}
+                            示例输入={Signal::derive(|| String::from("qing shu ru pin yin"))}
+                            反查码变更={反查码变更动作}
                         />
                     }.into_any(),
-                    工作模式::選取練習題 => view! {
-                        <Rime練習題選單
-                            預設練習題={方案配套練習題}
-                            當選題號={當選題號}
-                            選中題號={選中題號動作}
+                    工作模式::选取练习题 => view! {
+                        <Rime练习题选单
+                            预设练习题={方案配套练习题}
+                            当前题号={当前题号}
+                            选择题号={选中题号动作}
                         />
                     }.into_any(),
-                    工作模式::選擇輸入方案 => view! {
-                        <Rime方案選單
-                            現行方案={現行方案}
-                            選中方案={選中方案動作}
+                    工作模式::选择输入方案 => view! {
+                        <Rime方案选单
+                            当前方案={当前方案}
+                            选中方案={选中方案动作}
                         />
                     }.into_any(),
-                    工作模式::選擇配列 => view! {
-                        <Rime配列選單
-                            已選配列={已選配列}
-                            選用配列={選用配列動作}
+                    工作模式::选择配列 => view! {
+                        <Rime配列选单
+                            已选配列={已选配列}
+                            选用配列={选用配列动作}
                         />
                     }.into_any(),
                 }
             }
-            </Rime編碼欄>
-            <div title="輸入拼音反查鍵位">
-                <Rime鍵圖 鍵={回車鍵.鍵碼} 標註法={標註功能鍵(回車鍵)} 着色法={開關狀態}/>
+            </Rime编码栏>
+            <div title="输入拼音反查键位">
+                <Rime键图 键={回车键.键码} 标注法={标注功能键(回车键)} 着色法={开关状态}/>
             </div>
-            <div title="刪除／回退一字">
-                <Rime鍵圖 鍵={退格鍵.鍵碼} 標註法={標註功能鍵(退格鍵)} 着色法={並擊動態}/>
+            <div title="删除／回退一字">
+                <Rime键图 键={退格键.键码} 标注法={标注功能键(退格键)} 着色法={并击动态}/>
             </div>
         </div>
-        <Rime鍵盤圖 鍵盤佈局={方案指定佈局} 目標盤面={方案指定盤面} 配列={已選配列} 着色法={並擊動態}/>
+        <Rime键盘图 键盘布局={方案指定布局} 目标盘面={方案指定盘面} 键盘配列={已选配列} 着色法={并击动态}/>
 
-        <Rime狀態欄
-            現行方案={現行方案}
-            已選配列={已選配列}
-            點擊方案={move || 開啓方案選單()}
-            點擊配列={move || 開啓配列選單()}
+        <Rime状态栏
+            当前方案={当前方案}
+            已选配列={已选配列}
+            点击方案={move || 开启方案选单()}
+            点击配列={move || 开启配列选单()}
         />
     }
 }

@@ -1,51 +1,49 @@
-//! 本節用到的概念
-//! - 配列 :: 描述物理按鍵的數目和空間排佈
-//! - 矩陣 :: 定義按鍵邏輯上的行列座標, 採用 ISO/IEC 9995-1 的鍵位標註法
-//! - 鍵盤佈局 :: 各個盤面及各個位置上的字符定義
-//! - 盤面 :: 也稱層, 定義在盤面選擇碼指定的狀態下各鍵碼映射到哪些字符
-//! - 鍵面刻印 :: 鍵面顯示的文字
+//! 本节用到的概念
+//! - 键盘配列 :: 描述物理按键的数目和空间排布
+//! - 矩阵 :: 定义按键逻辑上的行列座标, 采用 ISO/IEC 9995-1 的键位标注法
+//! - 键盘布局 :: 各个盘面及各个位置上的字符定义
+//! - 盘面 :: 也称层, 定义在盘面选择码指定的状态下各键码映射到哪些字符
+//! - 键面刻印 :: 键面显示的文字
 
 use leptos::prelude::*;
-use strum::{Display, EnumIter};
+use strum::{ Display, EnumIter };
 
-use crate::gear::theory::輸入方案機關輸出信號;
+use crate::gear::theory::输入方案输出信号;
 use crate::key_code::KeyCode;
 
 #[derive(Clone, Copy, Default)]
-pub struct 盤面選擇碼(pub u64);
+pub struct 盘面序号(pub u64);
 
-impl 盤面選擇碼 {
-    pub fn 是否可選盤面(&self, 盤面號: usize) -> bool {
-        盤面號 == 0 || (self.0 & (1 << (盤面號 - 1))) != 0
+impl 盘面序号 {
+    pub fn 是否可选盘面(&self, 盘面号: usize) -> bool {
+        (盘面号 == 0) || ((self.0 & (1 << (盘面号 - 1))) != 0)
     }
 
-    pub fn 頂層盤面(&self) -> usize {
-        (0..64)
-            .rfind(|&盤面號| self.是否可選盤面(盤面號))
-            .unwrap_or_default()
+    pub fn 顶层盘面(&self) -> usize {
+        (0..64).rfind(|&盘面号| self.是否可选盘面(盘面号)).unwrap_or_default()
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct 矩陣座標(pub usize, pub usize);
+pub struct 矩阵坐标(pub usize, pub usize);
 
-/// 矩陣的行列座標按照 ISO/IEC 9995-1 的鍵位標註法顯示.
-/// 空格至數字行從下到上編號爲 A 到 E.
-/// 本品只做字母數字區, 因此 A 行列號從 03 開始, 其他各行從 01 開始.
-impl std::fmt::Display for 矩陣座標 {
+/// 矩阵的行列座标按照 ISO/IEC 9995-1 的键位标注法显示.
+/// 空格至数字行从下到上编号为 A 到 E.
+/// 本品只做字母数字区, 因此 A 行列号从 03 开始, 其他各行从 01 开始.
+impl std::fmt::Display for 矩阵坐标 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self.0 {
             // (0, 0) -> E01
             i @ 0..=3 => {
-                let 行號 = char::from_u32('E' as u32 - i as u32).ok_or(std::fmt::Error {})?;
-                let 列號 = self.1 + 1;
-                write!(f, "{行號}{列號}")
+                let 行号 = char::from_u32(('E' as u32) - (i as u32)).ok_or(std::fmt::Error {})?;
+                let 列号 = self.1 + 1;
+                write!(f, "{行号}{列号}")
             }
             // (4, 0) -> A03
             4 => {
-                let 行號 = 'A';
-                let 列號 = self.1 + 3;
-                write!(f, "{行號}{列號}")
+                let 行号 = 'A';
+                let 列号 = self.1 + 3;
+                write!(f, "{行号}{列号}")
             }
             _ => Err(std::fmt::Error {}),
         }
@@ -53,7 +51,7 @@ impl std::fmt::Display for 矩陣座標 {
 }
 
 #[derive(Clone, Copy, Default, PartialEq)]
-pub struct 刻印說明 {
+pub struct 刻印说明 {
     pub 中: Option<&'static str>,
     pub 上: Option<&'static str>,
     pub 下: Option<&'static str>,
@@ -61,7 +59,7 @@ pub struct 刻印說明 {
     pub 右: Option<&'static str>,
 }
 
-impl 刻印說明 {
+impl 刻印说明 {
     pub const fn 居中(文字: &'static str) -> Self {
         Self {
             中: Some(文字),
@@ -74,161 +72,147 @@ impl 刻印說明 {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-pub enum 鍵面刻印 {
+pub enum 键面刻印 {
     透明,
-    無刻,
-    有刻(刻印說明),
+    无刻,
+    有刻(刻印说明),
 }
 
-impl 鍵面刻印 {
+impl 键面刻印 {
     pub fn 居中刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(刻印說明 {
-                中: 有冇刻印, ..
-            }) => *有冇刻印,
+            键面刻印::有刻(刻印说明 { 中: 有冇刻印, .. }) => *有冇刻印,
             _ => None,
         }
     }
 
     pub fn 上方刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(刻印說明 {
-                上: 有冇刻印, ..
-            }) => *有冇刻印,
+            键面刻印::有刻(刻印说明 { 上: 有冇刻印, .. }) => *有冇刻印,
             _ => None,
         }
     }
 
     pub fn 下方刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(刻印說明 {
-                下: 有冇刻印, ..
-            }) => *有冇刻印,
+            键面刻印::有刻(刻印说明 { 下: 有冇刻印, .. }) => *有冇刻印,
             _ => None,
         }
     }
 
-    pub fn 左側刻印文字(&self) -> Option<&'static str> {
+    pub fn 左侧刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(刻印說明 {
-                左: 有冇刻印, ..
-            }) => *有冇刻印,
+            键面刻印::有刻(刻印说明 { 左: 有冇刻印, .. }) => *有冇刻印,
             _ => None,
         }
     }
 
-    pub fn 右側刻印文字(&self) -> Option<&'static str> {
+    pub fn 右侧刻印文字(&self) -> Option<&'static str> {
         match self {
-            鍵面刻印::有刻(刻印說明 {
-                右: 有冇刻印, ..
-            }) => *有冇刻印,
+            键面刻印::有刻(刻印说明 { 右: 有冇刻印, .. }) => *有冇刻印,
             _ => None,
         }
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct 鍵面映射 {
-    pub 鍵碼: KeyCode,
-    pub 刻印: 鍵面刻印,
+pub struct 键面映射 {
+    pub 键码: KeyCode,
+    pub 刻印: 键面刻印,
 }
 
-pub type 鍵盤矩陣<'a> = &'a [&'a [KeyCode]];
-pub type 盤面定義<'a> = &'a [&'a [鍵面刻印]];
+pub type 键盘矩阵<'a> = &'a [&'a [KeyCode]];
+pub type 盘面定义<'a> = &'a [&'a [键面刻印]];
 
 #[derive(Clone, Copy, Default, Display, EnumIter, PartialEq)]
-pub enum 配列 {
+pub enum 键盘配列 {
     #[default]
-    主鍵盤區,
-    字母鍵盤,
+    主键盘区,
+    字母键盘,
     正交直列,
-    直列分體,
-    正交直列帶數字行,
-    直列分體帶數字行,
+    直列分体,
+    正交直列带数字行,
+    直列分体带数字行,
 }
 
-impl 配列 {
-    pub fn 橫向交錯(&self) -> bool {
-        matches!(self, 配列::主鍵盤區 | 配列::字母鍵盤)
+impl 键盘配列 {
+    pub fn 横向交错(&self) -> bool {
+        matches!(self, 键盘配列::主键盘区 | 键盘配列::字母键盘)
     }
     pub fn 直列(&self) -> bool {
         matches!(
             self,
-            配列::正交直列
-                | 配列::直列分體
-                | 配列::正交直列帶數字行
-                | 配列::直列分體帶數字行
+            键盘配列::正交直列 |
+                键盘配列::直列分体 |
+                键盘配列::正交直列带数字行 |
+                键盘配列::直列分体带数字行
         )
     }
-    pub fn 分體(&self) -> bool {
-        matches!(self, 配列::直列分體 | 配列::直列分體帶數字行)
+    pub fn 分体(&self) -> bool {
+        matches!(self, 键盘配列::直列分体 | 键盘配列::直列分体带数字行)
     }
-    pub fn 規格(&self) -> usize {
+    pub fn 规格(&self) -> usize {
         match self {
-            配列::主鍵盤區 => 60,
-            配列::字母鍵盤 => 30,
-            配列::正交直列 | 配列::直列分體 => 30,
-            配列::正交直列帶數字行 | 配列::直列分體帶數字行 => 60,
+            键盘配列::主键盘区 => 60,
+            键盘配列::字母键盘 => 30,
+            键盘配列::正交直列 | 键盘配列::直列分体 => 30,
+            键盘配列::正交直列带数字行 | 键盘配列::直列分体带数字行 => 60,
         }
     }
-    pub fn 矩陣(&self) -> 鍵盤矩陣<'static> {
+    pub fn 矩阵(&self) -> 键盘矩阵<'static> {
         match self {
-            配列::主鍵盤區 => 主鍵盤區矩陣,
-            配列::字母鍵盤 => 字母鍵盤矩陣,
-            配列::正交直列 => 正交直列矩陣,
-            配列::直列分體 => 直列分體矩陣,
-            配列::正交直列帶數字行 => 正交直列帶數字行矩陣,
-            配列::直列分體帶數字行 => 直列分體帶數字行矩陣,
+            键盘配列::主键盘区 => 主键盘区矩阵,
+            键盘配列::字母键盘 => 字母键盘矩阵,
+            键盘配列::正交直列 => 正交直列矩阵,
+            键盘配列::直列分体 => 直列分体矩阵,
+            键盘配列::正交直列带数字行 => 正交直列带数字行矩阵,
+            键盘配列::直列分体带数字行 => 直列分体带数字行矩阵,
         }
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct 鍵盤佈局 {
-    pub 盤面: &'static [盤面定義<'static>],
-    pub 默認盤面: 盤面選擇碼,
-    pub 首選配列: 配列,
+pub struct 键盘布局 {
+    pub 盘面: &'static [盘面定义<'static>],
+    pub 默认盘面: 盘面序号,
+    pub 默认配列: 键盘配列,
 }
 
-impl 鍵盤佈局 {
-    pub fn 選擇盤面(
-        &self,
-        目標盤面: 盤面選擇碼,
-        座標: 矩陣座標,
-    ) -> Option<(usize, 鍵面刻印)> {
-        self.盤面
+impl 键盘布局 {
+    pub fn 选择盘面(&self, 目标盘面: 盘面序号, 坐标: 矩阵坐标) -> Option<(usize, 键面刻印)> {
+        self.盘面
             .iter()
             .enumerate()
             .rev()
-            .filter(|&(盤面號, _)| 目標盤面.是否可選盤面(盤面號))
-            .find_map(|(盤面號, 此盤面)| {
-                self.從盤面讀取刻印(此盤面, 座標)
-                    .and_then(|刻印| match 刻印 {
-                        鍵面刻印::透明 => None,
-                        _ => Some((盤面號, 刻印)),
-                    })
+            .filter(|&(盘面号, _)| 目标盘面.是否可选盘面(盘面号))
+            .find_map(|(盘面号, 此盘面)| {
+                self.从盘面读取刻印(此盘面, 坐标).and_then(|刻印| {
+                    match 刻印 {
+                        键面刻印::透明 => None,
+                        _ => Some((盘面号, 刻印)),
+                    }
+                })
             })
     }
 
-    fn 從盤面讀取刻印(
-        &self,
-        此盤面: 盤面定義<'static>,
-        座標: 矩陣座標,
-    ) -> Option<鍵面刻印> {
-        let 矩陣座標(行, 列) = 座標;
-        此盤面.get(行).and_then(|此行| 此行.get(列)).copied()
+    fn 从盘面读取刻印(&self, 此盘面: 盘面定义<'static>, 坐标: 矩阵坐标) -> Option<键面刻印> {
+        let 矩阵坐标(行, 列) = 坐标;
+        此盘面.get(行)
+            .and_then(|此行| 此行.get(列))
+            .copied()
     }
 }
 
-macro_rules! 矩陣 {
-    [ $( [ $( $鍵:ident )* ] $(,)? )* ] => {
-        &[ $( &[ $( crate::key_code::KeyCode::$鍵, )* ], )* ]
+macro_rules! 矩阵 {
+    [$([$($键:ident)*] $(,)?)*] => {
+        &[ $( &[ $( crate::key_code::KeyCode::$键, )* ], )* ]
     };
 }
 
-const 主鍵盤區矩陣: 鍵盤矩陣<'static> = 矩陣![
-    // ISO/IEC 9995-2 規定字母數字區至少包含 47 個用於輸入字符的鍵位
-    // 以下是協調 48 文字鍵盤佈局的一種實現, 不用鍵位 E00 而選用鍵位 C12, E13
+const 主键盘区矩阵: 键盘矩阵<'static> =
+    矩阵![
+    // ISO/IEC 9995-2 规定字母数字区至少包含 47 个用于输入字符的键位
+    // 以下是协调 48 文字键盘布局的一种实现, 不用键位 E00 而选用键位 C12, E13
     [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0 Minus Equal Grave],  // E01 - E13
     [Q W E R T Y U I O P LeftBracket RightBracket],               // D01 - D12
     [A S D F G H J K L Semicolon Quote Backslash],                // C01 - C12
@@ -236,7 +220,8 @@ const 主鍵盤區矩陣: 鍵盤矩陣<'static> = 矩陣![
     [Space]                                                       // A03
 ];
 
-const 字母鍵盤矩陣: 鍵盤矩陣<'static> = 矩陣![
+const 字母键盘矩阵: 键盘矩阵<'static> =
+    矩阵![
     [],                             // E01
     [Q W E R T Y U I O P],          // D01 - D10
     [A S D F G H J K L Semicolon],  // C01 - C10
@@ -244,7 +229,8 @@ const 字母鍵盤矩陣: 鍵盤矩陣<'static> = 矩陣![
     [Space]                         // A03
 ];
 
-const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
+const 正交直列矩阵: 键盘矩阵<'static> =
+    矩阵![
     [],                               // E01
     [Q W E R T Y U I O P],            // D01 - D10
     [A S D F G H J K L Semicolon],    // C01 - C10
@@ -252,7 +238,8 @@ const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
     [Space]                           // A03
 ];
 
-const 直列分體矩陣: 鍵盤矩陣<'static> = 矩陣![
+const 直列分体矩阵: 键盘矩阵<'static> =
+    矩阵![
     [],                               // E01
     [Q W E R T Y U I O P],            // D01 - D10
     [A S D F G H J K L Semicolon],    // C01 - C10
@@ -260,7 +247,8 @@ const 直列分體矩陣: 鍵盤矩陣<'static> = 矩陣![
     [No Space Space]                  // A03 - A05
 ];
 
-const 正交直列帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
+const 正交直列带数字行矩阵: 键盘矩阵<'static> =
+    矩阵![
     [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
     [Q W E R T Y U I O P],                      // D01 - D10
     [A S D F G H J K L Semicolon],              // C01 - C10
@@ -268,7 +256,8 @@ const 正交直列帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
     [Space]                                     // A03
 ];
 
-const 直列分體帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
+const 直列分体带数字行矩阵: 键盘矩阵<'static> =
+    矩阵![
     [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
     [Q W E R T Y U I O P],                      // D01 - D10
     [A S D F G H J K L Semicolon],              // C01 - C10
@@ -277,41 +266,46 @@ const 直列分體帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
 ];
 
 #[macro_export]
-macro_rules! 盤面 {
-    [ $( [ $( $鍵:tt )* ] $(,)? )* ] => {
-        &[ $( &[ $( 鍵面!($鍵), )* ], )* ]
+macro_rules! 盘面 {
+    [
+        $(
+            [$($键:tt)*]
+            $(,)?
+        )*
+    ] => {
+        &[ $( &[ $( 键面!($键), )* ], )* ]
     };
 }
 
 #[macro_export]
-macro_rules! 鍵面 {
-    ( _ ) => {
-        鍵面刻印::透明
+macro_rules! 键面 {
+    (_) => {
+        键面刻印::透明
     };
-    ( 空 ) => {
-        鍵面刻印::無刻
+    (空) => {
+        键面刻印::无刻
     };
-    ( $字符:literal ) => {
-        鍵面刻印::有刻($crate::gear::layout::刻印說明::居中($字符))
+    ($字符:literal) => {
+        键面刻印::有刻($crate::gear::layout::刻印说明::居中($字符))
     };
-    ( $字母:ident ) => {
-        鍵面刻印::有刻($crate::gear::layout::刻印說明::居中(
+    ($字母:ident) => {
+        键面刻印::有刻($crate::gear::layout::刻印说明::居中(
             stringify!($字母),
         ))
     };
-    ( { 中: $居中:tt, 上: $居上:tt, 下: $居下:tt, 左: $居左:tt, 右: $居右:tt } ) => {
-        鍵面刻印::有刻($crate::gear::layout::刻印說明 {
-            中: $crate::標註!($居中),
-            上: $crate::標註!($居上),
-            下: $crate::標註!($居下),
-            左: $crate::標註!($居左),
-            右: $crate::標註!($居右),
+    ({ 中: $居中:tt, 上: $居上:tt, 下: $居下:tt, 左: $居左:tt, 右: $居右:tt }) => {
+        键面刻印::有刻($crate::gear::layout::刻印说明 {
+            中: $crate::标注!($居中),
+            上: $crate::标注!($居上),
+            下: $crate::标注!($居下),
+            左: $crate::标注!($居左),
+            右: $crate::标注!($居右),
         })
     };
 }
 
 #[macro_export]
-macro_rules! 標註 {
+macro_rules! 标注 {
     (_) => {
         None
     };
@@ -323,7 +317,8 @@ macro_rules! 標註 {
     };
 }
 
-pub const 基本盤面: 盤面定義<'static> = 盤面![
+pub const 基本盘面: 盘面定义<'static> =
+    盘面![
     [ "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "-" "=" "`" ],  // E01 - E13
     [ q w e r t y u i o p "[" "]" ],                          // D01 - D12
     [ a s d f g h j k l ";" "'" "\\" ],                       // C01 - C12
@@ -331,7 +326,8 @@ pub const 基本盤面: 盤面定義<'static> = 盤面![
     [ "␣" "␣" "␣" ]                                           // A03 - A05
 ];
 
-pub const 上檔盤面: 盤面定義<'static> = 盤面![
+pub const 上档盘面: 盘面定义<'static> =
+    盘面![
     [ "!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "~" ],
     [ Q W E R T Y U I O P "{" "}" ],
     [ A S D F G H J K L ":" "\"" "|" ],
@@ -339,7 +335,8 @@ pub const 上檔盤面: 盤面定義<'static> = 盤面![
     [ _ _ _ ]
 ];
 
-pub const 大寫字母盤面: 盤面定義<'static> = 盤面![
+pub const 大写字母盘面: 盘面定义<'static> =
+    盘面![
     [ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ],
     [ Q W E R T Y U I O P _ _ ],
     [ A S D F G H J K L _ _ _ ],
@@ -347,55 +344,56 @@ pub const 大寫字母盤面: 盤面定義<'static> = 盤面![
     [ "␣" "␣" "␣" ]
 ];
 
-pub const 拉丁字母鍵盤佈局: 鍵盤佈局 = 鍵盤佈局 {
-    盤面: &[基本盤面, 上檔盤面, 大寫字母盤面],
-    默認盤面: 盤面選擇碼(2),
-    首選配列: 配列::字母鍵盤,
+pub const 拉丁字母键盘布局: 键盘布局 = 键盘布局 {
+    盘面: &[基本盘面, 上档盘面, 大写字母盘面],
+    默认盘面: 盘面序号(2),
+    默认配列: 键盘配列::字母键盘,
 };
 
-pub mod 功能鍵 {
+pub mod 功能键 {
     use super::*;
 
-    pub const 退出鍵: 鍵面映射 = 鍵面映射 {
-        鍵碼: KeyCode::Escape,
-        刻印: 鍵面刻印::有刻(刻印說明::居中("退出")),
+    pub const 退出键: 键面映射 = 键面映射 {
+        键码: KeyCode::Escape,
+        刻印: 键面刻印::有刻(刻印说明::居中("退出")),
     };
-    pub const 製表鍵: 鍵面映射 = 鍵面映射 {
-        鍵碼: KeyCode::Tab,
-        刻印: 鍵面刻印::有刻(刻印說明::居中("製表")),
+    pub const 制表键: 键面映射 = 键面映射 {
+        键码: KeyCode::Tab,
+        刻印: 键面刻印::有刻(刻印说明::居中("制表")),
     };
-    pub const 退格鍵: 鍵面映射 = 鍵面映射 {
-        鍵碼: KeyCode::Backspace,
-        刻印: 鍵面刻印::有刻(刻印說明::居中("退格")),
+    pub const 退格键: 键面映射 = 键面映射 {
+        键码: KeyCode::Backspace,
+        刻印: 键面刻印::有刻(刻印说明::居中("退格")),
     };
-    pub const 回車鍵: 鍵面映射 = 鍵面映射 {
-        鍵碼: KeyCode::Enter,
-        刻印: 鍵面刻印::有刻(刻印說明::居中("回車")),
+    pub const 回车键: 键面映射 = 键面映射 {
+        键码: KeyCode::Enter,
+        刻印: 键面刻印::有刻(刻印说明::居中("回车")),
     };
 
-    pub const 衆功能鍵: &[鍵面映射] = &[退出鍵, 製表鍵, 退格鍵, 回車鍵];
+    pub const 众功能键: &[键面映射] = &[退出键, 制表键, 退格键, 回车键];
 }
 
 #[derive(Clone)]
-pub struct 配列機關輸出信號 {
-    pub 已選配列: ReadSignal<配列>,
-    pub 選用配列: WriteSignal<配列>,
+pub struct 键盘配列输出信号 {
+    pub 已选配列: ReadSignal<键盘配列>,
+    pub 选用配列: WriteSignal<键盘配列>,
 }
 
-pub fn 配列機關(方案: &輸入方案機關輸出信號) -> 配列機關輸出信號 {
-    let 方案定義 = 方案.方案定義;
-    let 初始方案 = 方案定義.get_untracked();
-    let (已選配列, 選用配列) = signal(初始方案.佈局.首選配列);
+pub fn 配列机关(方案: &输入方案输出信号) -> 键盘配列输出信号 {
+    let 方案定义 = 方案.方案定义;
+    let 初始方案 = 方案定义.get_untracked();
+    let (已选配列, 选用配列) = signal(初始方案.布局.默认配列);
 
     let _ = Effect::watch(
-        方案定義,
+        方案定义,
         move |&方案, _, _| {
-            選用配列(方案.佈局.首選配列);
+            选用配列(方案.布局.默认配列);
         },
-        false,
+        false
     );
 
-    配列機關輸出信號 {
-        已選配列, 選用配列
+    键盘配列输出信号 {
+        已选配列,
+        选用配列,
     }
 }

@@ -2,33 +2,45 @@ use lazy_regex::Regex;
 use maybe_owned::MaybeOwned;
 use std::collections::HashMap;
 
-pub enum 拼寫運算<'a> {
-    變換 {
+pub enum 拼写运算<'a> {
+    变换 {
         模式: MaybeOwned<'a, Regex>,
-        替換文字: &'a str,
+        替换文字: &'a str,
     },
-    轉寫 {
+    转写 {
         字符映射: HashMap<char, char>,
     },
     消除 {
         模式: MaybeOwned<'a, Regex>,
     },
+    派生 {
+        模式: MaybeOwned<'a, Regex>,
+        替换文字: &'a str,
+    },
+    模糊 {
+        模式: MaybeOwned<'a, Regex>,
+        替换文字: &'a str,
+    },
+    缩写 {
+        模式: MaybeOwned<'a, Regex>,
+        替换文字: &'a str,
+    },
 }
 
 #[macro_export]
-macro_rules! 變換 {
-    ($模式:literal, $替換文字:literal) => {
-        拼寫運算::變換 {
+macro_rules! 变换 {
+    ($模式:literal, $替换文字:literal) => {
+        拼写运算::变换 {
             模式: regex!($模式).deref().into(),
-            替換文字: $替換文字,
+            替换文字: $替换文字,
         }
     };
 }
 
 #[macro_export]
-macro_rules! 轉寫 {
+macro_rules! 转写 {
     ($左字表:literal, $右字表:literal) => {
-        拼寫運算::轉寫 {
+        拼写运算::转写 {
             字符映射: std::iter::zip($左字表.chars(), $右字表.chars()).collect(),
         }
     };
@@ -37,36 +49,75 @@ macro_rules! 轉寫 {
 #[macro_export]
 macro_rules! 消除 {
     ($模式:literal) => {
-        拼寫運算::消除 {
+        拼写运算::消除 {
             模式: regex!($模式).deref().into(),
         }
     };
 }
 
-pub fn 施展拼寫運算(原形: &str, 運算規則: &[拼寫運算]) -> Option<String> {
+#[macro_export]
+macro_rules! 派生 {
+    ($模式:literal, $替换文字:literal) => {
+        拼写运算::派生 {
+            模式: regex!($模式).deref().into(),
+            替换文字: $替换文字,
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! 模糊 {
+    ($模式:literal, $替换文字:literal) => {
+        拼写运算::模糊 {
+            模式: regex!($模式).deref().into(),
+            替换文字: $替换文字,
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! 缩写 {
+    ($模式:literal, $替换文字:literal) => {
+        拼写运算::缩写 {
+            模式: regex!($模式).deref().into(),
+            替换文字: $替换文字,
+        }
+    };
+}
+
+pub fn 施展拼写运算(原形: &str, 运算规则: &[拼写运算]) -> Option<String> {
     if 原形.is_empty() {
         return None;
     }
-    let mut 運算結果 = 原形.to_owned();
-    for 運算 in 運算規則 {
-        match 運算 {
-            拼寫運算::變換 {
-                ref 模式, 替換文字
-            } => {
-                運算結果 = 模式.replace_all(&運算結果, *替換文字).to_string();
+    let mut 运算结果 = 原形.to_owned();
+    for 运算 in 运算规则 {
+        match 运算 {
+            拼写运算::变换 {
+                ref 模式, 替换文字
             }
-            拼寫運算::轉寫 { ref 字符映射 } => {
-                運算結果 = 運算結果
+            | 拼写运算::派生 {
+                ref 模式, 替换文字
+            }
+            | 拼写运算::模糊 {
+                ref 模式, 替换文字
+            }
+            | 拼写运算::缩写 {
+                ref 模式, 替换文字
+            } => {
+                运算结果 = 模式.replace_all(&运算结果, *替换文字).to_string();
+            }
+            拼写运算::转写 { ref 字符映射 } => {
+                运算结果 = 运算结果
                     .chars()
                     .map(|字符| 字符映射.get(&字符).copied().unwrap_or(字符))
                     .collect::<String>();
             }
-            拼寫運算::消除 { ref 模式 } => {
-                if 模式.is_match(&運算結果) {
+            拼写运算::消除 { ref 模式 } => {
+                if 模式.is_match(&运算结果) {
                     return None;
                 }
             }
         };
     }
-    (!運算結果.is_empty()).then_some(運算結果)
+    (!运算结果.is_empty()).then_some(运算结果)
 }

@@ -1,82 +1,73 @@
-use lazy_regex::{regex, Regex};
+use lazy_regex::{ regex, Regex };
 use lazy_static::lazy_static;
 
-use crate::definition::{觸鍵方式, 輸入方案定義, 轉寫法定義, 鍵位定義};
-use crate::gear::layout::拉丁字母鍵盤佈局;
+use crate::definition::{ 击键方式, 转写定义, 输入方案定义, 键位映射定义 };
+use crate::gear::layout::拉丁字母键盘布局;
 use crate::key_code::KeyCode;
-use crate::spelling_algebra::拼寫運算;
-use crate::轉寫;
+use crate::spelling_algebra::拼写运算;
+use crate::转写;
+use crate::默认映射;
 
-macro_rules! 字母鍵 {
-    ($字母: ident) => {
-        鍵位定義 {
-            輸入碼: stringify!($字母),
-            鍵碼: KeyCode::$字母,
-        }
-    };
-}
-
-const 字母表: &[鍵位定義] = &[
-    字母鍵!(A),
-    字母鍵!(B),
-    字母鍵!(C),
-    字母鍵!(D),
-    字母鍵!(E),
-    字母鍵!(F),
-    字母鍵!(G),
-    字母鍵!(H),
-    字母鍵!(I),
-    字母鍵!(J),
-    字母鍵!(K),
-    字母鍵!(L),
-    字母鍵!(M),
-    字母鍵!(N),
-    字母鍵!(O),
-    字母鍵!(P),
-    字母鍵!(Q),
-    字母鍵!(R),
-    字母鍵!(S),
-    字母鍵!(T),
-    字母鍵!(U),
-    字母鍵!(V),
-    字母鍵!(W),
-    字母鍵!(X),
-    字母鍵!(Y),
-    字母鍵!(Z),
-    鍵位定義 {
-        輸入碼: "␣",
-        鍵碼: KeyCode::Space,
+const 字母表: &[键位映射定义] = &[
+    默认映射!(A),
+    默认映射!(B),
+    默认映射!(C),
+    默认映射!(D),
+    默认映射!(E),
+    默认映射!(F),
+    默认映射!(G),
+    默认映射!(H),
+    默认映射!(I),
+    默认映射!(J),
+    默认映射!(K),
+    默认映射!(L),
+    默认映射!(M),
+    默认映射!(N),
+    默认映射!(O),
+    默认映射!(P),
+    默认映射!(Q),
+    默认映射!(R),
+    默认映射!(S),
+    默认映射!(T),
+    默认映射!(U),
+    默认映射!(V),
+    默认映射!(W),
+    默认映射!(X),
+    默认映射!(Y),
+    默认映射!(Z),
+    键位映射定义 {
+        输入码: "␣",
+        键码: KeyCode::Space,
     },
-    鍵位定義 {
-        輸入碼: "'",
-        鍵碼: KeyCode::Quote,
+    键位映射定义 {
+        输入码: "'",
+        键码: KeyCode::Quote,
     },
-    鍵位定義 {
-        輸入碼: "-",
-        鍵碼: KeyCode::Minus,
+    键位映射定义 {
+        输入码: "-",
+        键码: KeyCode::Minus,
     },
 ];
 
 lazy_static! {
-    static ref 字母轉鍵位: Box<[拼寫運算<'static>]> = Box::new([轉寫!(
-        "abcdefghijklmnopqrstuvwxyz ",
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ␣"
-    ),]);
-    static ref 驗證拉丁文: Box<[&'static Regex]> = Box::new([regex!("^([-A-Za-z '])+$").deref(),]);
+    static ref 字母转键位: Box<[拼写运算<'static>]> = Box::new([
+        转写!("abcdefghijklmnopqrstuvwxyz ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ␣"),
+    ]);
+    static ref 貌似拉丁: Box<[&'static Regex]> = Box::new([regex!("^([-A-Za-z '])+$").deref()]);
 }
 
-pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
-    輸入方案定義 {
-        名稱: "拉丁字母",
-        佈局: &拉丁字母鍵盤佈局,
-        指法: 觸鍵方式::連擊,
-        字根表: 字母表,
-        轉寫法: 轉寫法定義 {
-            輸入碼表示: &[],
-            輸入碼鍵位: &[],
-            拼式轉寫規則: &[],
-            字根拆分規則: &字母轉鍵位,
-            拼式驗證規則: &驗證拉丁文,
+pub fn 输入方案() -> 输入方案定义<'static> {
+    输入方案定义 {
+        名称: "拉丁字母",
+        布局: &拉丁字母键盘布局,
+        指法: 击键方式::连击,
+        键位映射: 字母表,
+        转写: 转写定义 {
+            编码预览: &[],
+            键位提示: &[],
+            输入棱镜: &[],
+            词库棱镜: &字母转键位,
+            拼式验证规则: &貌似拉丁,
         },
     }
 }

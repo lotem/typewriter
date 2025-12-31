@@ -1,18 +1,27 @@
-[package]
-name = "typewriter"
-version = "0.1.0"
-edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[package]
+name = "typewriter"
+edition = "2021"
+version = "0.1.0"
+
+[package.metadata]
+update_date = "2025-12-31"
+
+[workspace]
+members = ["tool/*"]
+
 [dependencies]
-console_error_panic_hook = "0.1.7"
-lazy-regex = "3.4.1"
-lazy_static = "1.5.0"
+custom_attribute_macro = { path = "tool/custom_attribute_macro" }
+parse_cargo_toml = { path = "tool/parse_cargo_toml" }
+
+console_error_panic_hook = "0.1"
+lazy-regex = "3.4"
+lazy_static = "1.5"
 leptos = { version = "0.8", features = ["csr", "nightly"] }
-leptos-use = "0.16"
-maybe-owned = "0.3.4"
-strum = { version = "0.27.1", features = ["derive"] }
+leptos-use = "0.17"
+maybe-owned = "0.3"
+strum = { version = "0.27", features = ["derive"] }
 
 [profile.release]
 codegen-units = 1

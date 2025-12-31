@@ -1,0 +1,9 @@
+{
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "editor.rulers": [
+        40,
+        80,
+        120
+    ]
+}

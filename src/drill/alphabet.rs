@@ -1,27 +1,27 @@
-use super::練習題;
+use super::练习题;
 use crate::gear::caption::{
-    字幕格式::{段落, 詞句},
-    字幕步進::逐字,
+    字幕格式::{段落, 词句},
+    字幕步进::逐字,
 };
 
-pub const 字母鍵盤練習題: &[練習題] = &[
-    練習題 {
-        標題: "字母表",
-        編碼: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        字幕: 詞句("ABCD EFGH IJKL MNOPQ RSTU VWXYZ"),
+pub const 字母键盘练习题: &[练习题] = &[
+    练习题 {
+        标题: "字母表",
+        编码: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        字幕: 词句("ABCD EFGH IJKL MNOPQ RSTU VWXYZ"),
     },
-    練習題 {
-        標題: "QWERTY 鍵盤",
-        編碼: "QWERTYUIOPASDFGHJKLZXCVBNM",
-        字幕: 詞句(
+    练习题 {
+        标题: "QWERTY 鍵盤",
+        编码: "QWERTYUIOPASDFGHJKLZXCVBNM",
+        字幕: 词句(
             "QWERT YUIOP \
              ASDFG HJKL \
              ZXCVB NM",
         ),
     },
-    練習題 {
-        標題: "洋文金句",
-        編碼: "HELLO␣WORLD
+    练习题 {
+        标题: "洋文金句",
+        编码: "HELLO␣WORLD
                THE␣QUICK␣BROWN␣FOX␣JUMPS␣OVER␣THE␣LAZY␣DOG",
         字幕: 段落(
             逐字,
