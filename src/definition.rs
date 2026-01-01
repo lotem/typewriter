@@ -16,12 +16,20 @@ pub struct 輸入方案定義<'a> {
     pub 名稱: &'a str,
     pub 佈局: &'a 鍵盤佈局,
     pub 指法: 觸鍵方式,
+    pub 編碼法: 碼表格式,
     pub 字根表: &'a [鍵位定義<'a>],
     pub 轉寫法: 轉寫法定義<'a>,
 }
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 觸鍵方式 {
+    連擊,
+    並擊,
+}
+
+#[derive(Clone, Copy)]
+pub enum 碼表格式 {
+    逐鍵,
     連擊,
     並擊,
 }

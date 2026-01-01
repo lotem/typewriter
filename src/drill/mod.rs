@@ -10,11 +10,11 @@ use ancient_chinese::{
 use cantonese::{宮保粵拼練習題, 粵語練習題};
 use combo_pinyin::宮保拼音練習題;
 
-use crate::gear::{caption::字幕格式, theory::方案選項};
+use crate::gear::{assignment::碼表定義, caption::字幕格式, theory::方案選項};
 
 pub struct 練習題<'a> {
     pub 標題: &'a str,
-    pub 編碼: &'a str,
+    pub 編碼: 碼表定義<'a>,
     pub 字幕: 字幕格式<'a>,
 }
 

@@ -185,11 +185,12 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
     });
     let 反查碼 = Signal::derive(move || {
-        當前作業
-            .read()
-            .自訂反查碼
-            .clone()
-            .or_else(|| 當前作業.read().目標輸入碼().map(str::to_owned))
+        當前作業.read().自訂反查碼.clone().or_else(|| {
+            當前作業
+                .read()
+                .目標輸入碼()
+                .map(|碼表| 碼表.碼表原文().to_string())
+        })
     });
     let 反查碼變更動作 = move |反查碼: String| {
         佈置作業(作業::自訂(現行方案(), 反查碼));

@@ -2,7 +2,7 @@ use lazy_regex::{regex, Regex};
 use lazy_static::lazy_static;
 
 use crate::definition::{
-    觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則, 鍵位定義
+    碼表格式, 觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則, 鍵位定義
 };
 use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::key_code::KeyCode;
@@ -81,6 +81,7 @@ pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
         名稱: "拉丁字母",
         佈局: &拉丁字母鍵盤佈局,
         指法: 觸鍵方式::連擊,
+        編碼法: 碼表格式::逐鍵,
         字根表: 字母表,
         轉寫法: 轉寫法定義 {
             輸入碼表示: &[],
