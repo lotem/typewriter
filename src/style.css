@@ -1,6 +1,6 @@
 :root {
     color-scheme: light dark;
-    --u: min(80px, 6.5vw, 12vh);
+    --u: min(80px, 6.5vw, 10vh);
     --gap: calc(var(--u) * 0.2);
 }
 @media (prefers-color-scheme: light) {
@@ -48,6 +48,9 @@ body {
     padding-bottom: calc(var(--u) * 0.8);
     box-sizing: border-box;
     min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
 }
 kbd {
     font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
