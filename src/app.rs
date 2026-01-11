@@ -4,7 +4,7 @@ use crate::definition::{觸鍵方式, 鍵組};
 use crate::engine::{微觀引擎, 微觀引擎輸出信號};
 use crate::gear::{
     assignment::{作業, 作業機關輸出信號},
-    caption::{字幕機關輸出信號, 字幕表示},
+    caption::字幕機關輸出信號,
     chord::{並擊機關輸出信號, 並擊狀態},
     key_press::連擊機關輸出信號,
     layout::{
@@ -110,10 +110,12 @@ pub fn Rime打字機應用() -> impl IntoView {
         目標輸入碼片段,
         ..
     } = 作業;
-    let 字幕機關輸出信號 { 段落表示, .. } = 字幕;
+    let 字幕機關輸出信號 { .. } = 字幕;
     let 連擊機關輸出信號 {
         連擊輸入碼,
         實況字根碼,
+        逐鍵提示,
+        連擊片段完成,
         ..
     } = 連擊;
     let 並擊機關輸出信號 {
@@ -141,14 +143,8 @@ pub fn Rime打字機應用() -> impl IntoView {
             編碼欄顯示選項::無顯示
         }
     });
-    let 完成一詞 = move || {
-        段落表示
-            .read()
-            .as_ref()
-            .is_some_and(|字幕表示 { 指標文字, .. }| ["", " "].contains(&指標文字.as_str()))
-    };
     let 輸入正確 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => 完成一詞(),
+        觸鍵方式::連擊 => 連擊片段完成(),
         觸鍵方式::並擊 => 並擊完成() && 並擊成功(),
     });
     let 點擊編碼欄動作 = move || {
@@ -214,8 +210,13 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let 標註功能鍵 = |功能鍵| Signal::derive(move || 功能鍵);
 
+    let 目標鍵位表示 = Signal::derive(move || match 指法() {
+        觸鍵方式::並擊 => 反查鍵位(),
+        觸鍵方式::連擊 => 逐鍵提示(),
+    });
+
     let 並擊動態 = 並擊對標動態 {
-        目標並擊: 反查鍵位,
+        目標並擊: 目標鍵位表示,
         實況並擊: 並擊狀態流.into(),
     };
 
