@@ -133,6 +133,13 @@ impl<'a> 輸入方案定義<'a> {
         self.轉寫法.邊界判定.分隔鍵.iter().find(查驗鍵位)
     }
 
+    pub fn 查起始鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
+    where
+        F: Fn(&&鍵位定義<'a>) -> bool,
+    {
+        self.轉寫法.邊界判定.起始鍵.iter().find(查驗鍵位)
+    }
+
     pub fn 查終止鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
     where
         F: Fn(&&鍵位定義<'a>) -> bool,
