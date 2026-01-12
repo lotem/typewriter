@@ -6,6 +6,7 @@ use crate::gear::layout::鍵盤佈局;
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 
+#[derive(Clone)]
 pub struct 鍵位定義<'a> {
     pub 輸入碼: &'a str,
     pub 鍵碼: KeyCode,
@@ -130,6 +131,13 @@ impl<'a> 輸入方案定義<'a> {
         F: Fn(&&鍵位定義<'a>) -> bool,
     {
         self.轉寫法.邊界判定.分隔鍵.iter().find(查驗鍵位)
+    }
+
+    pub fn 查終止鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
+    where
+        F: Fn(&&鍵位定義<'a>) -> bool,
+    {
+        self.轉寫法.邊界判定.終止鍵.iter().find(查驗鍵位)
     }
 }
 
