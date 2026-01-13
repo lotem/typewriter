@@ -2,7 +2,7 @@ use lazy_regex::Regex;
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 
-use crate::gear::layout::鍵盤佈局;
+use crate::gear::layout::{盤面選擇碼, 鍵盤佈局};
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 
@@ -20,6 +20,7 @@ pub struct 輸入方案定義<'a> {
     pub 編碼法: 碼表格式,
     pub 字根表: &'a [鍵位定義<'a>],
     pub 轉寫法: 轉寫法定義<'a>,
+    pub 動態切換: &'a [動態切換規則<'a>],
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -58,6 +59,11 @@ pub struct 邊界判定規則<'a> {
     pub 起始鍵: &'a [鍵位定義<'a>],
     /// 此中的鍵標誌一段輸入碼的結束
     pub 終止鍵: &'a [鍵位定義<'a>],
+}
+
+pub struct 動態切換規則<'a> {
+    pub 匹配輸入: &'a Regex,
+    pub 目標盤面: 盤面選擇碼,
 }
 
 pub trait 判定鍵位 {
