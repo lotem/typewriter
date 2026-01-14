@@ -377,25 +377,32 @@ pub mod 功能鍵 {
 }
 
 #[derive(Clone)]
-pub struct 配列機關輸出信號 {
+pub struct 佈局機關輸出信號 {
     pub 已選配列: ReadSignal<配列>,
     pub 選用配列: WriteSignal<配列>,
+    pub 當選盤面: ReadSignal<盤面選擇碼>,
+    pub 選擇盤面: WriteSignal<盤面選擇碼>,
 }
 
-pub fn 配列機關(方案: &輸入方案機關輸出信號) -> 配列機關輸出信號 {
+pub fn 佈局機關(方案: &輸入方案機關輸出信號) -> 佈局機關輸出信號 {
     let 方案定義 = 方案.方案定義;
     let 初始方案 = 方案定義.get_untracked();
     let (已選配列, 選用配列) = signal(初始方案.佈局.首選配列);
+    let (當選盤面, 選擇盤面) = signal(初始方案.佈局.默認盤面);
 
     let _ = Effect::watch(
         方案定義,
         move |&方案, _, _| {
             選用配列(方案.佈局.首選配列);
+            選擇盤面(方案.佈局.默認盤面);
         },
         false,
     );
 
-    配列機關輸出信號 {
-        已選配列, 選用配列
+    佈局機關輸出信號 {
+        已選配列,
+        選用配列,
+        當選盤面,
+        選擇盤面,
     }
 }
