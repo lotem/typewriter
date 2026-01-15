@@ -7,7 +7,7 @@ use crate::definition::{
 use crate::gear::layout::拉丁字母鍵盤佈局;
 use crate::theory::{
     alphabet::拉丁字母輸入方案, cantonese::粵語輸入方案, combo_jyutping::宮保粵拼輸入方案,
-    combo_pinyin::宮保拼音輸入方案, detenele::動態能力注音輸入方案,
+    combo_pinyin::宮保拼音輸入方案, combo_zhuyin::宮保注音輸入方案, detenele::動態能力注音輸入方案,
     early_middle_chinese::早期中古漢語輸入方案, late_middle_chinese::晚期中古漢語輸入方案,
     modern_chinese::現代漢語輸入方案, old_chinese::上古漢語輸入方案,
     old_mandarin::近古漢語輸入方案, zhuyin::注音輸入方案,
@@ -27,6 +27,7 @@ pub enum 方案選項 {
     宮保粵拼,
     注音,
     動態能力注音,
+    宮保注音,
 }
 
 lazy_static! {
@@ -42,6 +43,7 @@ lazy_static! {
         (方案選項::宮保粵拼, 宮保粵拼輸入方案()),
         (方案選項::注音, 注音輸入方案()),
         (方案選項::動態能力注音, 動態能力注音輸入方案()),
+        (方案選項::宮保注音, 宮保注音輸入方案()),
     ];
 }
 
