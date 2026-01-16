@@ -2,6 +2,7 @@ mod alphabet;
 mod ancient_chinese;
 mod cantonese;
 mod combo_pinyin;
+mod combo_zhuyin;
 mod zhuyin;
 
 use alphabet::字母鍵盤練習題;
@@ -10,6 +11,7 @@ use ancient_chinese::{
 };
 use cantonese::{宮保粵拼練習題, 粵語練習題};
 use combo_pinyin::宮保拼音練習題;
+use combo_zhuyin::宮保注音練習題;
 use zhuyin::注音練習題;
 
 use crate::gear::{assignment::碼表定義, caption::字幕格式, theory::方案選項};
@@ -32,6 +34,7 @@ const 各方案練習題組: &[(方案選項, &[練習題])] = &[
     (方案選項::宮保粵拼, 宮保粵拼練習題),
     (方案選項::注音, 注音練習題),
     (方案選項::動態能力注音, 注音練習題),
+    (方案選項::宮保注音, 宮保注音練習題),
 ];
 
 impl 方案選項 {
