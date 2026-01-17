@@ -114,7 +114,7 @@ where
 pub fn Rime鍵盤圖<T>(
     配列: ReadSignal<配列>,
     鍵盤佈局: Signal<鍵盤佈局>,
-    目標盤面: Signal<盤面選擇碼>,
+    目標盤面: ReadSignal<盤面選擇碼>,
     着色法: T,
 ) -> impl IntoView
 where

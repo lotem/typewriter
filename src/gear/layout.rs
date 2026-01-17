@@ -11,7 +11,7 @@ use strum::{Display, EnumIter};
 use crate::gear::theory::輸入方案機關輸出信號;
 use crate::key_code::KeyCode;
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, PartialEq)]
 pub struct 盤面選擇碼(pub u64);
 
 impl 盤面選擇碼 {

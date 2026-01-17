@@ -81,7 +81,7 @@ impl 鍵組 {
     }
 }
 
-impl 判定鍵位 for &鍵組 {
+impl 判定鍵位 for 鍵組 {
     fn 有無鍵位(&self) -> bool {
         !self.0.is_empty()
     }
@@ -135,7 +135,7 @@ impl<'a> 輸入方案定義<'a> {
         )
     }
 
-    pub fn 寫成字根碼(&self, 鍵位: impl 判定鍵位) -> String {
+    pub fn 寫成字根碼(&self, 鍵位: &impl 判定鍵位) -> String {
         if !鍵位.有無鍵位() {
             String::new()
         } else {
