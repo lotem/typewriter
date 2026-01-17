@@ -2,7 +2,9 @@ use leptos::prelude::*;
 
 use crate::action::動作;
 use crate::definition::鍵組;
-use crate::gear::{assignment::作業機關輸出信號, theory::輸入方案機關輸出信號};
+use crate::gear::{
+    assignment::作業機關輸出信號, layout::盤面選擇碼, theory::輸入方案機關輸出信號
+};
 use crate::key_code::KeyCode;
 
 pub struct 並擊狀態 {
@@ -89,7 +91,7 @@ pub fn 並擊機關(
         反查所得並擊碼
             .read()
             .as_deref()
-            .map(|並擊碼| 方案定義.read().讀出鍵位(並擊碼))
+            .map(|並擊碼| 方案定義.read().讀出鍵位(並擊碼, &盤面選擇碼(0)))
     });
 
     let _並擊開始 = Signal::derive(move || !並擊狀態流.read().實時落鍵.0.is_empty());

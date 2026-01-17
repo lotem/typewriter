@@ -4,13 +4,14 @@ use lazy_static::lazy_static;
 use crate::definition::{
     碼表格式, 觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則, 鍵位定義
 };
-use crate::gear::layout::拉丁字母鍵盤佈局;
+use crate::gear::layout::{拉丁字母鍵盤佈局, 盤面選擇碼};
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
 
 const 空格鍵: 鍵位定義 = 鍵位定義 {
     輸入碼: "␣",
+    盤面: 盤面選擇碼(0),
     鍵碼: KeyCode::Space,
 };
 
@@ -18,6 +19,7 @@ macro_rules! 字母鍵 {
     ($字母: ident) => {
         鍵位定義 {
             輸入碼: stringify!($字母),
+            盤面: 盤面選擇碼(0),
             鍵碼: KeyCode::$字母,
         }
     };
@@ -53,10 +55,12 @@ const 字母表: &[鍵位定義] = &[
     空格鍵,
     鍵位定義 {
         輸入碼: "'",
+        盤面: 盤面選擇碼(0),
         鍵碼: KeyCode::Quote,
     },
     鍵位定義 {
         輸入碼: "-",
+        盤面: 盤面選擇碼(0),
         鍵碼: KeyCode::Minus,
     },
 ];

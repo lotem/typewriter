@@ -24,6 +24,10 @@ impl 盤面選擇碼 {
             .rfind(|&盤面號| self.是否可選盤面(盤面號))
             .unwrap_or_default()
     }
+
+    pub fn 包含盤面(&self, 目標盤面: &盤面選擇碼) -> bool {
+        (self.0 & 目標盤面.0) == 目標盤面.0
+    }
 }
 
 #[derive(Clone, Copy)]

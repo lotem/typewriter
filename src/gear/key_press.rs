@@ -1,9 +1,11 @@
+use leptos::logging::log;
 use leptos::prelude::*;
 
 use crate::action::{動作, 動作得一結果, 動作給一參數, 未有};
-use crate::definition::{碼表格式, 鍵組};
+use crate::definition::{碼表格式, 選擇鍵面, 鍵組};
 use crate::gear::{
     assignment::{作業機關輸出信號, 碼表定義},
+    layout::佈局機關輸出信號,
     theory::輸入方案機關輸出信號,
 };
 use crate::key_code::KeyCode;
@@ -56,16 +58,23 @@ pub struct 連擊機關輸出信號 {
 pub fn 連擊機關(
     方案: &輸入方案機關輸出信號,
     作業: &作業機關輸出信號,
+    佈局: &佈局機關輸出信號,
 ) -> 連擊機關輸出信號 {
     let 方案 = 方案.方案定義;
     let 當前作業 = 作業.當前作業;
     let 目標輸入碼片段 = 作業.目標輸入碼片段;
     let 作業進度 = 作業.作業進度;
     let 作業進度完成 = 作業.作業進度完成;
+    let 當選盤面 = 佈局.當選盤面;
 
     let (連擊狀態流, 連擊狀態變更) = signal(連擊狀態::default());
 
-    let 實況字根碼 = Signal::derive(move || 方案.read().寫成字根碼(連擊狀態流.read().鍵碼));
+    let 實況字根碼 = Signal::derive(move || {
+        方案.read().寫成字根碼(選擇鍵面 {
+            盤面: 當選盤面(),
+            鍵碼: 連擊狀態流.read().鍵碼,
+        })
+    });
 
     let 反查所得字根碼 = Memo::new(move |_| {
         目標輸入碼片段
@@ -127,7 +136,7 @@ pub fn 連擊機關(
                 let 碼長 = 已正確錄入碼長();
                 字根碼.chars().nth(碼長)
             })
-            .map(|字根碼| 方案.read().讀出鍵位(&字根碼.to_string()))
+            .map(|字根碼| 方案.read().讀出鍵位(&字根碼.to_string(), &當選盤面()))
     });
 
     let 編碼法 = move || {
@@ -182,7 +191,11 @@ pub fn 連擊機關(
 
     let 編輯連擊輸入碼 = move |鍵碼: KeyCode| {
         let 自由輸入 = 目標輸入碼片段.read().is_none();
-        let 字根碼 = 方案.read().寫成字根碼(鍵碼);
+        let 字根碼 = 方案.read().寫成字根碼(選擇鍵面 {
+            盤面: 當選盤面(),
+            鍵碼,
+        });
+        log!("編輯連擊輸入碼 字根碼: {}", 字根碼);
         if !字根碼.is_empty() {
             match 編碼法() {
                 碼表格式::逐鍵 => {

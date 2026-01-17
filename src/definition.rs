@@ -9,6 +9,7 @@ use crate::spelling_algebra::{拼寫運算, 施展拼寫運算};
 #[derive(Clone)]
 pub struct 鍵位定義<'a> {
     pub 輸入碼: &'a str,
+    pub 盤面: 盤面選擇碼,
     pub 鍵碼: KeyCode,
 }
 
@@ -68,7 +69,7 @@ pub struct 動態切換規則<'a> {
 
 pub trait 判定鍵位 {
     fn 有無鍵位(&self) -> bool;
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool;
+    fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool;
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -85,8 +86,8 @@ impl 判定鍵位 for &鍵組 {
         !self.0.is_empty()
     }
 
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
-        self.0.contains(鍵碼)
+    fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool {
+        self.0.contains(&鍵位.鍵碼)
     }
 }
 
@@ -95,8 +96,24 @@ impl 判定鍵位 for KeyCode {
         *self != KeyCode::No
     }
 
-    fn 包含鍵位(&self, 鍵碼: &KeyCode) -> bool {
-        self == 鍵碼
+    fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool {
+        self == &鍵位.鍵碼
+    }
+}
+
+#[derive(Clone)]
+pub struct 選擇鍵面 {
+    pub 盤面: 盤面選擇碼,
+    pub 鍵碼: KeyCode,
+}
+
+impl 判定鍵位 for 選擇鍵面 {
+    fn 有無鍵位(&self) -> bool {
+        self.鍵碼.有無鍵位()
+    }
+
+    fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool {
+        self.盤面.包含盤面(&鍵位.盤面) && self.鍵碼 == 鍵位.鍵碼
     }
 }
 
@@ -105,15 +122,15 @@ impl<'a> 輸入方案定義<'a> {
         self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
     }
 
-    pub fn 讀出鍵位(&self, 字根碼: &str) -> 鍵組 {
+    pub fn 讀出鍵位(&self, 字根碼: &str, 盤面: &盤面選擇碼) -> 鍵組 {
         let 鍵碼序列 = 施展拼寫運算(字根碼, self.轉寫法.輸入碼鍵位)
             .map(Cow::Owned)
             .unwrap_or(Cow::Borrowed(字根碼));
         鍵組(
             self.字根表
                 .iter()
-                .filter(|鍵| 鍵碼序列.contains(鍵.輸入碼))
-                .map(|鍵| 鍵.鍵碼)
+                .filter(|字根| 盤面.包含盤面(&字根.盤面) && 鍵碼序列.contains(字根.輸入碼))
+                .map(|字根| 字根.鍵碼)
                 .collect(),
         )
     }
@@ -125,7 +142,7 @@ impl<'a> 輸入方案定義<'a> {
             let 字根碼 = self
                 .字根表
                 .iter()
-                .filter(|鍵| 鍵位.包含鍵位(&鍵.鍵碼))
+                .filter(|鍵| 鍵位.包含鍵位(鍵))
                 .map(|鍵| 鍵.輸入碼)
                 .collect::<String>();
             施展拼寫運算(&字根碼, self.轉寫法.輸入碼表示).unwrap_or(字根碼)
