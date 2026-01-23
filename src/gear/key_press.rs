@@ -45,7 +45,7 @@ pub type 切盤動作 = impl 動作;
 #[derive(Clone)]
 pub struct 連擊機關輸出信號 {
     pub 連擊狀態變更: WriteSignal<連擊狀態>,
-    pub 連擊輸入碼: ReadSignal<Vec<String>>,
+    // pub 連擊輸入碼: ReadSignal<Vec<String>>,
     pub 實況字根碼: Signal<String>,
     pub 已錄入字根碼: Memo<String>,
     pub 逐鍵提示: Signal<Option<鍵組>>,
@@ -244,7 +244,7 @@ pub fn 連擊機關(
 
     連擊機關輸出信號 {
         連擊狀態變更,
-        連擊輸入碼,
+        // 連擊輸入碼,
         實況字根碼,
         已錄入字根碼,
         逐鍵提示,
