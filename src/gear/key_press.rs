@@ -47,6 +47,7 @@ pub struct 連擊機關輸出信號 {
     pub 連擊狀態變更: WriteSignal<連擊狀態>,
     pub 連擊輸入碼: ReadSignal<Vec<String>>,
     pub 實況字根碼: Signal<String>,
+    pub 已錄入字根碼: Memo<String>,
     pub 逐鍵提示: Signal<Option<鍵組>>,
     pub 連擊比對成功: Memo<bool>,
     pub 連擊片段完成: Signal<bool>,
@@ -235,6 +236,7 @@ pub fn 連擊機關(
                 .find_map(|規則| 規則.匹配輸入.is_match(&輸入碼).then_some(規則.目標盤面))
                 .unwrap_or_else(|| 方案.read().佈局.默認盤面);
             if 目標盤面 != 當選盤面() {
+                log!("自動切換盤面啦: {:?}", 目標盤面);
                 選擇盤面(目標盤面);
             }
         }
@@ -244,6 +246,7 @@ pub fn 連擊機關(
         連擊狀態變更,
         連擊輸入碼,
         實況字根碼,
+        已錄入字根碼,
         逐鍵提示,
         連擊比對成功,
         連擊片段完成,

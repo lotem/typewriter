@@ -117,6 +117,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 連擊機關輸出信號 {
         連擊輸入碼,
         實況字根碼,
+        已錄入字根碼,
         逐鍵提示,
         連擊片段完成,
         ..
@@ -165,7 +166,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     });
     let 回顯輸入碼 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => {
-            let 輸入碼 = 連擊輸入碼.read().join("");
+            let 輸入碼 = 已錄入字根碼();
             match 輸入碼.as_str() {
                 "" | "␣" => 輸入碼,
                 _ => 輸入碼 + "‸",
