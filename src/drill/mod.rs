@@ -1,6 +1,7 @@
 mod alphabet;
 mod ancient_chinese;
 mod cantonese;
+mod combo_jyutping;
 mod combo_pinyin;
 mod combo_zhuyin;
 mod zhuyin;
@@ -9,7 +10,8 @@ use alphabet::字母鍵盤練習題;
 use ancient_chinese::{
     上古漢語練習題, 早期中古漢語練習題, 晚期中古漢語練習題, 現代漢語練習題, 近古漢語練習題,
 };
-use cantonese::{宮保粵拼練習題, 粵語練習題};
+use cantonese::粵語練習題;
+use combo_jyutping::宮保粵拼練習題;
 use combo_pinyin::宮保拼音練習題;
 use combo_zhuyin::宮保注音練習題;
 use zhuyin::注音練習題;
