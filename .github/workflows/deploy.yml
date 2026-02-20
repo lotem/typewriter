@@ -57,9 +57,17 @@ jobs:
         run: ./trunk build --release --dist dist/typewriter --public-url "/typewriter/"
 
       # 7. 配置 Cloudflare 重定向
-      # 讓訪問 rime.io (根路徑) 的用戶自動跳轉到 rime.io/typewriter/
       - name: Create _redirects for Cloudflare
-        run: echo "/ /typewriter 301" > dist/_redirects
+        run: |
+          mkdir -p dist
+          # 讓訪問 rime.io (根路徑) 的用戶自動跳轉到 rime.io/typewriter/
+          echo '/ /typewriter/ 301' > dist/_redirects
+          # 不重定向資源文件
+          echo '/typewriter/*.css /typewriter/:splat.css 200' >> dist/_redirects
+          echo '/typewriter/*.js /typewriter/:splat.js 200' >> dist/_redirects
+          echo '/typewriter/*.wasm /typewriter/:splat.wasm 200' >> dist/_redirects
+          # 爲 rime.io/typewriter/:theory 配置 SPA 路由重寫規則
+          echo '/typewriter/* /typewriter/ 200' >> dist/_redirects
 
       # 8. 發布到 Cloudflare Pages
       - name: Publish to Cloudflare Pages
