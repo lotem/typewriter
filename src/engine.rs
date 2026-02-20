@@ -2,6 +2,7 @@ use leptos::logging::log;
 use leptos::prelude::*;
 
 use crate::action::動作;
+use crate::app_state::use_app_state;
 use crate::definition::觸鍵方式;
 use crate::gear::{
     assignment::{作業, 作業機關, 作業機關輸出信號, 步進法},
@@ -27,8 +28,13 @@ pub struct 微觀引擎輸出信號 {
 }
 
 pub fn 微觀引擎() -> 微觀引擎輸出信號 {
-    let 方案 = 輸入方案機關();
-    let 佈局 = 佈局機關(&方案);
+    let state = use_app_state();
+    let 現行方案 = state.theory;
+    let 選用方案 = state.set_theory;
+    let 已選配列 = state.layout;
+    let 選用配列 = state.set_layout;
+    let 方案 = 輸入方案機關(現行方案, 選用方案);
+    let 佈局 = 佈局機關(&方案, 已選配列, 選用配列);
     let 作業 = 作業機關(&方案);
     let 字幕 = 字幕機關(&方案, &作業);
     let 連擊 = 連擊機關(&方案, &作業, &佈局);
@@ -39,6 +45,7 @@ pub fn 微觀引擎() -> 微觀引擎輸出信號 {
     ..
     } = 方案;
     let 作業機關輸出信號 {
+        當前作業,
         佈置作業,
         作業進度,
         重置作業進度,
@@ -48,6 +55,22 @@ pub fn 微觀引擎() -> 微觀引擎輸出信號 {
         有無作業,
         ..
     } = 作業;
+
+    Effect::new(move || {
+        let drill_param = state.drill.get();
+        if let Some(題號) = drill_param {
+            佈置作業(作業::練習題(*現行方案.read(), 題號));
+        }
+    });
+
+    Effect::new(move || {
+        let drill_param = state.drill.get_untracked();
+        let 有冇題號 = 當前作業.read().題號;
+        if 有冇題號 != drill_param {
+            (state.set_drill)(有冇題號);
+        }
+    });
+
     let 字幕機關輸出信號 {
         分段字幕,
         當前段落,

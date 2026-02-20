@@ -7,7 +7,7 @@ use crate::gear::theory::{方案選單, 方案選項};
 
 #[component]
 pub fn Rime方案選單(
-    現行方案: ReadSignal<方案選項>,
+    現行方案: Signal<方案選項>,
     選中方案: impl 動作給一參數<方案選項>,
 ) -> impl IntoView {
     let 方案選單的引用 = NodeRef::<html::Select>::new();

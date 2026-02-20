@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 use leptos::prelude::*;
 
+use crate::app_state::選用方案動作;
 use crate::definition::{
     碼表格式, 觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則
 };
@@ -70,15 +71,16 @@ const 未定義方案: 輸入方案定義<'static> = 輸入方案定義 {
 
 #[derive(Clone, Copy)]
 pub struct 輸入方案機關輸出信號 {
-    pub 現行方案: ReadSignal<方案選項>,
-    pub 選用方案: WriteSignal<方案選項>,
+    pub 現行方案: Signal<方案選項>,
+    pub 選用方案: 選用方案動作,
     pub 方案定義: Signal<輸入方案定義<'static>>,
     pub 指法: Signal<觸鍵方式>,
 }
 
-pub fn 輸入方案機關() -> 輸入方案機關輸出信號 {
-    let (現行方案, 選用方案) = signal(方案選項::default());
-
+pub fn 輸入方案機關(
+    現行方案: Signal<方案選項>,
+    選用方案: 選用方案動作,
+) -> 輸入方案機關輸出信號 {
     let 方案定義 = Signal::derive(move || {
         方案選單
             .iter()

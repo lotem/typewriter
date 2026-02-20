@@ -8,8 +8,8 @@ use crate::gear::layout::配列;
 
 #[component]
 pub fn Rime配列選單(
-    已選配列: ReadSignal<配列>,
-    選用配列: impl 動作給一參數<配列>,
+    已選配列: Signal<配列>,
+    選中配列: impl 動作給一參數<配列>,
 ) -> impl IntoView {
     let 配列選單的引用 = NodeRef::<html::Select>::new();
     let _ = Effect::new(move |_| {
@@ -29,8 +29,8 @@ pub fn Rime配列選單(
             on:change=move |ev| {
                 if let Ok(選中第幾項) = event_target_value(&ev).parse::<usize>() {
                     if let Some(配列) = 配列::iter().nth(選中第幾項) {
-                        log!("選用配列[{}]: {}", 選中第幾項, 配列);
-                        選用配列(配列);
+                        log!("選中配列[{}]: {}", 選中第幾項, 配列);
+                        選中配列(配列);
                     }
                 }
             }
