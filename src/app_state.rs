@@ -71,6 +71,7 @@ impl 配列 {
             配列::直列分體 => "ortho_split",
             配列::正交直列帶數字行 => "ortho_with_number_row",
             配列::直列分體帶數字行 => "ortho_split_with_number_row",
+            配列::縱向錯列分體 => "columnar_split",
         }
     }
     // 解析 URL
@@ -82,6 +83,7 @@ impl 配列 {
             "ortho_split" => Ok(配列::直列分體),
             "ortho_with_number_row" => Ok(配列::正交直列帶數字行),
             "ortho_split_with_number_row" => Ok(配列::直列分體帶數字行),
+            "columnar_split" => Ok(配列::縱向錯列分體),
             _ => Err(()), // 解析失敗
         }
     }

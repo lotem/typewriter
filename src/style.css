@@ -170,15 +170,63 @@ kbd {
 .board.ortholinear.split .row:last-child .key:last-child {
     margin-left: var(--u);
 }
-.board.size-30.staggered .row:nth-child(3) .key:first-child,
-.board.size-30.staggered .row:nth-child(4) .key:first-child {
+.board.staggered.size-30 .row:nth-child(3) .key:first-child,
+.board.staggered.size-30 .row:nth-child(4) .key:first-child {
     margin-left: calc(var(--u) * 0.6375);
 }
-.board.size-60.staggered .row:nth-child(3) .key:first-child {
+.board.staggered.size-60 .row:nth-child(3) .key:first-child {
     margin-left: calc(var(--u) * 0.6375);
 }
-.board.size-60.staggered .row:nth-child(4) .key:first-child {
+.board.staggered.size-60 .row:nth-child(4) .key:first-child {
     margin-left: calc(var(--u) * -0.6375);
+}
+/* Ferris Sweep 佈局：激進的列錯位 + 僅保留內側雙拇指鍵 */
+/* 左右手分離間距 */
+.board.columnar.split .row:not(:last-child) .key:nth-child(6) {
+    margin-left: calc(var(--u) * 1.5 + var(--gap));
+}
+/* 小指 - 大幅下沉 */
+.board.columnar .row:not(:last-child) .key:nth-child(1),
+.board.columnar .row:not(:last-child) .key:nth-child(10) {
+    transform: translateY(calc(var(--u) * 1));
+}
+/* 無名指 */
+.board.columnar .row:not(:last-child) .key:nth-child(2),
+.board.columnar .row:not(:last-child) .key:nth-child(9) {
+    transform: translateY(calc(var(--u) * 0.25));
+}
+/* 中指 - 最高點 */
+.board.columnar .row:not(:last-child) .key:nth-child(3),
+.board.columnar .row:not(:last-child) .key:nth-child(8) {
+    transform: translateY(calc(var(--u) * -0.25));
+}
+/* 食指 */
+.board.columnar .row:not(:last-child) .key:nth-child(4),
+.board.columnar .row:not(:last-child) .key:nth-child(7) {
+    transform: translateY(calc(var(--u) * 0.15));
+}
+/* 內側食指 */
+.board.columnar .row:not(:last-child) .key:nth-child(5),
+.board.columnar .row:not(:last-child) .key:nth-child(6) {
+    transform: translateY(calc(var(--u) * 0.35));
+}
+/* 拇指區形狀與定位 */
+.board.columnar .row:last-child .key {
+    width: var(--u) !important;
+    height: var(--u) !important;
+    border-radius: 40% 40% 20% 20% / 50% 50% 30% 30% !important;
+    margin-top: calc(var(--u) * 1);
+}
+/* 左手拇指 (內側空格) */
+.board.columnar .row:last-child .key:first-child {
+    transform-origin: top right;
+    transform: rotate(30deg);
+}
+/* 右手拇指 (內側空格) */
+.board.columnar .row:last-child .key:last-child {
+    margin-left: calc((var(--u) + var(--gap)) * 0.2);
+    transform-origin: top left;
+    transform: rotate(-30deg);
 }
 .row {
     display: flex;

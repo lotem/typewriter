@@ -126,8 +126,9 @@ where
             class=("size-60", move || 配列.read().規格() == 60)
             class=("size-30", move || 配列.read().規格() == 30)
             class:ortholinear={move || 配列.read().直列()}
-            class:split={move || 配列.read().分體()}
             class:staggered={move || 配列.read().橫向交錯()}
+            class:columnar={move || 配列.read().縱向交錯()}
+            class:split={move || 配列.read().分體()}
         >
         { move || 配列.read().矩陣().iter().enumerate().map(|(行座標, 行)| view! {
             <div class="row">
