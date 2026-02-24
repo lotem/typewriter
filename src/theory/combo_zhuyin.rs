@@ -7,6 +7,7 @@ use crate::definition::{
 use crate::gear::layout::{
     上檔盤面, 基本盤面, 大寫字母盤面, 盤面定義, 盤面選擇碼, 配列, 鍵盤佈局, 鍵面刻印,
 };
+use crate::gear::theory::輸入方案環境;
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
 use crate::{盤面, 變換, 轉寫, 鍵面};
@@ -232,7 +233,7 @@ const 宮保注音鍵盤佈局: 鍵盤佈局 = 鍵盤佈局 {
     首選配列: 配列::正交直列,
 };
 
-pub fn 宮保注音輸入方案() -> 輸入方案定義<'static> {
+pub fn 宮保注音輸入方案(_環境: 輸入方案環境) -> 輸入方案定義<'static> {
     輸入方案定義 {
         名稱: "宮保注音",
         佈局: &宮保注音鍵盤佈局,

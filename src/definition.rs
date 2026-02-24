@@ -15,6 +15,7 @@ pub struct 鍵位定義<'a> {
 
 #[derive(Clone, Copy)]
 pub struct 輸入方案定義<'a> {
+    #[allow(dead_code)]
     pub 名稱: &'a str,
     pub 佈局: &'a 鍵盤佈局,
     pub 指法: 觸鍵方式,

@@ -28,16 +28,16 @@ pub fn Rime方案選單(
             node_ref=方案選單的引用
             on:change=move |ev| {
                 if let Ok(選中第幾項) = event_target_value(&ev).parse::<usize>() {
-                    if let Some(&(方案, 方案定義)) = 方案選單.get(選中第幾項) {
-                        log!("選中方案[{}]: {}", 選中第幾項, 方案定義.名稱);
+                    if let Some(&(方案, _)) = 方案選單.get(選中第幾項) {
+                        log!("選中方案[{}]: {}", 選中第幾項, 方案);
                         選中方案(方案);
                     }
                 }
             }
         >
         {
-            方案選單.iter().enumerate().map(|(方案序號, (_, 方案定義))| view! {
-                <option value={方案序號}>{方案定義.名稱}</option>
+            方案選單.iter().enumerate().map(|(方案序號, (方案, __))| view! {
+                <option value={方案序號}>{方案.to_string()}</option>
             }).collect_view()
         }
         </select>

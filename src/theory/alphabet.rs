@@ -5,6 +5,7 @@ use crate::definition::{
     碼表格式, 觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則, 鍵位定義
 };
 use crate::gear::layout::{拉丁字母鍵盤佈局, 盤面選擇碼};
+use crate::gear::theory::輸入方案環境;
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::拼寫運算;
 use crate::轉寫;
@@ -80,7 +81,7 @@ lazy_static! {
         Box::new([regex!("^([-A-Za-z'])+$").deref(), regex!("^ $").deref(),]);
 }
 
-pub fn 拉丁字母輸入方案() -> 輸入方案定義<'static> {
+pub fn 拉丁字母輸入方案(_環境: 輸入方案環境) -> 輸入方案定義<'static> {
     輸入方案定義 {
         名稱: "拉丁字母",
         佈局: &拉丁字母鍵盤佈局,

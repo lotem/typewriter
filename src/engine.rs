@@ -4,6 +4,7 @@ use leptos::prelude::*;
 use crate::action::動作;
 use crate::app_state::use_app_state;
 use crate::definition::觸鍵方式;
+use crate::gear::theory::輸入方案環境;
 use crate::gear::{
     assignment::{作業, 作業機關, 作業機關輸出信號, 步進法},
     caption::{字幕機關, 字幕機關輸出信號, 字幕段落},
@@ -33,7 +34,8 @@ pub fn 微觀引擎() -> 微觀引擎輸出信號 {
     let 選用方案 = state.set_theory;
     let 已選配列 = state.layout;
     let 選用配列 = state.set_layout;
-    let 方案 = 輸入方案機關(現行方案, 選用方案);
+    let 環境 = 輸入方案環境 { 已選配列 };
+    let 方案 = 輸入方案機關(現行方案, 選用方案, 環境);
     let 佈局 = 佈局機關(&方案, 已選配列, 選用配列);
     let 作業 = 作業機關(&方案);
     let 字幕 = 字幕機關(&方案, &作業);

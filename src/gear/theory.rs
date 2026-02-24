@@ -1,27 +1,21 @@
 use lazy_static::lazy_static;
 use leptos::prelude::*;
+use strum::{Display, EnumIter};
 
 use crate::app_state::選用方案動作;
 use crate::definition::{
     碼表格式, 觸鍵方式, 輸入方案定義, 轉寫法定義, 邊界判定規則
 };
-use crate::gear::layout::拉丁字母鍵盤佈局;
+use crate::gear::layout::{拉丁字母鍵盤佈局, 配列};
 use crate::theory::{
-    alphabet::拉丁字母輸入方案,
-    cantonese::粵語輸入方案,
-    combo_jyutping::{宮保粵拼縱版輸入方案, 宮保粵拼輸入方案},
-    combo_pinyin::宮保拼音輸入方案,
-    combo_zhuyin::宮保注音輸入方案,
-    detenele::動態能力注音輸入方案,
-    early_middle_chinese::早期中古漢語輸入方案,
-    late_middle_chinese::晚期中古漢語輸入方案,
-    modern_chinese::現代漢語輸入方案,
-    old_chinese::上古漢語輸入方案,
-    old_mandarin::近古漢語輸入方案,
-    zhuyin::注音輸入方案,
+    alphabet::拉丁字母輸入方案, cantonese::粵語輸入方案, combo_jyutping::宮保粵拼輸入方案,
+    combo_pinyin::宮保拼音輸入方案, combo_zhuyin::宮保注音輸入方案, detenele::動態能力注音輸入方案,
+    early_middle_chinese::早期中古漢語輸入方案, late_middle_chinese::晚期中古漢語輸入方案,
+    modern_chinese::現代漢語輸入方案, old_chinese::上古漢語輸入方案,
+    old_mandarin::近古漢語輸入方案, zhuyin::注音輸入方案,
 };
 
-#[derive(Clone, Copy, Default, PartialEq)]
+#[derive(Clone, Copy, Default, Display, EnumIter, PartialEq)]
 pub enum 方案選項 {
     #[default]
     宮保拼音,
@@ -33,27 +27,27 @@ pub enum 方案選項 {
     現代漢語,
     粵語,
     宮保粵拼,
-    宮保粵拼縱版,
     注音,
     動態能力注音,
     宮保注音,
 }
 
+type 生成方案函數 = fn(輸入方案環境) -> 輸入方案定義<'static>;
+
 lazy_static! {
-    pub static ref 方案選單: Vec<(方案選項, 輸入方案定義<'static>)> = vec![
-        (方案選項::宮保拼音, 宮保拼音輸入方案()),
-        (方案選項::拉丁字母, 拉丁字母輸入方案()),
-        (方案選項::上古漢語, 上古漢語輸入方案()),
-        (方案選項::早期中古漢語, 早期中古漢語輸入方案()),
-        (方案選項::晚期中古漢語, 晚期中古漢語輸入方案()),
-        (方案選項::近古漢語, 近古漢語輸入方案()),
-        (方案選項::現代漢語, 現代漢語輸入方案()),
-        (方案選項::粵語, 粵語輸入方案()),
-        (方案選項::宮保粵拼, 宮保粵拼輸入方案()),
-        (方案選項::宮保粵拼縱版, 宮保粵拼縱版輸入方案()),
-        (方案選項::注音, 注音輸入方案()),
-        (方案選項::動態能力注音, 動態能力注音輸入方案()),
-        (方案選項::宮保注音, 宮保注音輸入方案()),
+    pub static ref 方案選單: Vec<(方案選項, 生成方案函數)> = vec![
+        (方案選項::宮保拼音, 宮保拼音輸入方案),
+        (方案選項::拉丁字母, 拉丁字母輸入方案),
+        (方案選項::上古漢語, 上古漢語輸入方案),
+        (方案選項::早期中古漢語, 早期中古漢語輸入方案),
+        (方案選項::晚期中古漢語, 晚期中古漢語輸入方案),
+        (方案選項::近古漢語, 近古漢語輸入方案),
+        (方案選項::現代漢語, 現代漢語輸入方案),
+        (方案選項::粵語, 粵語輸入方案),
+        (方案選項::宮保粵拼, 宮保粵拼輸入方案),
+        (方案選項::注音, 注音輸入方案),
+        (方案選項::動態能力注音, 動態能力注音輸入方案),
+        (方案選項::宮保注音, 宮保注音輸入方案),
     ];
 }
 
@@ -86,16 +80,22 @@ pub struct 輸入方案機關輸出信號 {
     pub 指法: Signal<觸鍵方式>,
 }
 
+#[derive(Clone, Copy)]
+pub struct 輸入方案環境 {
+    pub 已選配列: Signal<Option<配列>>,
+}
+
 pub fn 輸入方案機關(
     現行方案: Signal<方案選項>,
     選用方案: 選用方案動作,
+    環境: 輸入方案環境,
 ) -> 輸入方案機關輸出信號 {
     let 方案定義 = Signal::derive(move || {
         方案選單
             .iter()
-            .find_map(|&(方案, 定義)| {
+            .find_map(|&(方案, 生成方案定義)| {
                 if 方案 == 現行方案() {
-                    Some(定義)
+                    Some(生成方案定義(環境))
                 } else {
                     None
                 }
