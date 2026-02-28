@@ -63,6 +63,7 @@ jobs:
           # 讓訪問 rime.io (根路徑) 的用戶自動跳轉到 rime.io/typewriter/
           echo '/ /typewriter/ 301' > dist/_redirects
           # 不重定向資源文件
+          echo '/typewriter/static/* /typewriter/static/:splat 200' >> dist/_redirects
           echo '/typewriter/*.css /typewriter/:splat.css 200' >> dist/_redirects
           echo '/typewriter/*.js /typewriter/:splat.js 200' >> dist/_redirects
           echo '/typewriter/*.wasm /typewriter/:splat.wasm 200' >> dist/_redirects
