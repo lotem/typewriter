@@ -19,9 +19,9 @@ use crate::view::{
     caption::Rime字幕屏,
     exercise_menu::Rime練習題選單,
     input_code::{
-        Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄, 回顯區佈局, 編碼欄顯示選項
+        回顯區佈局, 編碼欄顯示選項, Rime反查輸入欄, Rime編碼回顯區, Rime編碼欄
     },
-    keyboard::{Rime鍵圖, Rime鍵盤圖, 鍵面動態着色法},
+    keyboard::{鍵面動態着色法, Rime鍵圖, Rime鍵盤圖},
     layout_menu::Rime配列選單,
     status_bar::Rime狀態欄,
     theory_menu::Rime方案選單,

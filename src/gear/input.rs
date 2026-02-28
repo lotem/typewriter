@@ -2,7 +2,7 @@ use leptos::{ev, leptos_dom::helpers::window_event_listener, logging::log, prelu
 use leptos_use::use_window_focus;
 
 use crate::action::{動作, 動作給一參數, 動作給一參數得一結果};
-use crate::key_code::{KeyCode, 網頁鍵值轉換};
+use crate::key_code::{網頁鍵值轉換, KeyCode};
 
 pub fn 焦點事件處理機關(重置並擊狀態: impl 動作) {
     let 鍵盤輸入焦點源 = Selector::new(use_window_focus());
