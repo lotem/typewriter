@@ -59,17 +59,20 @@ pub fn 微觀引擎() -> 微觀引擎輸出信號 {
     } = 作業;
 
     Effect::new(move || {
-        let drill_param = state.drill.get();
-        if let Some(題號) = drill_param {
-            佈置作業(作業::練習題(*現行方案.read(), 題號));
+        let Some(目標題號) = state.drill.get() else {
+            return;
+        };
+
+        if 當前作業.read_untracked().題號 != Some(目標題號) {
+            佈置作業(作業::練習題(現行方案.get(), 目標題號));
         }
     });
 
     Effect::new(move || {
-        let drill_param = state.drill.get_untracked();
-        let 有冇題號 = 當前作業.read().題號;
-        if 有冇題號 != drill_param {
-            (state.set_drill)(有冇題號);
+        let 作業題號 = 當前作業.read().題號;
+
+        if state.drill.get_untracked() != 作業題號 {
+            (state.set_drill)(作業題號);
         }
     });
 
