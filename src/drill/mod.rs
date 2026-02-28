@@ -18,11 +18,13 @@ use zhuyin::注音練習題;
 
 use crate::gear::{assignment::碼表定義, caption::字幕格式, theory::方案選項};
 
+#[derive(Clone)]
 pub struct 練習題<'a> {
     pub 標題: &'a str,
     pub 題目: 題目來源<'a>,
 }
 
+#[derive(Clone)]
 pub enum 題目來源<'a> {
     內建 {
         編碼: 碼表定義<'a>,

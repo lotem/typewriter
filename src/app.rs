@@ -110,6 +110,7 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 作業機關輸出信號 {
         當前作業,
         佈置作業,
+        目標作業內容,
         目標輸入碼片段,
         ..
     } = 作業;
@@ -184,12 +185,11 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
     });
     let 反查碼 = Signal::derive(move || {
-        當前作業.read().自訂反查碼.clone().or_else(|| {
-            當前作業
-                .read()
-                .目標輸入碼()
-                .map(|碼表| 碼表.碼表原文().to_string())
-        })
+        目標作業內容
+            .read()
+            .as_ref()
+            .flatten()
+            .map(|作業| 作業.碼表.碼表原文().to_string())
     });
     let 反查碼變更動作 = move |反查碼: String| {
         佈置作業(作業::自訂(現行方案(), 反查碼));

@@ -1,10 +1,13 @@
+use gloo_net::http::Request;
 use lazy_regex::regex;
 use leptos::logging::log;
 use leptos::prelude::*;
+use std::borrow::Cow;
 use std::cmp::min;
 
 use crate::action::*;
 use crate::definition::{碼表格式, 輸入方案定義, 轉寫法定義};
+use crate::drill::{練習題, 題目來源};
 use crate::gear::{
     caption::字幕格式,
     theory::{方案選項, 輸入方案機關輸出信號},
@@ -43,43 +46,27 @@ impl 作業 {
         }
     }
 
-    fn 自訂編碼(&self) -> Option<碼表定義<'_>> {
-        self.自訂反查碼
-            .as_ref()
-            .and_then(|反查碼| {
-                反查碼
-                    .split_once("//")
-                    .map(|(編碼, _字幕)| 編碼.trim())
-                    .or(Some(反查碼.as_str()))
-            })
-            .map(碼表定義::自訂)
-    }
-
-    fn 自訂字幕(&self) -> Option<&str> {
-        self.自訂反查碼
-            .as_ref()
-            .and_then(|反查碼| 反查碼.split_once("//").map(|(_編碼, 字幕)| 字幕.trim()))
-    }
-
-    pub fn 目標輸入碼(&self) -> Option<碼表定義<'_>> {
-        self.科目
-            .配套練習題()
-            .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
-            .map(|題| 題.編碼.clone())
-            .or(self.自訂編碼())
-    }
-
-    pub fn 字幕(&self) -> 字幕格式<'_> {
-        self.科目
-            .配套練習題()
-            .and_then(|練習題| self.題號.and_then(|題號| 練習題.get(題號)))
-            .map(|題| 題.字幕.clone())
-            .or_else(|| self.自訂字幕().map(字幕格式::自訂))
-            .unwrap_or(字幕格式::自動生成)
-    }
-
     pub fn 是否練習題(&self) -> bool {
         self.題號.is_some()
+    }
+}
+
+#[derive(Clone)]
+pub struct 作業內容<'a> {
+    pub 碼表: 碼表定義<'a>,
+    pub 字幕: 字幕格式<'a>,
+}
+
+fn 解析習題(習題文本: &str) -> 作業內容<'static> {
+    match 習題文本.split_once("//") {
+        Some((編碼, 字幕)) => 作業內容 {
+            碼表: 碼表定義::自訂(Cow::Owned(編碼.trim().to_string())),
+            字幕: 字幕格式::自訂(Cow::Owned(字幕.trim().to_string())),
+        },
+        None => 作業內容 {
+            碼表: 碼表定義::自訂(Cow::Owned(習題文本.trim().to_string())),
+            字幕: 字幕格式::自動生成,
+        },
     }
 }
 
@@ -122,8 +109,10 @@ pub struct 作業機關輸出信號 {
     pub 佈置作業: WriteSignal<作業>,
     pub 作業進度: ReadSignal<usize>,
     pub 重置作業進度: 重置作業進度動作,
+    pub 目標作業內容: LocalResource<Option<作業內容<'static>>>,
+    pub 目標碼表格式: Signal<Option<碼表格式>>,
     pub 目標輸入碼序列: Memo<Box<[對照輸入碼]>>,
-    pub 目標輸入碼片段: Memo<Option<對照輸入碼>>,
+    pub 目標輸入碼片段: Signal<Option<對照輸入碼>>,
     pub 作業推進: 作業推進動作,
     pub 作業回退: 作業回退動作,
     pub 有無作業: Signal<bool>,
@@ -151,24 +140,61 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         更新作業進度(0);
     };
 
-    let 目標輸入碼序列 = Memo::new(move |_| {
-        當前作業
+    let 目標作業內容 = LocalResource::new(move || {
+        let 作業 = 當前作業.get();
+        let 選題 = 作業
+            .科目
+            .配套練習題()
+            .and_then(|練習題| 作業.題號.and_then(|題號| 練習題.get(題號)));
+        async move {
+            match 選題 {
+                Some(練習題 {
+                    標題: _,
+                    題目: 題目來源::求取 { 網址 },
+                }) => {
+                    let 習題文本 = Request::get(網址).send().await.ok()?.text().await.ok()?;
+                    Some(解析習題(&習題文本))
+                }
+                Some(練習題 {
+                    標題: _,
+                    題目: 題目來源::內建 { 編碼, 字幕 },
+                }) => Some(作業內容 {
+                    碼表: 編碼.clone(),
+                    字幕: 字幕.clone(),
+                }),
+
+                None => 作業.自訂反查碼.as_deref().map(解析習題),
+            }
+        }
+    });
+
+    let 目標碼表格式 = Signal::derive(move || {
+        目標作業內容
             .read()
-            .目標輸入碼()
-            .map(|碼表| 解析碼表(&碼表, &方案定義.read()))
+            .as_ref()
+            .flatten()
+            .and_then(|作業| 作業.碼表.碼表格式())
+    });
+
+    let 目標輸入碼序列 = Memo::new(move |_| {
+        目標作業內容
+            .read()
+            .as_ref()
+            .flatten()
+            .map(|作業| 解析碼表(&作業.碼表, &方案定義.read()))
             .unwrap_or(Box::new([]))
     });
 
     let _ = Effect::watch(
         目標輸入碼序列,
-        move |目標輸入碼序列, _, _| {
-            log!("更新了目標輸入碼: {}", 目標輸入碼序列.len());
+        move |輸入碼, _, _| {
+            log!("更新了目標輸入碼: {}", 輸入碼.len());
             重置作業進度();
         },
         false,
     );
 
-    let 目標輸入碼片段 = Memo::new(move |_| {
+    let 目標輸入碼片段 = Signal::derive(move || {
         目標輸入碼序列.with(|輸入碼| {
             if 輸入碼.is_empty() {
                 None
@@ -215,9 +241,9 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         }
     };
 
-    let 有無作業 = Signal::derive(move || 當前作業.read().目標輸入碼().is_some());
-
     let 輸入碼總數 = move || 目標輸入碼序列.read().len();
+
+    let 有無作業 = Signal::derive(move || 輸入碼總數() > 0);
 
     let 作業進度完成 = Signal::derive(move || 有無作業() && 作業進度() == 輸入碼總數());
 
@@ -226,6 +252,8 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         佈置作業,
         作業進度,
         重置作業進度,
+        目標作業內容,
+        目標碼表格式,
         目標輸入碼序列,
         目標輸入碼片段,
         作業推進,
@@ -240,7 +268,7 @@ pub enum 碼表定義<'a> {
     逐鍵(&'a str),
     連擊(&'a str),
     並擊(&'a str),
-    自訂(&'a str),
+    自訂(Cow<'a, str>),
 }
 
 impl 碼表定義<'_> {

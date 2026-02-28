@@ -4,9 +4,7 @@ use leptos::prelude::*;
 use crate::action::{動作, 動作得一結果, 動作給一參數, 未有};
 use crate::definition::{判定鍵位, 碼表格式, 選擇鍵面, 鍵組};
 use crate::gear::{
-    assignment::{作業機關輸出信號, 碼表定義},
-    layout::佈局機關輸出信號,
-    theory::輸入方案機關輸出信號,
+    assignment::作業機關輸出信號, layout::佈局機關輸出信號, theory::輸入方案機關輸出信號,
 };
 use crate::key_code::KeyCode;
 use crate::spelling_algebra::施展拼寫運算;
@@ -64,7 +62,7 @@ pub fn 連擊機關(
     佈局: &佈局機關輸出信號,
 ) -> 連擊機關輸出信號 {
     let 方案 = 方案.方案定義;
-    let 當前作業 = 作業.當前作業;
+    let 目標碼表格式 = 作業.目標碼表格式;
     let 目標輸入碼片段 = 作業.目標輸入碼片段;
     let 作業進度 = 作業.作業進度;
     let 作業進度完成 = 作業.作業進度完成;
@@ -143,14 +141,7 @@ pub fn 連擊機關(
             .map(|字根碼| 方案.read().讀出鍵位(&字根碼.to_string(), &當選盤面()))
     });
 
-    let 編碼法 = move || {
-        當前作業
-            .read()
-            .目標輸入碼()
-            .as_ref()
-            .and_then(碼表定義::碼表格式)
-            .unwrap_or_else(|| 方案.read().編碼法)
-    };
+    let 編碼法 = move || 目標碼表格式.read().unwrap_or_else(|| 方案.read().編碼法);
 
     let 連擊比對成功 = Memo::new(move |_| {
         let 字根碼 = 實錄分隔鍵().map_or_else(

@@ -25,9 +25,9 @@ impl From<觸鍵方式> for 字幕步進 {
 #[derive(Clone)]
 pub enum 字幕格式<'a> {
     自動生成,
-    自訂(&'a str),
-    詞句(&'static str),
-    段落(字幕步進, &'static str),
+    自訂(Cow<'a, str>),
+    詞句(&'a str),
+    段落(字幕步進, &'a str),
 }
 
 struct 字幕指標<'a> {
@@ -105,36 +105,43 @@ pub fn 字幕機關(
     作業: &作業機關輸出信號,
 ) -> 字幕機關輸出信號 {
     let 指法 = 方案.指法;
-    let 當前作業 = 作業.當前作業;
     let 作業進度 = 作業.作業進度;
+    let 目標作業內容 = 作業.目標作業內容;
     let 目標輸入碼序列 = 作業.目標輸入碼序列;
 
-    let 分段字幕 = Memo::new(move |_| match 當前作業.read().字幕() {
-        字幕格式::自動生成 => {
-            let 步進 = 字幕步進::from(指法());
-            生成字幕(步進, &目標輸入碼序列.read())
-        }
-        字幕格式::自訂(字幕) => {
-            標註字序(字幕.split_whitespace().map(String::from).map(Cow::Owned))
-        }
-        字幕格式::詞句(字幕) => 標註字序(字幕.split_whitespace().map(Cow::Borrowed)),
-        字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(
-            字幕
-                .lines()
-                .map(|每一行| 每一行.split_whitespace().collect::<Vec<_>>().join("[ ]"))
-                .map(Cow::Owned),
-        ),
-        字幕格式::段落(字幕步進::逐詞, 字幕) => 標註字序(
-            字幕
-                .lines()
-                .map(|每一行| {
-                    每一行
-                        .split_whitespace()
-                        .flat_map(|每個詞| ["[", 每個詞, " ]"])
-                        .collect::<String>()
-                })
-                .map(Cow::Owned),
-        ),
+    let 分段字幕 = Memo::new(move |_| {
+        目標作業內容.read().as_ref().flatten().map_or_else(
+            || Box::from([]),
+            |作業| match 作業.字幕 {
+                字幕格式::自動生成 => {
+                    let 步進 = 字幕步進::from(指法());
+                    生成字幕(步進, &目標輸入碼序列.read())
+                }
+                字幕格式::自訂(ref 字幕) => {
+                    標註字序(字幕.split_whitespace().map(String::from).map(Cow::Owned))
+                }
+                字幕格式::詞句(字幕) => {
+                    標註字序(字幕.split_whitespace().map(Cow::Borrowed))
+                }
+                字幕格式::段落(字幕步進::逐字, 字幕) => 標註字序(
+                    字幕
+                        .lines()
+                        .map(|每一行| 每一行.split_whitespace().collect::<Vec<_>>().join("[ ]"))
+                        .map(Cow::Owned),
+                ),
+                字幕格式::段落(字幕步進::逐詞, 字幕) => 標註字序(
+                    字幕
+                        .lines()
+                        .map(|每一行| {
+                            每一行
+                                .split_whitespace()
+                                .flat_map(|每個詞| ["[", 每個詞, " ]"])
+                                .collect::<String>()
+                        })
+                        .map(Cow::Owned),
+                ),
+            },
+        )
     });
 
     let 當前段落 = Memo::new(move |_| {
