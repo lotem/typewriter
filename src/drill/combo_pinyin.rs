@@ -147,4 +147,32 @@ er 'a ␣"),
         標題: "鼠鬚管",
         題目: 求取 { 網址: "/typewriter/static/drill/shuxuguan.txt" },
     },
+    練習題 {
+        標題: "歌者",
+        題目: 求取 { 網址: "/typewriter/static/drill/gezhe.txt" },
+    },
+    練習題 {
+        標題: "一個人開發",
+        題目: 求取 { 網址: "/typewriter/static/drill/yigerenkaifa.txt" },
+    },
+    練習題 {
+        標題: "山羊要喫山頂上的草",
+        題目: 求取 { 網址: "/typewriter/static/drill/shanyangyaochishandingshangdecao.txt" },
+    },
+    練習題 {
+        標題: "宮保並擊節奏無敵",
+        題目: 求取 { 網址: "/typewriter/static/drill/gongbaobingjijiezouwudi.txt" },
+    },
+    練習題 {
+        標題: "拼音輸入哪家強",
+        題目: 求取 { 網址: "/typewriter/static/drill/pinyinshurunajiaqiang.txt" },
+    },
+    練習題 {
+        標題: "粗鄙之語",
+        題目: 求取 { 網址: "/typewriter/static/drill/cubizhiyu.txt" },
+    },
+    練習題 {
+        標題: "煙花易冷",
+        題目: 求取 { 網址: "/typewriter/static/drill/yanhuayileng.txt" },
+    },
 ];

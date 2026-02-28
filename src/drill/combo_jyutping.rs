@@ -122,4 +122,16 @@ aak ak ek ik ok uk oek",
             網址: "/typewriter/static/drill/gongsaan.txt",
         },
     },
+    練習題 {
+        標題: "陳慧嫻－千千闋歌",
+        題目: 求取 {
+            網址: "/typewriter/static/drill/cincinkyutgo.txt",
+        },
+    },
+    練習題 {
+        標題: "劉德華－一起走過的日子",
+        題目: 求取 {
+            網址: "/typewriter/static/drill/jatheizaugwodikjatzi.txt",
+        },
+    },
 ];
