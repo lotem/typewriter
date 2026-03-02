@@ -2,6 +2,8 @@
     color-scheme: light dark;
     --u: min(80px, 6.5vw, 10vh);
     --gap: calc(var(--u) * 0.2);
+    --default-font: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
+    --key-label-font: var(--default-font);
 }
 @media (prefers-color-scheme: light) {
     :root {
@@ -45,6 +47,7 @@
 body {
     color: var(--primary-fg-color);
     background-color: var(--primary-bg-color);
+    font-family: var(--default-font);
     padding-bottom: calc(var(--u) * 0.8);
     box-sizing: border-box;
     min-height: 100vh;
@@ -53,7 +56,7 @@ body {
     margin: 0;
 }
 kbd {
-    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
+    font-family: var(--key-label-font);
 }
 .text-box {
     display: flex;
@@ -66,7 +69,6 @@ kbd {
     //border: 1px dotted;
     //border-radius: 32px;
     color: var(--secondary-fg-color);
-    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
     font-size: max(24px, calc(var(--u) * 0.7));
     line-height: 1.4;
     padding: 16px 32px;
@@ -117,7 +119,6 @@ kbd {
     color: var(--accent-color-done);
 }
 .translated-input, .lookup-code, .exercises, .theories, .layouts {
-    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
     font-size: calc(var(--u) * 0.4);
 }
 .input-code .single-column {
@@ -342,7 +343,6 @@ kbd {
     align-items: center;
     gap: calc(var(--u) * 0.4);
     background-color: transparent;
-    font-family: LXGW WenKai, Maple Mono CN, Maple Mono, Inter, sans-serif;
     font-size: max(12px, calc(var(--u) * 0.2));
     opacity: 0.3;
     transition: opacity 0.2s ease-in-out;
