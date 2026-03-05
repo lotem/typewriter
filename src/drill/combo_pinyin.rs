@@ -175,4 +175,8 @@ er 'a ␣"),
         標題: "煙花易冷",
         題目: 求取 { 網址: "/typewriter/static/drill/yanhuayileng.txt" },
     },
+    練習題 {
+        標題: "五指刪",
+        題目: 求取 { 網址: "/typewriter/static/drill/wuzhishan.txt" },
+    },
 ];
