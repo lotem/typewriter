@@ -117,7 +117,7 @@ aak ak ek ik ok uk oek",
         },
     },
     練習題 {
-        標題: "馬德鍾－江山",
+        標題: "馬德鐘－江山",
         題目: 求取 {
             網址: "/typewriter/static/drill/gongsaan.txt",
         },
