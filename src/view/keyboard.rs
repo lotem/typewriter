@@ -1,4 +1,6 @@
 use leptos::prelude::*;
+use leptos::wasm_bindgen::JsCast;
+use leptos::web_sys;
 
 use crate::gear::layout::{
     功能鍵::衆功能鍵, 盤面選擇碼, 矩陣座標, 配列, 鍵盤佈局, 鍵面刻印, 鍵面映射,
@@ -84,13 +86,22 @@ impl 鍵面標註法 for 鍵面映射 {
 }
 
 #[component]
-pub fn Rime鍵圖<T, U>(鍵: KeyCode, 標註法: Signal<T>, 着色法: U) -> impl IntoView
+pub fn Rime鍵圖<T, U>(
+    鍵: KeyCode,
+    標註法: Signal<T>,
+    着色法: U,
+    #[prop(into)] 落鍵動作: Callback<KeyCode>,
+    #[prop(into)] 抬鍵動作: Callback<KeyCode>,
+) -> impl IntoView
 where
     T: 鍵面標註法 + Copy + Send + Sync + 'static,
     U: 鍵面動態着色法 + Copy + Send + Sync + 'static,
 {
+    let (已落鍵, 落鍵) = signal(false);
     view! {
-        <div class="key horizontal-box"
+        <div
+            style="touch-action: none; user-select: none;"
+            class="key horizontal-box"
             class:empty={move || 標註法.read().是否空鍵()}
             class:fallback={move || 標註法.read().是否後備盤面()}
             class:function={move || 標註法.read().是否功能鍵()}
@@ -98,6 +109,42 @@ where
             class:hint={move || 着色法.鍵位提示(鍵)}
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
+            on:pointerdown=move |ev| {
+                //  釋放指針捕獲: 允許手指在屏幕上滑動到其他鍵
+                if let Ok(el) = ev.target().unwrap().dyn_into::<web_sys::Element>() {
+                    let _ = el.release_pointer_capture(ev.pointer_id());  // 會立即觸發 pointerenter
+                }
+                if !已落鍵.get_untracked() {
+                    落鍵(true);
+                    落鍵動作.run(鍵);
+                }
+            }
+            on:pointerup=move |_| {
+                if 已落鍵.get_untracked() {
+                    落鍵(false);
+                    抬鍵動作.run(鍵);
+                }
+            }
+            on:pointerenter=move |ev| {
+                // 如果手指按壓着滑入該鍵,視爲落鍵
+                if ev.buttons() > 0 && !已落鍵.get_untracked() {
+                    落鍵(true);
+                    落鍵動作.run(鍵);
+                }
+            }
+            on:pointerleave=move |_| {
+                if 已落鍵.get_untracked() {
+                    落鍵(false);
+                    抬鍵動作.run(鍵);
+                }
+            }
+            on:pointercancel=move |_| {
+                // 處理系統中斷
+                if 已落鍵.get_untracked() {
+                    落鍵(false);
+                    抬鍵動作.run(鍵);
+                }
+            }
         >
             <kbd class="label secondary">{move || 標註法.read().刻印().左側刻印文字()}</kbd>
             <div class="vertical-box">
@@ -116,6 +163,8 @@ pub fn Rime鍵盤圖<T>(
     鍵盤佈局: Signal<鍵盤佈局>,
     目標盤面: ReadSignal<盤面選擇碼>,
     着色法: T,
+    #[prop(into)] 落鍵動作: Callback<KeyCode>,
+    #[prop(into)] 抬鍵動作: Callback<KeyCode>,
 ) -> impl IntoView
 where
     T: 鍵面動態着色法 + Copy + Send + Sync + 'static,
@@ -137,7 +186,7 @@ where
               .map(|(列座標, &鍵)| {
                 let 標註法 = Signal::derive(move || 選擇鍵面::new(鍵盤佈局(), 鍵, 目標盤面(), 矩陣座標(行座標, 列座標)));
                 view! {
-                    <Rime鍵圖 鍵={鍵} 標註法={標註法} 着色法={着色法}/>
+                    <Rime鍵圖 鍵={鍵} 標註法={標註法} 着色法={着色法} 落鍵動作={落鍵動作} 抬鍵動作={抬鍵動作}/>
                 }
             }).collect_view() }
             </div>

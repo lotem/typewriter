@@ -14,6 +14,7 @@ pub fn 焦點事件處理機關(重置並擊狀態: impl 動作) {
 }
 
 #[allow(dead_code)]
+#[derive(Default)]
 pub struct 檔位 {
     pub shift: bool,
     pub ctrl: bool,
