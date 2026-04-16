@@ -1,5 +1,6 @@
 mod alphabet;
 mod ancient_chinese;
+mod cangjie;
 mod cantonese;
 mod combo_jyutping;
 mod combo_pinyin;
@@ -10,6 +11,7 @@ use alphabet::字母鍵盤練習題;
 use ancient_chinese::{
     上古漢語練習題, 早期中古漢語練習題, 晚期中古漢語練習題, 現代漢語練習題, 近古漢語練習題,
 };
+use cangjie::倉頡練習題;
 use cantonese::粵語練習題;
 use combo_jyutping::宮保粵拼練習題;
 use combo_pinyin::宮保拼音練習題;
@@ -48,6 +50,7 @@ const 各方案練習題組: &[(方案選項, &[練習題])] = &[
     (方案選項::注音, 注音練習題),
     (方案選項::動態能力注音, 注音練習題),
     (方案選項::宮保注音, 宮保注音練習題),
+    (方案選項::倉頡, 倉頡練習題),
 ];
 
 impl 方案選項 {
