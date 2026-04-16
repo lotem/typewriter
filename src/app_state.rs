@@ -39,6 +39,7 @@ impl 方案選項 {
             方案選項::注音 => "zhuyin",
             方案選項::動態能力注音 => "detenele",
             方案選項::宮保注音 => "combo_zhuyin",
+            方案選項::倉頡 => "cangjie",
         }
     }
     // 解析 URL
@@ -56,6 +57,7 @@ impl 方案選項 {
             "zhuyin" => Ok(方案選項::注音),
             "detenele" => Ok(方案選項::動態能力注音),
             "combo_zhuyin" => Ok(方案選項::宮保注音),
+            "cangjie" => Ok(方案選項::倉頡),
             _ => Err(()), // 解析失敗
         }
     }
