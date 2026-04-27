@@ -40,6 +40,7 @@ impl 方案選項 {
             方案選項::動態能力注音 => "detenele",
             方案選項::宮保注音 => "combo_zhuyin",
             方案選項::倉頡 => "cangjie",
+            方案選項::倉頡七曜並擊 => "cangjie_luminary_chords",
         }
     }
     // 解析 URL
@@ -58,6 +59,7 @@ impl 方案選項 {
             "detenele" => Ok(方案選項::動態能力注音),
             "combo_zhuyin" => Ok(方案選項::宮保注音),
             "cangjie" => Ok(方案選項::倉頡),
+            "cangjie_luminary_chords" => Ok(方案選項::倉頡七曜並擊),
             _ => Err(()), // 解析失敗
         }
     }

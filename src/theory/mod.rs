@@ -1,5 +1,6 @@
 pub mod alphabet;
 pub mod cangjie;
+pub mod cangjie_luminary_chords;
 pub mod cantonese;
 pub mod combo_jyutping;
 pub mod combo_pinyin;
