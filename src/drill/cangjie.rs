@@ -18,4 +18,10 @@ pub const 倉頡練習題: &[練習題] = &[
             網址: "/typewriter/static/drill/qianziwen.txt",
         },
     },
+    練習題 {
+        標題: "鍵道·破執",
+        題目: 求取 {
+            網址: "/typewriter/static/drill/jiandao-pozhi.txt",
+        },
+    },
 ];
