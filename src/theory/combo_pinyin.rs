@@ -198,7 +198,7 @@ lazy_static! {
         變換!("eng$", "NE"),
         變換!("^([jqx])u", "${1}Ü"),
         變換!("^yu|ü|v", "Ü"),
-        變換!("^yi?|ii?", "I"),
+        變換!("yi?|i", "I"),
         變換!("^wu?|u", "U"),
         // 聲母的並擊碼
         變換!("^b", "B"),
@@ -234,8 +234,8 @@ lazy_static! {
         regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
         regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
         regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$").deref(),
-        // 尖音，演示指法用。其中韻母 i 雙寫
-        regex!("^([zcs])(ii|[iv]e?|üe?|i?ao|iu|[iv]a?n|üa?n|ia?ng|iong)$").deref(),
+        // 尖音，演示指法用。韻母 i 在 z,c,s 之後可拼爲 yi 以區別於舌尖元音
+        regex!("^([zcs])(yi|[iv]e?|üe?|i?ao|iu|[iv]a?n|üa?n|ia?ng|iong)$").deref(),
         regex!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$").deref(),
         // 聲母
         regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)-?$").deref(),
