@@ -225,17 +225,17 @@ lazy_static! {
     ]);
 
     static ref 貌似拼音: Box<[&'static Regex]> = Box::new([
-        regex!("^([bpm])([iu]|a|i?e|o|[ae]i|i?ao|[oi]u|i?an|[ie]n|[ei]ng|ang|ong)$").deref(),
+        regex!("^([bpm])([iu]|a|i?e|o|[ae]i|i?ao|i?ou|iu|i?an|[ie]n|[ei]ng|ang|ong)$").deref(),
         regex!("^([fw])(u|a|o|[ae]i|ao|ou|an|en|eng|ang|ong)$").deref(),
-        regex!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|[oi]u|[iu]?an|[ue]n|[ei]ng|ang|ong)$").deref(),
+        regex!("^([dt])([iu]|i?a|i?e|uo|[aeu]i|i?ao|i?ou|iu|[iu]?an|[ue]n|[ei]ng|ang|ong)$").deref(),
         regex!(
-            "^([nl])([iuv]|i?a|[iuv]?e|üe?|u?o|[aeu]i|i?ao|[oi]u|[iu]?an|[iue]n|[ei]ng|i?ang|i?ong)$"
+            "^([nl])([iuv]|i?a|[iuv]?e|üe?|u?o|[aeu]i|i?ao|i?ou|iu|[iu]?an|[iue]n|[ei]ng|i?ang|i?ong)$"
         ).deref(),
         regex!("^([gkh])(u|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
         regex!("^([zcs]h?|r)([iu]|u?a|e|uo|u?ai|[ue]i|ao|ou|u?an|[ue]n|eng|u?ang|ong)$").deref(),
-        regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|[oi]u|[iu]?an|[iu]n|ing|i?ang|i?ong)$").deref(),
+        regex!("^([jqxy])([iu]|i?a|[iu]?e|o|i?ao|i?ou|iu|[iu]?an|[iu]n|ing|i?ang|i?ong)$").deref(),
         // 尖音，演示指法用。韻母 i 在 z,c,s 之後可拼爲 yi 以區別於舌尖元音
-        regex!("^([zcs])(yi|[iv]e?|üe?|i?ao|iu|[iv]a?n|üa?n|ia?ng|iong)$").deref(),
+        regex!("^([zcs])(yi|[iv]e?|üe?|iao|io?u|[iv]a?n|üa?n|ia?ng|iong)$").deref(),
         regex!("^([aeo]|[ae]i|ao|ou|[ae]ng?|er)$").deref(),
         // 聲母
         regex!("^([bpmfdtnlgkhjqxr]|[zcs]h?)-?$").deref(),
