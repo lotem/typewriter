@@ -373,7 +373,7 @@ fn 解析並擊輸入碼序列(輸入碼序列: &str) -> Box<[對照輸入碼]> 
             (?P<chord> \p{Uppercase}+ ) |
             \[ (?P<non_ascii_chord> [^\]]+ ) \]
         )(?:
-            = (?P<eq_code> [\w'] )+ |
+            = (?P<eq_code> [\w']+ ) |
             =< (?P<eq_quoted_code> [^<>]* ) >
         )? |
         (?P<code> \w+ ) |
