@@ -82,7 +82,7 @@ lazy_static! {
         變換!("-", "a"),
         變換!(" ", ""),
         變換!("^([iy])", "j${1}"),
-        變換!("^(u)", "w${1}"),
+        變換!("^(u[int]?)$", "w${1}"),
     ]);
     static ref 粵拼轉並擊: Box<[拼寫運算<'static>]> = Box::new([
         變換!("^m", "FB"),
@@ -105,7 +105,7 @@ lazy_static! {
         變換!("aa", "A"),
         變換!("oe|eo", "V"),
         變換!("^j([iy])", "${1}"),
-        變換!("^w(u)", "${1}"),
+        變換!("^w(u[int]?)$", "${1}"),
         變換!("^j", "CL"),
         變換!("^w", "SH"),
         變換!("yu", "Y"),
@@ -206,7 +206,7 @@ lazy_static! {
 
 lazy_static! {
     static ref 貌似粵拼: Box<[&'static Regex]> =
-        Box::new([regex!("^[bpmfdtnlgkhzcsjwaoey][a-z]*$").deref(),]);
+        Box::new([regex!("^[bpmfdtnlgkhzcsjwaoeyu][a-z]*$").deref(),]);
 }
 
 const 宮保粵拼盤面: 盤面定義<'static> = 盤面![
