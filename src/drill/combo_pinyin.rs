@@ -179,4 +179,8 @@ er 'a ␣"),
         標題: "五指刪",
         題目: 求取 { 網址: "/typewriter/static/drill/wuzhishan.txt" },
     },
+    練習題 {
+        標題: "九張機·中州新韻",
+        題目: 求取 { 網址: "/typewriter/static/drill/jiuzhangji.txt" },
+    },
 ];
