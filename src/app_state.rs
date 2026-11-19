@@ -29,18 +29,18 @@ impl 方案選項 {
         match self {
             方案選項::宮保拼音 => "combo_pinyin",
             方案選項::拉丁字母 => "alphabet",
+            方案選項::倉頡 => "cangjie",
+            方案選項::倉頡七曜並擊 => "cangjie_luminary_chords",
+            方案選項::注音 => "zhuyin",
+            方案選項::動態能力注音 => "detenele",
+            方案選項::宮保注音 => "combo_zhuyin",
+            方案選項::宮保粵拼 => "combo_jyutping",
+            方案選項::粵語 => "cantonese",
             方案選項::上古漢語 => "old_chinese",
             方案選項::早期中古漢語 => "early_middle_chinese",
             方案選項::晚期中古漢語 => "late_middle_chinese",
             方案選項::近古漢語 => "old_mandarin",
             方案選項::現代漢語 => "modern_chinese",
-            方案選項::粵語 => "cantonese",
-            方案選項::宮保粵拼 => "combo_jyutping",
-            方案選項::注音 => "zhuyin",
-            方案選項::動態能力注音 => "detenele",
-            方案選項::宮保注音 => "combo_zhuyin",
-            方案選項::倉頡 => "cangjie",
-            方案選項::倉頡七曜並擊 => "cangjie_luminary_chords",
         }
     }
     // 解析 URL
@@ -48,18 +48,18 @@ impl 方案選項 {
         match s {
             "combo_pinyin" => Ok(方案選項::宮保拼音),
             "alphabet" => Ok(方案選項::拉丁字母),
+            "cangjie" => Ok(方案選項::倉頡),
+            "cangjie_luminary_chords" => Ok(方案選項::倉頡七曜並擊),
+            "zhuyin" => Ok(方案選項::注音),
+            "detenele" => Ok(方案選項::動態能力注音),
+            "combo_zhuyin" => Ok(方案選項::宮保注音),
+            "combo_jyutping" => Ok(方案選項::宮保粵拼),
+            "cantonese" => Ok(方案選項::粵語),
             "old_chinese" => Ok(方案選項::上古漢語),
             "early_middle_chinese" => Ok(方案選項::早期中古漢語),
             "late_middle_chinese" => Ok(方案選項::晚期中古漢語),
             "old_mandarin" => Ok(方案選項::近古漢語),
             "modern_chinese" => Ok(方案選項::現代漢語),
-            "cantonese" => Ok(方案選項::粵語),
-            "combo_jyutping" => Ok(方案選項::宮保粵拼),
-            "zhuyin" => Ok(方案選項::注音),
-            "detenele" => Ok(方案選項::動態能力注音),
-            "combo_zhuyin" => Ok(方案選項::宮保注音),
-            "cangjie" => Ok(方案選項::倉頡),
-            "cangjie_luminary_chords" => Ok(方案選項::倉頡七曜並擊),
             _ => Err(()), // 解析失敗
         }
     }
