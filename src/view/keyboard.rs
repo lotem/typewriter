@@ -31,8 +31,14 @@ pub trait 鍵面動態着色法 {
     fn 提示步進(&self) -> usize {
         0
     }
+    fn 是否失誤態(&self) -> bool {
+        false
+    }
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool;
     fn 是否擊中(&self, 鍵: KeyCode) -> bool;
+    fn 是否誤擊(&self, _鍵: KeyCode) -> bool {
+        false
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -116,12 +122,14 @@ where
             class:function={move || 標註法.read().是否功能鍵()}
             class:space={move || 標註法.read().是否空格()}
             class:hint={move || 着色法.鍵位提示(鍵)}
+            class:hint-missed={move || 着色法.是否失誤態() && 着色法.鍵位提示(鍵) && !着色法.是否擊中(鍵)}
             class:hint-upcoming={move || 着色法.餘碼預顯(鍵)}
             class:hint-repeat={move || 着色法.鍵位提示(鍵) && 着色法.連打餘數(鍵) >= 2}
             class:hint-step-even={move || 着色法.鍵位提示(鍵) && 着色法.提示步進().is_multiple_of(2)}
             class:hint-step-odd={move || 着色法.鍵位提示(鍵) && !着色法.提示步進().is_multiple_of(2)}
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
+            class:mispress={move || 着色法.是否誤擊(鍵)}
             on:pointerdown=move |ev| {
                 //  釋放指針捕獲: 允許手指在屏幕上滑動到其他鍵
                 if let Ok(el) = ev.target().unwrap().dyn_into::<web_sys::Element>() {

@@ -46,6 +46,7 @@ pub fn 輸入事件處理機關(
         };
         if 處理功能鍵(觸鍵消息 { 鍵碼, 檔位 }) {
             ev.prevent_default();
+            return;
         }
         if 鍵碼 != KeyCode::No {
             既然落鍵(鍵碼);

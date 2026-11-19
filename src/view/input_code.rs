@@ -3,7 +3,7 @@ use leptos::prelude::*;
 use leptos_use::on_click_outside;
 
 use crate::action::{動作, 動作給一參數};
-use crate::gear::key_press::連擊對照表示;
+use crate::gear::{chord::並擊對照表示, key_press::連擊對照表示};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum 回顯區佈局 {
@@ -17,6 +17,7 @@ pub fn Rime編碼回顯區(
     輸入碼: Signal<String>,
     轉寫碼: Signal<Option<String>>,
     連擊對照: Signal<Option<連擊對照表示>>,
+    並擊對照: Signal<Option<並擊對照表示>>,
 ) -> impl IntoView {
     view! {
         {move || {
@@ -50,6 +51,24 @@ pub fn Rime編碼回顯區(
                     }
                     .into_any();
                 }
+            } else if let Some(對照) = 並擊對照() {
+                return view! {
+                    <kbd class="raw-input left-column chord-compare">
+                        <span class="seq-error">{對照.實擊並擊碼}</span>
+                        {(!對照.目標並擊碼.is_empty()).then_some(view! {
+                            <span class="chord-target">{對照.目標並擊碼}</span>
+                        })}
+                    </kbd>
+                    <span class="translated-input right-column chord-compare">
+                        {對照.實擊轉寫碼.map(|實拼| view! {
+                            <span class="seq-error">{實拼}</span>
+                        })}
+                        {對照.目標轉寫碼.map(|目標拼| view! {
+                            <span class="chord-target">{目標拼}</span>
+                        })}
+                    </span>
+                }
+                .into_any();
             }
 
             view! {

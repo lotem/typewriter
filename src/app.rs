@@ -33,6 +33,7 @@ struct 並擊對標動態 {
     餘碼提示: Signal<Option<鍵組>>,
     同鍵連打數: Signal<usize>,
     提示步進: Signal<usize>,
+    並擊失誤態: Signal<bool>,
     實況並擊: Signal<並擊狀態>,
 }
 
@@ -59,12 +60,22 @@ impl 鍵面動態着色法 for 並擊對標動態 {
         self.提示步進.get()
     }
 
+    fn 是否失誤態(&self) -> bool {
+        self.並擊失誤態.get()
+    }
+
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
         self.實況並擊.read().實時落鍵.0.contains(&鍵)
     }
 
     fn 是否擊中(&self, 鍵: KeyCode) -> bool {
         self.實況並擊.read().累計擊鍵.0.contains(&鍵)
+    }
+
+    fn 是否誤擊(&self, 鍵: KeyCode) -> bool {
+        self.並擊失誤態.get()
+            && !self.鍵位提示(鍵)
+            && self.實況並擊.read().累計擊鍵.0.contains(&鍵)
     }
 }
 
@@ -153,6 +164,9 @@ pub fn Rime打字機應用() -> impl IntoView {
         並擊所得拼音,
         並擊完成,
         並擊成功,
+        並擊失誤,
+        並擊計次,
+        並擊對照,
         ..
     } = 並擊;
     let 視圖輸入信號 {
@@ -186,15 +200,19 @@ pub fn Rime打字機應用() -> impl IntoView {
     });
     let 輸入錯誤 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => 存在錯碼(),
-        觸鍵方式::並擊 => false,
+        觸鍵方式::並擊 => 並擊失誤(),
     });
     let 錯碼計數 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => 連擊對照.read().錯碼段.chars().count(),
-        觸鍵方式::並擊 => 0,
+        觸鍵方式::並擊 => 並擊計次(),
     });
     let 連擊回顯對照 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => Some(連擊對照()),
         觸鍵方式::並擊 => None,
+    });
+    let 並擊回顯對照 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => None,
+        觸鍵方式::並擊 => 並擊對照(),
     });
     let 點擊編碼欄動作 = move || {
         if 現行工作模式() == 工作模式::錄入 {
@@ -270,11 +288,17 @@ pub fn Rime打字機應用() -> impl IntoView {
         觸鍵方式::連擊 => 提示步進(),
     });
 
+    let 並擊失誤表示 = Signal::derive(move || match 指法() {
+        觸鍵方式::並擊 => 並擊失誤(),
+        觸鍵方式::連擊 => false,
+    });
+
     let 並擊動態 = 並擊對標動態 {
         目標並擊: 目標鍵位表示,
         餘碼提示: 餘碼鍵位表示,
         同鍵連打數: 連打餘數表示,
         提示步進: 提示步進表示,
+        並擊失誤態: 並擊失誤表示,
         實況並擊: 並擊狀態流.into(),
     };
 
@@ -311,6 +335,7 @@ pub fn Rime打字機應用() -> impl IntoView {
                             輸入碼={回顯輸入碼}
                             轉寫碼={回顯轉寫碼}
                             連擊對照={連擊回顯對照}
+                            並擊對照={並擊回顯對照}
                         />
                     }.into_any(),
                     工作模式::輸入反查碼 => view! {

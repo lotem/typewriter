@@ -124,6 +124,10 @@ kbd {
     color: var(--accent-color-done);
 }
 .input-code.error {
+    width: auto;
+    min-width: calc(var(--u) * 4.8);
+    padding: 0 12px;
+    box-sizing: border-box;
     background-color: color-mix(in srgb, var(--accent-color-error) 10%, transparent);
     border-style: solid;
     border-color: var(--accent-color-error);
@@ -161,7 +165,8 @@ kbd {
 .input-code.success .seq-echo-track .seq-matched {
     color: inherit;
 }
-.seq-echo-track .seq-error {
+.seq-echo-track .seq-error,
+.chord-compare .seq-error {
     color: var(--accent-color-error);
     text-decoration: line-through;
     text-decoration-thickness: 2px;
@@ -219,6 +224,22 @@ kbd {
     overflow: visible;
     overflow-wrap: break-word;
     white-space: nowrap;
+}
+.input-code .chord-compare {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22em;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+.input-code .left-column.chord-compare {
+    justify-content: flex-end;
+}
+.input-code .right-column.chord-compare {
+    justify-content: flex-start;
+}
+.chord-compare .chord-target {
+    color: var(--accent-color-hint);
 }
 .lookup-code, .exercises, .theories, .layouts {
     border: 1px dotted var(--accent-color-hint);
@@ -412,6 +433,15 @@ kbd {
 .key.hint.pressed {
     color: var(--accent-color-done);
     background-color: color-mix(in srgb, var(--accent-color-done) var(--color-mix-percentage-active), transparent);
+}
+/* 並擊失誤時漏按的目標鍵加深實心填充 (與已擊中的 .hint.pressed 等重), 而目標外的錯誤擊鍵只用紅色描邊不填充, 以填充面塊突出完整目標鍵組 */
+.key.hint.hint-missed {
+    background-color: color-mix(in srgb, var(--accent-color-hint) var(--color-mix-percentage-active), transparent);
+}
+.key.mispress {
+    color: var(--accent-color-error);
+    border-color: var(--accent-color-error);
+    background-color: transparent;
 }
 .key.keydown, .key.hint.keydown {
     color: var(--accent-color-active);
