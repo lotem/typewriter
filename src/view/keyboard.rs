@@ -22,6 +22,15 @@ pub trait 鍵面標註法 {
 
 pub trait 鍵面動態着色法 {
     fn 鍵位提示(&self, 鍵: KeyCode) -> bool;
+    fn 餘碼預顯(&self, _鍵: KeyCode) -> bool {
+        false
+    }
+    fn 連打餘數(&self, _鍵: KeyCode) -> usize {
+        1
+    }
+    fn 提示步進(&self) -> usize {
+        0
+    }
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool;
     fn 是否擊中(&self, 鍵: KeyCode) -> bool;
 }
@@ -107,6 +116,10 @@ where
             class:function={move || 標註法.read().是否功能鍵()}
             class:space={move || 標註法.read().是否空格()}
             class:hint={move || 着色法.鍵位提示(鍵)}
+            class:hint-upcoming={move || 着色法.餘碼預顯(鍵)}
+            class:hint-repeat={move || 着色法.鍵位提示(鍵) && 着色法.連打餘數(鍵) >= 2}
+            class:hint-step-even={move || 着色法.鍵位提示(鍵) && 着色法.提示步進().is_multiple_of(2)}
+            class:hint-step-odd={move || 着色法.鍵位提示(鍵) && !着色法.提示步進().is_multiple_of(2)}
             class:keydown={move || 着色法.是否落鍵(鍵)}
             class:pressed={move || 着色法.是否擊中(鍵)}
             on:pointerdown=move |ev| {
@@ -153,6 +166,11 @@ where
                 <kbd class="label secondary">{move || 標註法.read().刻印().下方刻印文字()}</kbd>
             </div>
             <kbd class="label secondary">{move || 標註法.read().刻印().右側刻印文字()}</kbd>
+            <Show when=move || { 着色法.鍵位提示(鍵) && 着色法.連打餘數(鍵) >= 2 }>
+                <span class="repeat-badge">
+                    {move || format!("×{}", 着色法.連打餘數(鍵))}
+                </span>
+            </Show>
         </div>
     }
 }

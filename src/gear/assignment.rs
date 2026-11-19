@@ -103,6 +103,25 @@ pub type 重置作業進度動作 = impl 動作;
 pub type 作業推進動作 = impl 動作給一參數得一結果<步進法>;
 pub type 作業回退動作 = impl 動作給一參數得一結果<步進法>;
 
+/// 異步 `LocalResource` 的〇複製同步借閱句柄:
+/// 下游僅追蹤棧上輕量的就緒 `世代` 信號, 借閱時以 `with_untracked` 原地讀取 `LocalResource` 內部鎖槽,
+/// 既避免複製 `作業內容` 大文本, 又隔離下游同步 `Memo` 的 `Check` 查詢以免清掉異步資源的 `Dirty` 標記.
+#[derive(Clone, Copy)]
+pub struct 已載入作業 {
+    世代: ReadSignal<Option<usize>>,
+    資源: LocalResource<Option<作業內容<'static>>>,
+}
+
+impl 已載入作業 {
+    pub fn 借閱<U>(&self, 讀取: impl FnOnce(Option<&作業內容<'static>>) -> U) -> U {
+        if self.世代.get().is_none() {
+            return 讀取(None);
+        }
+        self.資源
+            .with_untracked(|槽| 讀取(槽.as_ref().and_then(Option::as_ref)))
+    }
+}
+
 #[derive(Clone)]
 pub struct 作業機關輸出信號 {
     pub 當前作業: ReadSignal<作業>,
@@ -110,6 +129,7 @@ pub struct 作業機關輸出信號 {
     pub 作業進度: ReadSignal<usize>,
     pub 重置作業進度: 重置作業進度動作,
     pub 目標作業內容: LocalResource<Option<作業內容<'static>>>,
+    pub 已載入作業: 已載入作業,
     pub 目標碼表格式: Signal<Option<碼表格式>>,
     pub 目標輸入碼序列: Memo<Box<[對照輸入碼]>>,
     pub 目標輸入碼片段: Signal<Option<對照輸入碼>>,
@@ -125,11 +145,15 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
     let 方案定義 = 方案.方案定義;
     let 初始方案 = 現行方案.get_untracked();
     let (當前作業, 佈置作業) = signal(作業::練習題(初始方案, 0));
+    let (作業就緒世代, 更新作業就緒世代) = signal(None::<usize>);
 
     let _ = Effect::watch(
         現行方案,
-        move |&方案, _, _| {
-            佈置作業(作業::練習題(方案, 0));
+        move |&方案, 舊方案, _| {
+            if 舊方案 != Some(&方案) {
+                更新作業就緒世代(None);
+                佈置作業(作業::練習題(方案, 0));
+            }
         },
         false,
     );
@@ -168,21 +192,28 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         }
     });
 
+    // 由單一專職 Effect 銜接異步 LocalResource 與同步信號圖, 僅遞增就緒世代而不複製作業內容
+    Effect::new(move |世代: Option<usize>| {
+        let 已載入 = 目標作業內容.with(|槽| 槽.is_some());
+        let 新世代 = 世代.unwrap_or(0).wrapping_add(1);
+        更新作業就緒世代(已載入.then_some(新世代));
+        新世代
+    });
+
+    let 已載入作業 = 已載入作業 {
+        世代: 作業就緒世代,
+        資源: 目標作業內容,
+    };
+
     let 目標碼表格式 = Signal::derive(move || {
-        目標作業內容
-            .read()
-            .as_ref()
-            .flatten()
-            .and_then(|作業| 作業.碼表.碼表格式())
+        已載入作業.借閱(|作業| 作業.and_then(|作業| 作業.碼表.碼表格式()))
     });
 
     let 目標輸入碼序列 = Memo::new(move |_| {
-        目標作業內容
-            .read()
-            .as_ref()
-            .flatten()
-            .map(|作業| 解析碼表(&作業.碼表, &方案定義.read()))
-            .unwrap_or(Box::new([]))
+        已載入作業.借閱(|作業| {
+            作業.map(|作業| 解析碼表(&作業.碼表, &方案定義.read()))
+                .unwrap_or(Box::new([]))
+        })
     });
 
     let _ = Effect::watch(
@@ -253,6 +284,7 @@ pub fn 作業機關(方案: &輸入方案機關輸出信號) -> 作業機關輸�
         作業進度,
         重置作業進度,
         目標作業內容,
+        已載入作業,
         目標碼表格式,
         目標輸入碼序列,
         目標輸入碼片段,

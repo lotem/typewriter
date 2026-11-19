@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use leptos::logging::log;
 use leptos::prelude::*;
 
@@ -40,6 +42,21 @@ pub type 回退動作 = impl 動作得一結果;
 pub type 擊鍵動作 = impl 動作給一參數<KeyCode>;
 pub type 切盤動作 = impl 動作;
 
+/// [連擊] 編碼回顯區的分段對照描述: 拆分已對前綴, 錯碼段與待輸霧化虛影.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct 連擊對照表示 {
+    /// 是否採用分段對照視圖 (`碼表格式::連擊` 爲 `true`; `碼表格式::逐鍵` 爲 `false`)
+    pub 分段對照: bool,
+    /// 已正確匹配的字根前綴 (或自習/完成態下的完整已錄字根)
+    pub 已對前綴: String,
+    /// 與目標不符的錯碼後綴 (非空時即處於錯碼警示態)
+    pub 錯碼段: String,
+    /// 尚未錄入的目標字根序列 (用於渲染逐字霧化虛影)
+    pub 待輸後綴: String,
+    /// 是否顯示錄入插入符 `‸`
+    pub 顯示光標: bool,
+}
+
 #[derive(Clone)]
 pub struct 連擊機關輸出信號 {
     pub 連擊狀態變更: WriteSignal<連擊狀態>,
@@ -47,6 +64,11 @@ pub struct 連擊機關輸出信號 {
     pub 實況字根碼: Signal<String>,
     pub 已錄入字根碼: Memo<String>,
     pub 逐鍵提示: Signal<Option<鍵組>>,
+    pub 餘碼提示: Signal<Option<鍵組>>,
+    pub 同鍵連打數: Signal<usize>,
+    pub 提示步進: Signal<usize>,
+    pub 存在錯碼: Signal<bool>,
+    pub 連擊對照: Signal<連擊對照表示>,
     pub 連擊比對成功: Memo<bool>,
     pub 連擊片段完成: Signal<bool>,
     pub 清空連擊輸入碼: 清空動作,
@@ -95,7 +117,11 @@ pub fn 連擊機關(
     let (連擊進度, 更新連擊進度) = signal(0);
 
     let 清空連擊輸入碼 = move || {
-        更新連擊輸入碼.write().clear();
+        更新連擊輸入碼.update(|列表| {
+            if !列表.is_empty() {
+                列表.clear();
+            }
+        });
         let 校正進度 = 作業進度();
         if 連擊進度() != 校正進度 {
             更新連擊進度(校正進度);
@@ -130,7 +156,24 @@ pub fn 連擊機關(
         }
     };
 
+    let 編碼法 = move || 目標碼表格式.read().unwrap_or_else(|| 方案.read().編碼法);
+
+    let 存在錯碼 = Signal::derive(move || {
+        matches!(編碼法(), 碼表格式::連擊)
+            && !作業進度完成()
+            && 連擊進度() == 作業進度()
+            && 反查所得字根碼.read().is_some()
+            && 已錄入字根碼.read().chars().count() > 已正確錄入碼長()
+    });
+
     let 逐鍵提示 = Signal::derive(move || {
+        if 作業進度完成() {
+            return None;
+        }
+        if 存在錯碼() {
+            // 錯碼方案 A: 熄滅字母區下一鍵提示, 改爲點亮退格鍵引導糾錯
+            return Some(鍵組(BTreeSet::from([KeyCode::Backspace])));
+        }
         反查所得字根碼
             .read()
             .as_deref()
@@ -141,7 +184,45 @@ pub fn 連擊機關(
             .map(|字根碼| 方案.read().讀出鍵位(&字根碼.to_string(), &當選盤面()))
     });
 
-    let 編碼法 = move || 目標碼表格式.read().unwrap_or_else(|| 方案.read().編碼法);
+    let 餘碼提示 = Signal::derive(move || {
+        if !matches!(編碼法(), 碼表格式::連擊) || 作業進度完成() || 存在錯碼() {
+            return None;
+        }
+        let 餘下字根: String = 反查所得字根碼
+            .read()
+            .as_deref()
+            .map(|字根碼| 字根碼.chars().skip(已正確錄入碼長() + 1).collect())
+            .unwrap_or_default();
+        if 餘下字根.is_empty() {
+            return None;
+        }
+        let mut 餘鍵 = 方案.read().讀出鍵位(&餘下字根, &當選盤面());
+        if let Some(當前鍵) = 逐鍵提示() {
+            for 鍵 in &當前鍵.0 {
+                餘鍵.0.remove(鍵);
+            }
+        }
+        餘鍵.有無鍵位().then_some(餘鍵)
+    });
+
+    let 同鍵連打數 = Signal::derive(move || {
+        if !matches!(編碼法(), 碼表格式::連擊) || 作業進度完成() || 存在錯碼() {
+            return 1;
+        }
+        反查所得字根碼
+            .read()
+            .as_deref()
+            .map(|字根碼| {
+                let mut 餘下 = 字根碼.chars().skip(已正確錄入碼長());
+                let Some(首字根) = 餘下.next() else {
+                    return 1;
+                };
+                1 + 餘下.take_while(|&後續| 後續 == 首字根).count()
+            })
+            .unwrap_or(1)
+    });
+
+    let 提示步進 = Signal::derive(move || 作業進度().wrapping_add(已正確錄入碼長()));
 
     let 連擊比對成功 = Memo::new(move |_| {
         let 字根碼 = 實錄分隔鍵().map_or_else(
@@ -171,6 +252,65 @@ pub fn 連擊機關(
         碼表格式::逐鍵 => 完成一詞(),
         碼表格式::連擊 => 作業進度() > 連擊進度(),
         _ => false,
+    });
+
+    let 連擊對照 = Signal::derive(move || {
+        let 錄入 = 已錄入字根碼();
+        if !matches!(編碼法(), 碼表格式::連擊) {
+            let 顯示光標 = !matches!(錄入.as_str(), "" | "␣");
+            return 連擊對照表示 {
+                分段對照: false,
+                已對前綴: 錄入,
+                錯碼段: String::new(),
+                待輸後綴: String::new(),
+                顯示光標,
+            };
+        }
+
+        if 連擊片段完成() {
+            return 連擊對照表示 {
+                分段對照: true,
+                已對前綴: 錄入,
+                錯碼段: String::new(),
+                待輸後綴: String::new(),
+                顯示光標: false,
+            };
+        }
+
+        if 作業進度完成() {
+            return 連擊對照表示 {
+                分段對照: true,
+                ..Default::default()
+            };
+        }
+
+        if let Some(目標) = 反查所得字根碼.read().as_deref() {
+            let 正確數 = 目標
+                .chars()
+                .zip(錄入.chars())
+                .take_while(|(查得, 實錄)| 查得 == 實錄)
+                .count();
+            let 已對前綴: String = 錄入.chars().take(正確數).collect();
+            let 錯碼段: String = 錄入.chars().skip(正確數).collect();
+            let 待輸後綴: String = 目標.chars().skip(正確數).collect();
+            let 顯示光標 = !錄入.is_empty();
+            連擊對照表示 {
+                分段對照: true,
+                已對前綴,
+                錯碼段,
+                待輸後綴,
+                顯示光標,
+            }
+        } else {
+            let 顯示光標 = !錄入.is_empty();
+            連擊對照表示 {
+                分段對照: true,
+                已對前綴: 錄入,
+                錯碼段: String::new(),
+                待輸後綴: String::new(),
+                顯示光標,
+            }
+        }
     });
 
     let 位於碼段邊界 = move || {
@@ -220,12 +360,12 @@ pub fn 連擊機關(
     let 自動切換盤面 = move || {
         if let 碼表格式::連擊 = 編碼法() {
             let 輸入碼 = 已錄入字根碼();
-            let 目標盤面 = 方案
-                .read()
+            let 方案定義 = 方案.read();
+            let 目標盤面 = 方案定義
                 .動態切換
                 .iter()
                 .find_map(|規則| 規則.匹配輸入.is_match(&輸入碼).then_some(規則.目標盤面))
-                .unwrap_or_else(|| 方案.read().佈局.默認盤面);
+                .unwrap_or(方案定義.佈局.默認盤面);
             if 目標盤面 != 當選盤面() {
                 log!("自動切換盤面啦: {:?}", 目標盤面);
                 選擇盤面(目標盤面);
@@ -239,6 +379,11 @@ pub fn 連擊機關(
         實況字根碼,
         已錄入字根碼,
         逐鍵提示,
+        餘碼提示,
+        同鍵連打數,
+        提示步進,
+        存在錯碼,
+        連擊對照,
         連擊比對成功,
         連擊片段完成,
         清空連擊輸入碼,

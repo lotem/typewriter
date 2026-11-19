@@ -33,6 +33,9 @@ pub fn 輸入事件處理機關(
     既然抬鍵: impl 動作給一參數<KeyCode>,
 ) {
     let keydown_handle = window_event_listener(ev::keydown, move |ev| {
+        if ev.is_composing() {
+            return;
+        }
         log!("落鍵 key = {}, code = {}", &ev.key(), ev.code());
         let 鍵碼 = 網頁鍵值轉換(&ev.code());
         let 檔位 = 檔位 {
@@ -50,6 +53,9 @@ pub fn 輸入事件處理機關(
     });
 
     let keyup_handle = window_event_listener(ev::keyup, move |ev| {
+        if ev.is_composing() {
+            return;
+        }
         log!("抬鍵 key = {}, code = {}", &ev.key(), &ev.code());
         let 鍵碼 = 網頁鍵值轉換(&ev.code());
         if 鍵碼 != KeyCode::No {

@@ -80,7 +80,7 @@ const 未定義方案: 輸入方案定義<'static> = 輸入方案定義 {
 
 #[derive(Clone, Copy)]
 pub struct 輸入方案機關輸出信號 {
-    pub 現行方案: Signal<方案選項>,
+    pub 現行方案: Memo<方案選項>,
     pub 選用方案: 選用方案動作,
     pub 方案定義: Signal<輸入方案定義<'static>>,
     pub 指法: Signal<觸鍵方式>,
@@ -88,11 +88,11 @@ pub struct 輸入方案機關輸出信號 {
 
 #[derive(Clone, Copy)]
 pub struct 輸入方案環境 {
-    pub 已選配列: Signal<Option<配列>>,
+    pub 已選配列: Memo<Option<配列>>,
 }
 
 pub fn 輸入方案機關(
-    現行方案: Signal<方案選項>,
+    現行方案: Memo<方案選項>,
     選用方案: 選用方案動作,
     環境: 輸入方案環境,
 ) -> 輸入方案機關輸出信號 {

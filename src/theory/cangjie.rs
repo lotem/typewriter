@@ -9,7 +9,8 @@ use crate::gear::layout::{
 };
 use crate::gear::theory::輸入方案環境;
 use crate::key_code::KeyCode;
-use crate::{盤面, 鍵面};
+use crate::spelling_algebra::拼寫運算;
+use crate::{盤面, 轉寫, 鍵面};
 
 macro_rules! 鍵位 {
     ($輸入碼: ident => $鍵碼: path) => {
@@ -50,8 +51,13 @@ const 倉頡字母: &[鍵位定義] = &[
 ];
 
 lazy_static! {
-    static ref 倉頡拼式: Box<[&'static Regex]> =
-        Box::new([regex!("^[日月金木水火土竹戈十大中一弓人心手口尸廿山女田卜難]+$").deref(),]);
+    static ref 拉丁字母轉倉頡字根: Box<[拼寫運算<'static>]> = Box::new([轉寫!(
+        "abcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXY",
+        "日月金木水火土竹戈十大中一弓人心手口尸廿山女田難卜日月金木水火土竹戈十大中一弓人心手口尸廿山女田難卜"
+    ),]);
+    static ref 倉頡拼式: Box<[&'static Regex]> = Box::new([
+        regex!("^[A-Ya-y日月金木水火土竹戈十大中一弓人心手口尸廿山女田卜難]+$").deref(),
+    ]);
 }
 
 const 倉頡盤面: 盤面定義<'static> = 盤面! {
@@ -79,7 +85,7 @@ pub fn 倉頡輸入方案(_環境: 輸入方案環境) -> 輸入方案定義<'st
             輸入碼表示: &[],
             輸入碼鍵位: &[],
             拼式轉寫規則: &[],
-            字根拆分規則: &[],
+            字根拆分規則: &拉丁字母轉倉頡字根,
             拼式驗證規則: &倉頡拼式,
             邊界判定: 邊界判定規則 {
                 分隔鍵: &[],

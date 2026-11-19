@@ -12,7 +12,7 @@ use crate::gear::{
         功能鍵::{回車鍵, 製表鍵, 退出鍵, 退格鍵},
     },
     mode::{工作模式, 工作模式機關輸出信號},
-    theory::輸入方案機關輸出信號,
+    theory::{方案選項, 輸入方案機關輸出信號},
 };
 use crate::key_code::KeyCode;
 use crate::view::{
@@ -30,6 +30,9 @@ use crate::view::{
 #[derive(Clone, Copy)]
 struct 並擊對標動態 {
     目標並擊: Signal<Option<鍵組>>,
+    餘碼提示: Signal<Option<鍵組>>,
+    同鍵連打數: Signal<usize>,
+    提示步進: Signal<usize>,
     實況並擊: Signal<並擊狀態>,
 }
 
@@ -39,6 +42,21 @@ impl 鍵面動態着色法 for 並擊對標動態 {
             .read()
             .as_ref()
             .is_some_and(|並擊| 並擊.0.contains(&鍵))
+    }
+
+    fn 餘碼預顯(&self, 鍵: KeyCode) -> bool {
+        self.餘碼提示
+            .read()
+            .as_ref()
+            .is_some_and(|餘碼| 餘碼.0.contains(&鍵))
+    }
+
+    fn 連打餘數(&self, _鍵: KeyCode) -> usize {
+        self.同鍵連打數.get()
+    }
+
+    fn 提示步進(&self) -> usize {
+        self.提示步進.get()
     }
 
     fn 是否落鍵(&self, 鍵: KeyCode) -> bool {
@@ -111,15 +129,19 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 作業機關輸出信號 {
         當前作業,
         佈置作業,
-        目標作業內容,
+        已載入作業,
         目標輸入碼片段,
         ..
     } = 作業;
     let 字幕機關輸出信號 { .. } = 字幕;
     let 連擊機關輸出信號 {
-        實況字根碼,
         已錄入字根碼,
         逐鍵提示,
+        餘碼提示,
+        同鍵連打數,
+        提示步進,
+        存在錯碼,
+        連擊對照,
         連擊片段完成,
         ..
     } = 連擊;
@@ -140,14 +162,20 @@ pub fn Rime打字機應用() -> impl IntoView {
 
     let 是否顯示光標 = Signal::derive(move || matches!(指法(), 觸鍵方式::連擊));
     let 有無輸入碼 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => !實況字根碼.read().is_empty(),
+        觸鍵方式::連擊 => !已錄入字根碼.read().is_empty(),
         觸鍵方式::並擊 => !實況並擊碼.read().is_empty(),
     });
+    let 有無目標預顯 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => !連擊對照.read().待輸後綴.is_empty(),
+        觸鍵方式::並擊 => 反查鍵位.read().is_some(),
+    });
     let 顯示選項 = Signal::derive(move || {
-        if 反查鍵位.read().is_some() {
+        if 指法() == 觸鍵方式::並擊 && 有無目標預顯() {
             編碼欄顯示選項::顯示反查
         } else if 有無輸入碼() {
             編碼欄顯示選項::顯示實況
+        } else if 有無目標預顯() {
+            編碼欄顯示選項::顯示反查
         } else {
             編碼欄顯示選項::無顯示
         }
@@ -155,6 +183,18 @@ pub fn Rime打字機應用() -> impl IntoView {
     let 輸入正確 = Signal::derive(move || match 指法() {
         觸鍵方式::連擊 => 連擊片段完成(),
         觸鍵方式::並擊 => 並擊完成() && 並擊成功(),
+    });
+    let 輸入錯誤 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => 存在錯碼(),
+        觸鍵方式::並擊 => false,
+    });
+    let 錯碼計數 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => 連擊對照.read().錯碼段.chars().count(),
+        觸鍵方式::並擊 => 0,
+    });
+    let 連擊回顯對照 = Signal::derive(move || match 指法() {
+        觸鍵方式::連擊 => Some(連擊對照()),
+        觸鍵方式::並擊 => None,
     });
     let 點擊編碼欄動作 = move || {
         if 現行工作模式() == 工作模式::錄入 {
@@ -190,11 +230,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
     });
     let 反查碼 = Signal::derive(move || {
-        目標作業內容
-            .read()
-            .as_ref()
-            .flatten()
-            .map(|作業| 作業.碼表.碼表原文().to_string())
+        已載入作業.借閱(|作業| 作業.map(|作業| 作業.碼表.碼表原文().to_string()))
     });
     let 反查碼變更動作 = move |反查碼: String| {
         佈置作業(作業::自訂(現行方案(), 反查碼));
@@ -221,9 +257,24 @@ pub fn Rime打字機應用() -> impl IntoView {
         觸鍵方式::並擊 => 反查鍵位(),
         觸鍵方式::連擊 => 逐鍵提示(),
     });
+    let 餘碼鍵位表示 = Signal::derive(move || match 指法() {
+        觸鍵方式::並擊 => None,
+        觸鍵方式::連擊 => 餘碼提示(),
+    });
+    let 連打餘數表示 = Signal::derive(move || match 指法() {
+        觸鍵方式::並擊 => 1,
+        觸鍵方式::連擊 => 同鍵連打數(),
+    });
+    let 提示步進表示 = Signal::derive(move || match 指法() {
+        觸鍵方式::並擊 => 0,
+        觸鍵方式::連擊 => 提示步進(),
+    });
 
     let 並擊動態 = 並擊對標動態 {
         目標並擊: 目標鍵位表示,
+        餘碼提示: 餘碼鍵位表示,
+        同鍵連打數: 連打餘數表示,
+        提示步進: 提示步進表示,
         實況並擊: 並擊狀態流.into(),
     };
 
@@ -247,18 +298,36 @@ pub fn Rime打字機應用() -> impl IntoView {
             <Rime編碼欄
                 顯示選項={顯示選項}
                 輸入正確={輸入正確}
+                輸入錯誤={輸入錯誤}
+                錯碼計數={錯碼計數}
                 點擊動作={點擊編碼欄動作}
                 關閉輸入欄={關閉輸入欄}
             >
             {
                 move || match 現行工作模式() {
                     工作模式::錄入 => view! {
-                        <Rime編碼回顯區 佈局={編碼回顯區佈局} 輸入碼={回顯輸入碼} 轉寫碼={回顯轉寫碼}/>
+                        <Rime編碼回顯區
+                            佈局={編碼回顯區佈局}
+                            輸入碼={回顯輸入碼}
+                            轉寫碼={回顯轉寫碼}
+                            連擊對照={連擊回顯對照}
+                        />
                     }.into_any(),
                     工作模式::輸入反查碼 => view! {
                         <Rime反查輸入欄
                             反查碼={反查碼}
-                            示例輸入={Signal::derive(|| String::from("qing shu ru pin yin"))}
+                            示例輸入={Signal::derive(move || match 現行方案() {
+                                方案選項::倉頡 | 方案選項::倉頡七曜並擊 => {
+                                    String::from("請輸入倉頡碼 (如: 木女戈戈 或 dvii)")
+                                }
+                                方案選項::注音 | 方案選項::動態能力注音 => {
+                                    String::from("請輸入注音碼 (如: ㄓㄨㄥˉ ㄍㄨㄛˊ)")
+                                }
+                                方案選項::拉丁字母 => {
+                                    String::from("type words to practice")
+                                }
+                                _ => String::from("qing shu ru pin yin"),
+                            })}
                             反查碼變更={反查碼變更動作}
                         />
                     }.into_any(),

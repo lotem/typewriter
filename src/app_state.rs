@@ -99,9 +99,9 @@ pub type 選用配列動作 = impl 動作給一參數<Option<配列>>;
 
 // 返回值類型, 包含所有狀態和設置器
 pub struct AppState {
-    pub theory: Signal<方案選項>,
-    pub drill: Signal<Option<usize>>,
-    pub layout: Signal<Option<配列>>,
+    pub theory: Memo<方案選項>,
+    pub drill: Memo<Option<usize>>,
+    pub layout: Memo<Option<配列>>,
     pub set_theory: 選用方案動作,
     pub set_drill: 選用練習題動作,
     pub set_layout: 選用配列動作,
@@ -112,8 +112,8 @@ pub fn use_app_state() -> AppState {
     let params = use_params::<AppParams>();
     let query = use_query::<AppQuery>();
 
-    // 從路徑獲取 theory, 默認 [宮保拼音]
-    let theory = Signal::derive(move || {
+    // 從路徑獲取 theory, 默認 [宮保拼音] (用 Memo 等值截流, 避免查詢參數變更時誤觸發方案重置)
+    let theory = Memo::new(move |_| {
         params
             .read()
             .as_ref()
@@ -124,7 +124,7 @@ pub fn use_app_state() -> AppState {
     });
 
     // 從 query 獲取 drill, 冇 = None
-    let drill = Signal::derive(move || {
+    let drill = Memo::new(move |_| {
         query
             .read()
             .as_ref()
@@ -133,7 +133,7 @@ pub fn use_app_state() -> AppState {
     });
 
     // 從 query 獲取 layout, 冇 = None
-    let layout = Signal::derive(move || {
+    let layout = Memo::new(move |_| {
         query
             .read()
             .as_ref()

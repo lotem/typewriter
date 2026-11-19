@@ -5,7 +5,7 @@ use crate::gear::{layout::配列, theory::方案選項};
 
 #[component]
 pub fn Rime狀態欄(
-    現行方案: Signal<方案選項>,
+    現行方案: Memo<方案選項>,
     已選配列: Signal<配列>,
     點擊方案: impl 動作,
     點擊配列: impl 動作,
