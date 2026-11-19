@@ -171,15 +171,24 @@ kbd {
 .board.ortholinear.split .row:last-child .key:last-child {
     margin-left: var(--u);
 }
-.board.staggered.size-30 .row:nth-child(3) .key:first-child,
-.board.staggered.size-30 .row:nth-child(4) .key:first-child {
-    margin-left: calc(var(--u) * 0.6375);
+/* 字母鍵盤 (30 鍵): 以第 3 行主行 (A..;, 含 F/J 定位鍵) 居中爲基準軸;
+   第 2 行 (Q..P, 10 鍵) 末鍵右留半鍵距以整體左移 1/4 鍵距, 第 4 行 (Z.., 9 鍵) 自然居中即相對主行右錯 1/2 鍵距 */
+.board.staggered.size-30 .row:nth-child(2) .key:last-child {
+    margin-right: calc((var(--u) + var(--gap)) * 0.5);
 }
-.board.staggered.size-60 .row:nth-child(3) .key:first-child {
-    margin-left: calc(var(--u) * 0.6375);
+/* 主鍵盤區 (E00..E13 14 鍵 / D 12 鍵 / C 11 鍵 / B 10 鍵): 同樣以 F/J 定位鍵居中於屏幕中軸, 核心 30 鍵與字母鍵盤完全重合 */
+.view-normal .board.staggered.size-60 {
+    --u: min(80px, 5.6vw, 10vh);
 }
+.board.staggered.size-60 .row:nth-child(1) .key:first-child {
+    margin-left: calc((var(--u) + var(--gap)) * 0.5);
+}
+.board.staggered.size-60 .row:nth-child(2) .key:first-child {
+    margin-left: calc((var(--u) + var(--gap)) * 1.5);
+}
+.board.staggered.size-60 .row:nth-child(3) .key:first-child,
 .board.staggered.size-60 .row:nth-child(4) .key:first-child {
-    margin-left: calc(var(--u) * -0.6375);
+    margin-left: calc(var(--u) + var(--gap));
 }
 /* Ferris Sweep 佈局：激進的列錯位 + 僅保留內側雙拇指鍵 */
 /* 左右手分離間距 */

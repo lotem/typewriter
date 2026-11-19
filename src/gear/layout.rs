@@ -36,12 +36,14 @@ pub struct 矩陣座標(pub usize, pub usize);
 
 /// 矩陣的行列座標按照 ISO/IEC 9995-1 的鍵位標註法顯示.
 /// 空格至數字行從下到上編號爲 A 到 E.
-/// 本品只做字母數字區, 因此 A 行列號從 03 開始, 其他各行從 01 開始.
+/// 本品只做字母數字區, 因此 E 行列號從 00 開始, A 行列號從 03 開始, 其他各行從 01 開始.
 impl std::fmt::Display for 矩陣座標 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self.0 {
-            // (0, 0) -> E01
-            i @ 0..=3 => {
+            // (0, 0) -> E00
+            0 => write!(f, "E{}", self.1),
+            // (1, 0) -> D01
+            i @ 1..=3 => {
                 let 行號 = char::from_u32('E' as u32 - i as u32).ok_or(std::fmt::Error {})?;
                 let 列號 = self.1 + 1;
                 write!(f, "{行號}{列號}")
@@ -240,16 +242,16 @@ macro_rules! 矩陣 {
 
 const 主鍵盤區矩陣: 鍵盤矩陣<'static> = 矩陣![
     // ISO/IEC 9995-2 規定字母數字區至少包含 47 個用於輸入字符的鍵位
-    // 以下是協調 48 文字鍵盤佈局的一種實現, 不用鍵位 E00 而選用鍵位 C12, E13
-    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0 Minus Equal Grave],  // E01 - E13
-    [Q W E R T Y U I O P LeftBracket RightBracket],               // D01 - D12
-    [A S D F G H J K L Semicolon Quote Backslash],                // C01 - C12
-    [Z X C V B N M Comma Dot Slash],                              // B01 - B10
-    [Space]                                                       // A03
+    // 以下是協調 48 文字鍵盤佈局的一種實現, 選用鍵位 E00 (Grave) 與 E13 (Backslash)
+    [Grave Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0 Minus Equal Backslash],  // E00 - E13
+    [Q W E R T Y U I O P LeftBracket RightBracket],                         // D01 - D12
+    [A S D F G H J K L Semicolon Quote],                                    // C01 - C11
+    [Z X C V B N M Comma Dot Slash],                                        // B01 - B10
+    [Space]                                                                 // A03
 ];
 
 const 字母鍵盤矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [],                             // E01
+    [],                             // E00
     [Q W E R T Y U I O P],          // D01 - D10
     [A S D F G H J K L Semicolon],  // C01 - C10
     [Z X C V B N M Comma Dot],      // B01 - B09
@@ -257,7 +259,7 @@ const 字母鍵盤矩陣: 鍵盤矩陣<'static> = 矩陣![
 ];
 
 const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [],                               // E01
+    [],                               // E00
     [Q W E R T Y U I O P],            // D01 - D10
     [A S D F G H J K L Semicolon],    // C01 - C10
     [Z X C V B N M Comma Dot Slash],  // B01 - B10
@@ -265,7 +267,7 @@ const 正交直列矩陣: 鍵盤矩陣<'static> = 矩陣![
 ];
 
 const 直列分體矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [],                               // E01
+    [],                               // E00
     [Q W E R T Y U I O P],            // D01 - D10
     [A S D F G H J K L Semicolon],    // C01 - C10
     [Z X C V B N M Comma Dot Slash],  // B01 - B10
@@ -273,19 +275,19 @@ const 直列分體矩陣: 鍵盤矩陣<'static> = 矩陣![
 ];
 
 const 正交直列帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
-    [Q W E R T Y U I O P],                      // D01 - D10
-    [A S D F G H J K L Semicolon],              // C01 - C10
-    [Z X C V B N M Comma Dot Slash],            // B01 - B10
-    [Space]                                     // A03
+    [No Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E00 - E10
+    [Q W E R T Y U I O P],                         // D01 - D10
+    [A S D F G H J K L Semicolon],                 // C01 - C10
+    [Z X C V B N M Comma Dot Slash],               // B01 - B10
+    [Space]                                        // A03
 ];
 
 const 直列分體帶數字行矩陣: 鍵盤矩陣<'static> = 矩陣![
-    [Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E01 - E10
-    [Q W E R T Y U I O P],                      // D01 - D10
-    [A S D F G H J K L Semicolon],              // C01 - C10
-    [Z X C V B N M Comma Dot Slash],            // B01 - B10
-    [No Space Space]                            // A03 - A05
+    [No Kc1 Kc2 Kc3 Kc4 Kc5 Kc6 Kc7 Kc8 Kc9 Kc0],  // E00 - E10
+    [Q W E R T Y U I O P],                         // D01 - D10
+    [A S D F G H J K L Semicolon],                 // C01 - C10
+    [Z X C V B N M Comma Dot Slash],               // B01 - B10
+    [No Space Space]                               // A03 - A05
 ];
 
 #[macro_export]
@@ -336,17 +338,17 @@ macro_rules! 標註 {
 }
 
 pub const 基本盤面: 盤面定義<'static> = 盤面![
-    [ "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "-" "=" "`" ],  // E01 - E13
-    [ q w e r t y u i o p "[" "]" ],                          // D01 - D12
-    [ a s d f g h j k l ";" "'" "\\" ],                       // C01 - C12
-    [ z x c v b n m "," "." "/" ],                            // B01 - B10
-    [ "␣" "␣" "␣" ]                                           // A03 - A05
+    [ "`" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "-" "=" "\\" ],  // E00 - E13
+    [ q w e r t y u i o p "[" "]" ],                               // D01 - D12
+    [ a s d f g h j k l ";" "'" ],                                 // C01 - C11
+    [ z x c v b n m "," "." "/" ],                                 // B01 - B10
+    [ "␣" "␣" "␣" ]                                                // A03 - A05
 ];
 
 pub const 上檔盤面: 盤面定義<'static> = 盤面![
-    [ "!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "~" ],
+    [ "~" "!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "|" ],
     [ Q W E R T Y U I O P "{" "}" ],
-    [ A S D F G H J K L ":" "\"" "|" ],
+    [ A S D F G H J K L ":" "\"" ],
     [ Z X C V B N M "<" ">" "?" ],
     [ _ _ _ ]
 ];
@@ -354,7 +356,7 @@ pub const 上檔盤面: 盤面定義<'static> = 盤面![
 pub const 大寫字母盤面: 盤面定義<'static> = 盤面![
     [ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ],
     [ Q W E R T Y U I O P _ _ ],
-    [ A S D F G H J K L _ _ _ ],
+    [ A S D F G H J K L _ _ ],
     [ Z X C V B N M _ _ _ ],
     [ "␣" "␣" "␣" ]
 ];
