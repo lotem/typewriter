@@ -242,7 +242,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         }
     });
     let 反查碼 = Signal::derive(move || {
-        已載入作業.借閱(|作業| 作業.map(|作業| 作業.碼表.碼表原文().to_string()))
+        已載入作業.借閱(|作業| 作業.map(|作業| 作業.碼表.原文.to_string()))
     });
     let 反查碼變更動作 = move |反查碼: String| {
         佈置作業(作業::自訂(現行方案(), 反查碼));

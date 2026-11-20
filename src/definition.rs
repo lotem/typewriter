@@ -31,7 +31,7 @@ pub enum 觸鍵方式 {
     並擊,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum 碼表格式 {
     逐鍵,
     連擊,
