@@ -96,6 +96,7 @@ pub struct 連擊對照表示 {
 
 #[derive(Clone)]
 pub struct 連擊機關輸出信號 {
+    pub 連擊狀態流: ReadSignal<連擊狀態>,
     pub 連擊狀態變更: WriteSignal<連擊狀態>,
     pub 實況字根碼: Signal<String>,
     pub 已錄入字根碼: Memo<String>,
@@ -447,6 +448,7 @@ fn 構建連擊機關(
     };
 
     連擊機關輸出信號 {
+        連擊狀態流,
         連擊狀態變更,
         實況字根碼,
         已錄入字根碼,

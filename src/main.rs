@@ -13,6 +13,7 @@ mod definition;
 mod drill;
 mod engine;
 mod gear;
+mod introspect;
 mod key_code;
 mod spelling_algebra;
 mod theory;

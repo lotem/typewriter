@@ -505,53 +505,928 @@ kbd {
     margin-left: auto;
 }
 
-.status-bar {
+/* ==========================================================================
+   統一置頂雙翼狀態與視圖工具欄 (左: [輸入方案] / [佈局]; 右: [內觀] 附欄 / 全屏錄屏 / [視圖] 總開關)
+   ========================================================================== */
+
+.top-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    z-index: 240;
+}
+
+.top-wing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.top-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: var(--default-font);
+    font-size: 12px;
+    line-height: 1.2;
+    cursor: pointer;
+    pointer-events: auto;
+    transition:
+        opacity 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.top-pill .pill-label {
+    color: var(--secondary-fg-color);
+    font-size: 11px;
+}
+
+.top-pill .pill-value {
+    font-weight: 600;
+}
+
+.top-pill .pill-kbd {
+    font-size: 10px;
+    line-height: 1.1;
+    padding: 1.5px 5px;
+    border-radius: 4px;
+    border: 1px solid color-mix(in srgb, var(--secondary-fg-color) 36%, transparent);
+    color: var(--secondary-fg-color);
+    opacity: 0.75;
+}
+
+/* [常規視圖]: 置頂左右邊角隱隱浮現, 平時無外框不與中央字幕搶戲; 指針靠近邊角時加亮顯框 */
+.view-normal .top-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 42px;
+    padding: 8px 18px;
+    pointer-events: none;
+}
+
+.view-normal .top-wing {
+    pointer-events: auto;
+    padding: 2px;
+}
+
+.view-normal .top-pill {
+    opacity: 0.34;
+    color: var(--primary-fg-color);
+}
+
+.view-normal .top-wing:hover .top-pill {
+    opacity: 0.82;
+    border-color: color-mix(in srgb, var(--secondary-fg-color) 36%, transparent);
+    background: color-mix(in srgb, var(--primary-bg-color) 85%, transparent);
+}
+
+.view-normal .top-pill:hover,
+.view-normal .top-pill.active {
+    opacity: 1.0 !important;
+    border-color: color-mix(in srgb, var(--accent-color-active) 70%, transparent) !important;
+    background: color-mix(in srgb, var(--accent-color-active) 10%, var(--primary-bg-color)) !important;
+    color: var(--accent-color-active);
+}
+
+
+/* ==========================================================================
+   共享骨架: [常規視圖] <-> [內觀視圖] (複用字幕屏 / 編碼欄 / 選單 / 狀態欄 / 鍵盤圖)
+   ========================================================================== */
+
+/* [常規視圖]: 容器透明展開, 保持原有排版分毫不差 */
+.app-shell.view-normal,
+.view-normal .shared-top-bar,
+.view-normal .stage-container {
+    display: contents;
+}
+
+/* [內觀視圖]: 深邃宣紙古墨暗底, 緊湊收攏頂部共享組件, 讓出主空間予光束舞臺 */
+.app-shell.view-introspect {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    background:
+        radial-gradient(circle at 50% 45%, rgba(44, 37, 28, 0.42), rgba(11, 10, 9, 0.98) 74%),
+        #0c0b0a;
+    color: #ebe3d5;
+    color-scheme: dark;
+    user-select: none;
+    overflow: hidden;
+    transition: box-shadow 0.35s ease;
+}
+
+.app-shell.view-introspect.cinema-mode {
+    padding-bottom: 6px;
+}
+
+.app-shell.view-introspect.resonance-glow {
+    box-shadow: inset 0 0 90px rgba(245, 185, 66, 0.15);
+}
+
+/* [內觀視圖] 頂部工具欄: 默認顯示黯淡外框, 懸停與激活態高亮琥珀金外框 */
+.view-introspect .top-toolbar {
+    position: relative;
+    min-height: 42px;
+    padding: 6px 18px;
+    border-bottom: 1px solid rgba(218, 200, 170, 0.09);
+    background: rgba(16, 14, 12, 0.82);
+    flex-wrap: wrap;
+}
+
+.view-introspect .top-pill {
+    opacity: 0.86;
+    border-color: rgba(226, 212, 188, 0.16);
+    background: rgba(28, 25, 21, 0.74);
+    color: #d5cbb9;
+}
+
+.view-introspect .top-pill .pill-label {
+    color: #8f8575;
+}
+
+.view-introspect .top-pill .pill-value {
+    color: #efe7d8;
+}
+
+.view-introspect .top-pill .pill-kbd {
+    color: #9e9381;
+    border-color: rgba(226, 212, 188, 0.2);
+}
+
+.view-introspect .top-pill:hover,
+.view-introspect .top-pill.active {
+    opacity: 1.0;
+    border-color: rgba(245, 185, 66, 0.76);
+    background: rgba(245, 185, 66, 0.16);
+    color: #fffaf0;
+}
+
+.view-introspect .top-pill:hover .pill-value,
+.view-introspect .top-pill.active .pill-value {
+    color: #ffe6a8;
+}
+
+.view-introspect .top-pill:hover .pill-kbd,
+.view-introspect .top-pill.active .pill-kbd {
+    color: #ffd980;
+    border-color: rgba(245, 185, 66, 0.45);
+}
+
+/* 全屏錄屏態: 頂部工具欄平時全隱, 鼠標移至頂邊喚出即可退出錄屏 */
+.view-introspect.cinema-mode .top-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    border-bottom-color: transparent;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.view-introspect.cinema-mode .top-toolbar:hover {
+    opacity: 0.96;
+    background: rgba(14, 12, 10, 0.82);
+}
+
+/* [內觀視圖] 下複用同一個 Rime字幕屏 與 Rime編碼欄, 左右並排收攏成緊湊書卷橫欄 (鎖定高度防抖) */
+.view-introspect .shared-top-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    min-height: 44px;
+    gap: 18px;
+    padding: 4px 24px 2px;
+    z-index: 25;
+}
+
+.view-introspect.cinema-mode .shared-top-bar {
+    padding-top: 14px;
+}
+
+.view-introspect .text-box {
+    height: auto;
+    margin: 0;
+}
+
+.view-introspect .caption {
+    padding: 2px 8px;
+    font-size: clamp(18px, 2.1vw, 27px);
+    line-height: 1.3;
+    color: #847b6d;
+}
+
+.view-introspect .caption .accepted {
+    color: #6ec8b8;
+}
+
+.view-introspect .caption .highlight {
+    color: #f5b942;
+    text-shadow: 0 0 14px rgba(245, 185, 66, 0.52);
+}
+
+.view-introspect .echo-bar {
+    --u: 38px;
+    margin: 0;
+    height: auto;
+    align-items: center;
+}
+
+/* [內觀視圖] 頂欄收起四枚大號功能鍵帽, 保留核心編碼/選單/反查欄 */
+.view-introspect .echo-bar > .fn-key-slot {
+    display: none;
+}
+
+.view-introspect .input-code {
+    width: auto;
+    min-width: 176px;
+    max-width: min(440px, 82vw);
+    height: 36px;
+    margin: 0;
+    padding: 0 14px;
+    gap: 12px;
+    border-radius: 18px;
+    font-size: 15px;
+    background: rgba(24, 21, 17, 0.84);
+    border: 1px solid rgba(226, 210, 182, 0.2);
+    color: #e7decb;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.view-introspect .input-code:hover {
+    border-color: rgba(245, 185, 66, 0.55);
+}
+
+.view-introspect .input-code.freeplay {
+    border-color: rgba(242, 143, 59, 0.65);
+    color: #f6b26b;
+}
+
+.view-introspect .input-code.target {
+    border-color: rgba(126, 217, 166, 0.55);
+    color: #9ee6be;
+}
+
+.view-introspect .input-code.success {
+    background: rgba(94, 234, 212, 0.14);
+    border-color: #5eead4;
+    color: #7ef3df;
+}
+
+.view-introspect .input-code.error {
+    background: rgba(248, 113, 113, 0.14);
+    border-color: #f87171;
+    color: #e7decb;
+}
+
+.view-introspect .seq-echo-track .seq-matched {
+    color: #6ee7b7;
+}
+
+.view-introspect .seq-echo-track .seq-error,
+.view-introspect .chord-compare .seq-error {
+    color: #fca5a5;
+    background-color: rgba(248, 113, 113, 0.22);
+}
+
+.view-introspect .chord-compare .chord-target {
+    color: #9ee6be;
+}
+
+.view-introspect .seq-echo-track .pending-glyph {
+    color: #e2d7c2;
+    opacity: 0.52;
+    border-bottom-color: rgba(218, 200, 170, 0.38);
+}
+
+.view-introspect .seq-echo-track .pending-glyph.peek-on-error {
+    color: #86efac;
+    opacity: 0.92;
+    border-bottom-color: #86efac;
+}
+
+/* 當打開 [輸入方案] / [佈局] / 練習題選單或反查輸入框時, 原位舒展高亮, 保持 36px 等高零抖動 */
+.view-introspect .echo-bar.mode-editing .input-code {
+    width: min(420px, 84vw);
+    height: 36px;
+    padding: 0 8px;
+    border: 1.5px solid #f5b942;
+    background: rgba(20, 17, 14, 0.96);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65), 0 0 18px rgba(245, 185, 66, 0.22);
+    overflow: visible;
+}
+
+.view-introspect .lookup-code,
+.view-introspect .exercises,
+.view-introspect .theories,
+.view-introspect .layouts {
+    margin: 0;
+    width: 100%;
+    height: 32px;
+    padding: 2px 8px;
+    font-size: 15px;
+    font-family: var(--default-font);
+    color: #f7efe0;
+    background-color: #161310;
+    border: none;
+    border-radius: 12px;
+    outline: none;
+}
+
+
+/* ==========================================================================
+   [內觀視圖] 主舞臺與 [同屏對照] 縮微無刻定位鍵盤 (複用 Rime鍵盤圖)
+   ========================================================================== */
+
+.view-introspect .stage-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.introspect-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 28px;
+    box-sizing: border-box;
+}
+
+/* [同屏對照] 開啓時爲下方固定懸空的縮微鍵盤預留恆定安全高度, SVG 自身亦紋絲不動 */
+.introspect-stage.has-mini-dock {
+    padding-bottom: 112px;
+}
+
+.view-introspect.cinema-mode .introspect-stage {
+    padding-bottom: 8px;
+}
+
+.view-introspect.cinema-mode .introspect-stage.has-mini-dock {
+    padding-bottom: 96px;
+}
+
+/* [同屏對照] 縮微鍵盤底座: 固定座標懸空, 完全脫離文檔流, 絕不隨底部脈衝或讀數內容浮沉跳動 */
+.mini-keyboard-dock {
+    --u: min(20px, 2.3vh, 2.1vw);
+    --gap: calc(var(--u) * 0.22);
+    position: fixed;
+    bottom: 34px;
+    left: 0;
+    right: 0;
+    width: fit-content;
+    margin: 0 auto;
+    z-index: 235;
+    padding: 3px 16px 6px;
+    border-radius: 14px;
+    background: rgba(16, 14, 12, 0.8);
+    border: 1px solid rgba(218, 200, 170, 0.12);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+}
+
+.view-introspect.cinema-mode .mini-keyboard-dock {
+    bottom: 12px;
+    background: rgba(12, 11, 9, 0.48);
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.mini-keyboard-dock .board {
+    padding: 4px 6px;
+}
+
+/* 30 鍵配列首行數字行爲空時收起多餘間距 (不影響 :nth-child(3) 命中主行 F/J) */
+.mini-keyboard-dock .board .row:empty {
+    display: none;
+}
+
+/* 針對 Ferris Sweep 下沉小指與旋轉拇指鍵預留底部微距 */
+.mini-keyboard-dock .board.columnar {
+    padding-bottom: calc(var(--u) * 0.65);
+}
+
+.mini-keyboard-dock .key {
+    position: relative;
+    border-width: 1.5px;
+    border-radius: 32% 32% 20% 20% / 40% 40% 26% 26%;
+    border-color: rgba(196, 182, 158, 0.26);
+    background-color: rgba(25, 22, 18, 0.88);
+    color: transparent;
+    transition: background-color 0.08s ease, border-color 0.08s ease, box-shadow 0.08s ease;
+}
+
+/* 全然不寫字: 隱藏縮微鍵帽內所有主副刻印文字與連打數字角標 */
+.mini-keyboard-dock .key kbd.label,
+.mini-keyboard-dock .key .repeat-badge {
+    display: none;
+}
+
+/* 唯獨在主行第 4, 7 鍵 (F 與 J 定位鍵) 底部繪製溫潤琥珀盲凸定位橫線 */
+.mini-keyboard-dock .board .row:nth-child(3) .key:nth-child(4)::after,
+.mini-keyboard-dock .board .row:nth-child(3) .key:nth-child(7)::after {
+    content: "";
+    position: absolute;
+    bottom: 22%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44%;
+    height: 2px;
+    border-radius: 2px;
+    background-color: rgba(245, 185, 66, 0.78);
+    box-shadow: 0 0 4px rgba(245, 185, 66, 0.45);
+}
+
+.mini-keyboard-dock .key.hint-upcoming {
+    border-color: rgba(110, 231, 183, 0.36);
+    background-color: rgba(52, 211, 153, 0.09);
+}
+
+.mini-keyboard-dock .key.hint {
+    border-color: #6ee7b7;
+    background-color: rgba(52, 211, 153, 0.24);
+    box-shadow: 0 0 7px rgba(52, 211, 153, 0.28);
+}
+
+.mini-keyboard-dock .key.hint.hint-repeat {
+    box-shadow: 0 0 0 2px rgba(110, 231, 183, 0.52), 0 0 10px rgba(52, 211, 153, 0.42);
+}
+
+.mini-keyboard-dock .key.pressed {
+    border-color: #f28f3b;
+    background-color: rgba(242, 143, 59, 0.3);
+}
+
+.mini-keyboard-dock .key.hint.pressed {
+    border-color: #5eead4;
+    background-color: rgba(94, 234, 212, 0.42);
+    box-shadow: 0 0 10px rgba(94, 234, 212, 0.45);
+}
+
+.mini-keyboard-dock .key.hint.hint-missed {
+    border-color: #6ee7b7;
+    background-color: rgba(52, 211, 153, 0.38);
+    box-shadow: 0 0 9px rgba(52, 211, 153, 0.36);
+}
+
+.mini-keyboard-dock .key.mispress {
+    border-color: #f87171;
+    background-color: rgba(25, 22, 18, 0.88);
+    box-shadow: none;
+}
+
+.mini-keyboard-dock .key.keydown,
+.mini-keyboard-dock .key.hint.keydown {
+    border-color: #ffd166;
+    background-color: rgba(245, 185, 66, 0.56);
+    box-shadow: 0 0 12px rgba(245, 185, 66, 0.7);
+}
+
+
+/* ==========================================================================
+   [內觀視圖] 九脈濾鏡欄, 機關面板與光纖純能光束 SVG 樣式
+   ========================================================================== */
+
+.xray-brand-emblem {
+    color: #f5b942;
+    font-size: 14px;
+    text-shadow: 0 0 10px rgba(245, 185, 66, 0.7);
+}
+
+.xray-resonance-pill {
+    font-size: 11.5px;
+    color: #ffdf94;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: rgba(245, 185, 66, 0.16);
+    border: 1px solid rgba(245, 185, 66, 0.55);
+    box-shadow: 0 0 12px rgba(245, 185, 66, 0.3);
+}
+
+.xray-conduit-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(226, 212, 188, 0.15);
+    background: rgba(28, 25, 21, 0.75);
+    color: #cfc5b4;
+    font-family: var(--default-font);
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.xray-conduit-chip:hover,
+.xray-conduit-chip.active {
+    color: #fffaf0;
+    border-color: rgba(245, 185, 66, 0.7);
+    background: rgba(245, 185, 66, 0.16);
+}
+
+.xray-conduit-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 5px 18px;
+    border-bottom: 1px solid rgba(218, 200, 170, 0.06);
+    background: rgba(14, 13, 11, 0.55);
+}
+
+.xray-conduit-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.xray-ticker-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #a19684;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.xray-canvas-wrap {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    box-sizing: border-box;
+}
+
+.view-introspect.cinema-mode .xray-canvas-wrap {
+    padding: 0 24px 4px;
+}
+
+.xray-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 1460px;
+    max-height: 100%;
+    overflow: visible;
+}
+
+.xray-zone-label {
+    fill: #6d6456;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+}
+
+.xray-blueprint-banner {
+    fill: #6d6559;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+}
+
+/* 光纖外鞘與纖芯 */
+.xray-fiber-group {
+    transition: opacity 0.2s ease;
+}
+
+.xray-fiber-group.is-dimmed {
+    opacity: 0.11;
+}
+
+.xray-fiber-sheath {
+    stroke: rgba(232, 220, 198, 0.07);
+    stroke-width: 3.6;
+    stroke-linecap: round;
+}
+
+.xray-fiber-group.is-unwired .xray-fiber-sheath {
+    stroke: rgba(160, 148, 132, 0.03);
+    stroke-width: 2.0;
+}
+
+.xray-fiber-core {
+    stroke-width: 1.15;
+    opacity: 0.34;
+    stroke-linecap: round;
+    transition: opacity 0.18s ease, stroke-width 0.18s ease;
+}
+
+.xray-fiber-group.is-unwired .xray-fiber-core {
+    opacity: 0.22;
+}
+
+.xray-fiber-group.is-spotlight .xray-fiber-core {
+    opacity: 0.96;
+    stroke-width: 2.3;
+}
+
+/* 純能飛流光束動畫 */
+.xray-fiber-afterglow {
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    animation: xray-afterglow 0.44s ease-out forwards;
+}
+
+.xray-energy-aura {
+    stroke-width: 5.2;
+    stroke-linecap: round;
+    stroke-dasharray: 24 115;
+    stroke-dashoffset: 24;
+    animation: xray-beam-shoot 0.38s cubic-bezier(0.18, 0.82, 0.28, 1) forwards;
+}
+
+.xray-energy-core {
+    stroke: #fffef7;
+    stroke-width: 2.0;
+    stroke-linecap: round;
+    stroke-dasharray: 15 115;
+    stroke-dashoffset: 20;
+    animation: xray-beam-shoot 0.38s cubic-bezier(0.18, 0.82, 0.28, 1) forwards;
+}
+
+.xray-photon-head {
+    fill: #fffef8;
+    animation: xray-photon-fade 0.39s ease-out forwards;
+}
+
+.xray-beam-caption {
+    animation: xray-pill-pop 0.44s ease-out forwards;
+}
+
+.xray-edge-pill {
+    fill: rgba(18, 16, 13, 0.92);
+    stroke-width: 1.1;
+}
+
+.xray-edge-pill-text {
+    fill: #f7f1e5;
+    font-size: 10px;
+}
+
+/* 機關組件面板與邊框物理接口 */
+.xray-gear-panel {
+    transition: opacity 0.2s ease;
+}
+
+.xray-gear-panel.is-dimmed {
+    opacity: 0.22;
+}
+
+.xray-panel-halo {
+    fill: none;
+    stroke: rgba(245, 185, 66, 0.55);
+    stroke-width: 2.0;
+}
+
+.xray-panel-body {
+    fill: #171512;
+    stroke: #443d33;
+    stroke-width: 1.25;
+    transition: stroke 0.18s ease, fill 0.18s ease;
+}
+
+.xray-gear-panel.is-active .xray-panel-body {
+    fill: #201c16;
+    stroke: #f5b942;
+    stroke-width: 1.7;
+}
+
+.xray-gear-panel.is-blueprint .xray-panel-body {
+    fill: rgba(20, 18, 15, 0.48);
+    stroke: #4d463c;
+    stroke-dasharray: 5 4;
+}
+
+.xray-panel-header {
+    fill: #231f1a;
+}
+
+.xray-gear-panel.is-active .xray-panel-header {
+    fill: #2e261b;
+}
+
+.xray-gear-panel.is-blueprint .xray-panel-header {
+    fill: rgba(34, 30, 25, 0.42);
+}
+
+.xray-panel-title {
+    fill: #f2eadb;
+    font-size: 11.2px;
+    font-weight: 600;
+}
+
+.xray-gear-panel.is-blueprint .xray-panel-title {
+    fill: #918778;
+}
+
+.xray-panel-role-tag {
+    fill: #e7b85c;
+    font-size: 9.8px;
+}
+
+.xray-gear-panel.is-blueprint .xray-panel-role-tag {
+    fill: #7d7365;
+}
+
+.xray-panel-subtitle {
+    fill: #8d8475;
+    font-size: 8.8px;
+}
+
+.xray-panel-readout-box {
+    fill: #0f0e0c;
+    stroke: #2c2720;
+    stroke-width: 0.9;
+}
+
+.xray-gear-panel.is-active .xray-panel-readout-box {
+    stroke: rgba(245, 185, 66, 0.5);
+}
+
+.xray-panel-readout-text {
+    fill: #cfc5b3;
+    font-size: 10.2px;
+}
+
+.xray-gear-panel.is-active .xray-panel-readout-text {
+    fill: #ffe6a8;
+    font-weight: 600;
+}
+
+.xray-gear-panel.is-blueprint .xray-panel-readout-text {
+    fill: #6c6458;
+}
+
+.xray-port-collar {
+    fill: #12100d;
+    stroke: #5b5143;
+    stroke-width: 1.1;
+}
+
+.xray-port-socket.is-active .xray-port-collar {
+    stroke: #ffd980;
+    stroke-width: 1.6;
+}
+
+/* [合詠] 共振波紋 */
+.xray-resonance-ring {
+    fill: none;
+    stroke: #f5b942;
+    stroke-width: 1.8;
+    pointer-events: none;
+}
+
+.xray-resonance-ring.ring-1 {
+    animation: xray-resonance-expand 0.9s cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+}
+
+.xray-resonance-ring.ring-2 {
+    animation: xray-resonance-expand 0.9s 0.12s cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+}
+
+.xray-resonance-banner {
+    fill: #ffe094;
+    font-size: 12.5px;
+    letter-spacing: 0.22em;
+    animation: xray-pill-pop 0.9s ease-out forwards;
+}
+
+/* 底部微觀脈衝流水欄: 固定底邊單行高度且禁止折行, 徹底消除因徽章增減引起的頁面抖動 */
+.xray-pulse-ticker {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: max(32px, calc(var(--u) * 0.5));
+    height: 28px;
+    z-index: 220;
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: calc(var(--u) * 0.4);
-    background-color: transparent;
-    font-size: max(12px, calc(var(--u) * 0.2));
-    opacity: 0.3;
-    transition: opacity 0.2s ease-in-out;
-    user-select: none;
-    pointer-events: none;
-    z-index: 100;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px;
+    border-top: 1px solid rgba(218, 200, 170, 0.08);
+    background: rgba(13, 12, 10, 0.88);
+    font-size: 10.8px;
+    color: #8b8172;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.status-bar:hover {
-    opacity: 1.0;
-    pointer-events: auto;
-}
-
-.status-item {
-    cursor: pointer;
+.xray-ticker-items {
     display: flex;
-    gap: calc(var(--u) * 0.1);
     align-items: center;
-    pointer-events: auto;
-    transition: color 0.15s;
+    gap: 8px;
+    overflow: hidden;
 }
 
-.status-item:hover {
-    color: var(--accent-color-active);
+.xray-ticker-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(255, 248, 234, 0.05);
+    border: 1px solid rgba(255, 248, 234, 0.09);
+    white-space: nowrap;
 }
 
-.status-label {
-    color: var(--secondary-fg-color);
-    font-size: max(11px, calc(var(--u) * 0.18));
+.xray-ticker-badge .ticker-role {
+    color: #f5b942;
 }
 
-.status-value {
-    font-weight: bold;
-    color: var(--primary-fg-color);
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
+.xray-ticker-badge .ticker-sig {
+    color: #bfb5a4;
+}
+
+.xray-ticker-badge .ticker-val {
+    color: #fff6e0;
+    font-weight: 600;
+}
+
+@keyframes xray-beam-shoot {
+    0% {
+        stroke-dashoffset: 24;
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        stroke-dashoffset: -106;
+        opacity: 0;
+    }
+}
+
+@keyframes xray-afterglow {
+    0% {
+        opacity: 0.88;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes xray-photon-fade {
+    0% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes xray-pill-pop {
+    0% {
+        opacity: 0;
+    }
+    14% {
+        opacity: 1;
+    }
+    82% {
+        opacity: 0.95;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes xray-resonance-expand {
+    0% {
+        r: 36px;
+        opacity: 0.72;
+        stroke-width: 2.4;
+    }
+    100% {
+        r: 520px;
+        opacity: 0;
+        stroke-width: 0.5;
+    }
 }
