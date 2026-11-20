@@ -228,13 +228,7 @@ pub fn Rime打字機應用() -> impl IntoView {
         觸鍵方式::並擊 => 回顯區佈局::左右對照,
     });
     let 回顯輸入碼 = Signal::derive(move || match 指法() {
-        觸鍵方式::連擊 => {
-            let 輸入碼 = 已錄入字根碼();
-            match 輸入碼.as_str() {
-                "" | "␣" => 輸入碼,
-                _ => 輸入碼 + "‸",
-            }
-        }
+        觸鍵方式::連擊 => String::new(),
         觸鍵方式::並擊 => 反查所得並擊碼().unwrap_or_else(實況並擊碼),
     });
     let 回顯轉寫碼 = Signal::derive(move || match 指法() {

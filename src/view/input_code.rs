@@ -22,7 +22,7 @@ pub fn Rime編碼回顯區(
     view! {
         {move || {
             if 佈局() == 回顯區佈局::單欄 {
-                if let Some(對照) = 連擊對照().filter(|對照| 對照.分段對照) {
+                if let Some(對照) = 連擊對照() {
                     let 有錯碼 = !對照.錯碼段.is_empty();
                     let 待輸列表: Vec<char> = 對照.待輸後綴.chars().collect();
                     return view! {

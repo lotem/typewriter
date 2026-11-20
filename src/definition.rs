@@ -170,6 +170,26 @@ impl<'a> 輸入方案定義<'a> {
     {
         self.轉寫法.邊界判定.終止鍵.iter().find(查驗鍵位)
     }
+
+    pub fn 是否分隔鍵(&self, 鍵面: &選擇鍵面) -> bool {
+        self.查分隔鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+    }
+
+    pub fn 是否起始鍵(&self, 鍵面: &選擇鍵面) -> bool {
+        self.查起始鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+    }
+
+    pub fn 是否終止鍵(&self, 鍵面: &選擇鍵面) -> bool {
+        self.查終止鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+    }
+
+    pub fn 是否分隔碼(&self, 輸入碼: &str) -> bool {
+        !輸入碼.is_empty() && self.查分隔鍵(|鍵位| 鍵位.輸入碼 == 輸入碼).is_some()
+    }
+
+    pub fn 是否終止碼(&self, 輸入碼: &str) -> bool {
+        !輸入碼.is_empty() && self.查終止鍵(|鍵位| 鍵位.輸入碼 == 輸入碼).is_some()
+    }
 }
 
 impl 轉寫法定義<'_> {
