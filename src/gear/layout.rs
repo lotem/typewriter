@@ -12,21 +12,18 @@ use crate::app_state::選用配列動作;
 use crate::gear::theory::輸入方案機關輸出信號;
 use crate::key_code::KeyCode;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct 盤面選擇碼(pub u64);
 
+pub const 基本層: 盤面選擇碼 = 盤面選擇碼(0b00);
+pub const 上檔層: 盤面選擇碼 = 盤面選擇碼(0b01);
+
 impl 盤面選擇碼 {
-    pub fn 是否可選盤面(&self, 盤面號: usize) -> bool {
-        盤面號 == 0 || (self.0 & (1 << (盤面號 - 1))) != 0
+    pub const fn 疊加(self, 其他: 盤面選擇碼) -> Self {
+        盤面選擇碼(self.0 | 其他.0)
     }
 
-    pub fn 頂層盤面(&self) -> usize {
-        (0..64)
-            .rfind(|&盤面號| self.是否可選盤面(盤面號))
-            .unwrap_or_default()
-    }
-
-    pub fn 包含盤面(&self, 目標盤面: &盤面選擇碼) -> bool {
+    pub const fn 包含盤面(&self, 目標盤面: &盤面選擇碼) -> bool {
         (self.0 & 目標盤面.0) == 目標盤面.0
     }
 }
@@ -59,7 +56,7 @@ impl std::fmt::Display for 矩陣座標 {
     }
 }
 
-#[derive(Clone, Copy, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct 刻印說明 {
     pub 中: Option<&'static str>,
     pub 上: Option<&'static str>,
@@ -80,7 +77,7 @@ impl 刻印說明 {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum 鍵面刻印 {
     透明,
     無刻,
@@ -198,8 +195,11 @@ impl 配列 {
 }
 
 #[derive(Clone, Copy)]
+pub struct 盤面層(pub 盤面選擇碼, pub 盤面定義<'static>);
+
+#[derive(Clone, Copy)]
 pub struct 鍵盤佈局 {
-    pub 盤面: &'static [盤面定義<'static>],
+    pub 盤面: &'static [盤面層],
     pub 默認盤面: 盤面選擇碼,
     pub 首選配列: 配列,
 }
@@ -214,14 +214,45 @@ impl 鍵盤佈局 {
             .iter()
             .enumerate()
             .rev()
-            .filter(|&(盤面號, _)| 目標盤面.是否可選盤面(盤面號))
-            .find_map(|(盤面號, 此盤面)| {
-                self.從盤面讀取刻印(此盤面, 座標)
-                    .and_then(|刻印| match 刻印 {
-                        鍵面刻印::透明 => None,
-                        _ => Some((盤面號, 刻印)),
-                    })
+            .filter(|&(_, 層)| 目標盤面.包含盤面(&層.0))
+            .find_map(|(盤面號, 層)| {
+                self.從盤面讀取刻印(層.1, 座標).and_then(|刻印| match 刻印 {
+                    鍵面刻印::透明 => None,
+                    _ => Some((盤面號, 刻印)),
+                })
             })
+    }
+
+    pub fn 頂層盤面號(&self, 目標盤面: 盤面選擇碼) -> Option<usize> {
+        self.盤面
+            .iter()
+            .enumerate()
+            .rev()
+            .find_map(|(盤面號, 層)| 目標盤面.包含盤面(&層.0).then_some(盤面號))
+    }
+
+    /// 求取盤面選擇碼對應層在佈局中的層序 (高層優先於低層).
+    pub fn 盤面層序(&self, 目標盤面: 盤面選擇碼) -> usize {
+        self.盤面
+            .iter()
+            .rposition(|層| 層.0 == 目標盤面)
+            .unwrap_or(0)
+    }
+
+    /// 判定鍵碼在指定激活盤面下是否被高層 `空` (`鍵面刻印::無刻`) 顯式遮斷.
+    pub fn 是否遮斷(&self, 目標盤面: 盤面選擇碼, 鍵碼: KeyCode) -> bool {
+        Self::鍵碼座標(鍵碼)
+            .and_then(|座標| self.選擇盤面(目標盤面, 座標))
+            .is_some_and(|(_, 刻印)| 刻印 == 鍵面刻印::無刻)
+    }
+
+    pub fn 鍵碼座標(鍵碼: KeyCode) -> Option<矩陣座標> {
+        主鍵盤區矩陣.iter().enumerate().find_map(|(行號, 此行)| {
+            此行
+                .iter()
+                .position(|&鍵| 鍵 == 鍵碼)
+                .map(|列號| 矩陣座標(行號, 列號))
+        })
     }
 
     fn 從盤面讀取刻印(
@@ -337,33 +368,42 @@ macro_rules! 標註 {
     };
 }
 
-pub const 基本盤面: 盤面定義<'static> = 盤面![
-    [ "`" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "-" "=" "\\" ],  // E00 - E13
-    [ q w e r t y u i o p "[" "]" ],                               // D01 - D12
-    [ a s d f g h j k l ";" "'" ],                                 // C01 - C11
-    [ z x c v b n m "," "." "/" ],                                 // B01 - B10
-    [ "␣" "␣" "␣" ]                                                // A03 - A05
-];
+pub const 基本盤面: 盤面層 = 盤面層(
+    基本層,
+    盤面![
+        [ "`" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" "-" "=" "\\" ],  // E00 - E13
+        [ q w e r t y u i o p "[" "]" ],                               // D01 - D12
+        [ a s d f g h j k l ";" "'" ],                                 // C01 - C11
+        [ z x c v b n m "," "." "/" ],                                 // B01 - B10
+        [ "␣" "␣" "␣" ]                                                // A03 - A05
+    ],
+);
 
-pub const 上檔盤面: 盤面定義<'static> = 盤面![
-    [ "~" "!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "|" ],
-    [ Q W E R T Y U I O P "{" "}" ],
-    [ A S D F G H J K L ":" "\"" ],
-    [ Z X C V B N M "<" ">" "?" ],
-    [ _ _ _ ]
-];
+pub const 上檔盤面: 盤面層 = 盤面層(
+    上檔層,
+    盤面![
+        [ "~" "!" "@" "#" "$" "%" "^" "&" "*" "(" ")" "_" "+" "|" ],
+        [ Q W E R T Y U I O P "{" "}" ],
+        [ A S D F G H J K L ":" "\"" ],
+        [ Z X C V B N M "<" ">" "?" ],
+        [ _ _ _ ]
+    ],
+);
 
-pub const 大寫字母盤面: 盤面定義<'static> = 盤面![
-    [ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ],
-    [ Q W E R T Y U I O P _ _ ],
-    [ A S D F G H J K L _ _ ],
-    [ Z X C V B N M _ _ _ ],
-    [ "␣" "␣" "␣" ]
-];
+pub const 大寫字母盤面: 盤面層 = 盤面層(
+    盤面選擇碼(0b10),
+    盤面![
+        [ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ],
+        [ Q W E R T Y U I O P _ _ ],
+        [ A S D F G H J K L _ _ ],
+        [ Z X C V B N M _ _ _ ],
+        [ "␣" "␣" "␣" ]
+    ],
+);
 
 pub const 拉丁字母鍵盤佈局: 鍵盤佈局 = 鍵盤佈局 {
     盤面: &[基本盤面, 上檔盤面, 大寫字母盤面],
-    默認盤面: 盤面選擇碼(2),
+    默認盤面: 盤面選擇碼(0b10),
     首選配列: 配列::字母鍵盤,
 };
 
@@ -394,20 +434,36 @@ pub mod 功能鍵 {
 pub struct 佈局機關輸出信號 {
     pub 實際配列: Signal<配列>,
     pub 選用配列: 選用配列動作,
-    pub 當選盤面: ReadSignal<盤面選擇碼>,
+    pub 常駐盤面: ReadSignal<盤面選擇碼>,
     pub 選擇盤面: WriteSignal<盤面選擇碼>,
+    pub 當選盤面: Memo<盤面選擇碼>,
+}
+
+/// 純信號流派生當選盤面: 常駐盤面按位疊加上檔換擋態 (真 => `0b01`), 佈局機關無須感知具體物理鍵位.
+pub fn 派生當選盤面(
+    常駐盤面: ReadSignal<盤面選擇碼>,
+    上檔態: Memo<bool>,
+) -> Memo<盤面選擇碼> {
+    Memo::new(move |_| {
+        if 上檔態.get() {
+            常駐盤面().疊加(上檔層)
+        } else {
+            常駐盤面()
+        }
+    })
 }
 
 pub fn 佈局機關(
     方案: &輸入方案機關輸出信號,
     已選配列: Memo<Option<配列>>,
     選用配列: 選用配列動作,
+    上檔態: Memo<bool>,
 ) -> 佈局機關輸出信號 {
     let 方案定義 = 方案.方案定義;
     let 實際配列 =
         Signal::derive(move || 已選配列.read().unwrap_or_else(|| 方案定義().佈局.首選配列));
 
-    let (當選盤面, 選擇盤面) = signal(方案定義.get_untracked().佈局.默認盤面);
+    let (常駐盤面, 選擇盤面) = signal(方案定義.get_untracked().佈局.默認盤面);
 
     let _ = Effect::watch(
         方案定義,
@@ -417,10 +473,13 @@ pub fn 佈局機關(
         false,
     );
 
+    let 當選盤面 = 派生當選盤面(常駐盤面, 上檔態);
+
     佈局機關輸出信號 {
         實際配列,
         選用配列,
-        當選盤面,
+        常駐盤面,
         選擇盤面,
+        當選盤面,
     }
 }

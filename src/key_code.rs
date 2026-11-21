@@ -371,6 +371,22 @@ pub enum KeyCode {
     RGui = 0x00E7,
 }
 
+impl KeyCode {
+    pub const fn 是否修飾鍵(self) -> bool {
+        matches!(
+            self,
+            Self::LCtrl
+                | Self::LShift
+                | Self::LAlt
+                | Self::LGui
+                | Self::RCtrl
+                | Self::RShift
+                | Self::RAlt
+                | Self::RGui
+        )
+    }
+}
+
 pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
     match 鍵值 {
         "KeyA" => KeyCode::A,
@@ -425,6 +441,14 @@ pub fn 網頁鍵值轉換(鍵值: &str) -> KeyCode {
         "Tab" => KeyCode::Tab,
         "Backspace" => KeyCode::Backspace,
         "Enter" => KeyCode::Enter,
+        "ShiftLeft" => KeyCode::LShift,
+        "ShiftRight" => KeyCode::RShift,
+        "ControlLeft" => KeyCode::LCtrl,
+        "ControlRight" => KeyCode::RCtrl,
+        "AltLeft" => KeyCode::LAlt,
+        "AltRight" => KeyCode::RAlt,
+        "MetaLeft" => KeyCode::LGui,
+        "MetaRight" => KeyCode::RGui,
         _ => KeyCode::No,
     }
 }

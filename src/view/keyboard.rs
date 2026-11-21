@@ -81,7 +81,7 @@ impl 鍵面標註法 for 選擇鍵面 {
     }
     fn 是否後備盤面(&self) -> bool {
         self.有效盤面()
-            .is_some_and(|(盤面, _)| 盤面 != self.目標盤面.頂層盤面())
+            .is_some_and(|(盤面號, _)| Some(盤面號) != self.佈局.頂層盤面號(self.目標盤面))
     }
 }
 
@@ -187,7 +187,7 @@ where
 pub fn Rime鍵盤圖<T>(
     配列: Signal<配列>,
     鍵盤佈局: Signal<鍵盤佈局>,
-    目標盤面: ReadSignal<盤面選擇碼>,
+    #[prop(into)] 目標盤面: Signal<盤面選擇碼>,
     着色法: T,
     #[prop(into)] 落鍵動作: Callback<KeyCode>,
     #[prop(into)] 抬鍵動作: Callback<KeyCode>,

@@ -71,6 +71,9 @@ pub struct 動態切換規則<'a> {
 pub trait 判定鍵位 {
     fn 有無鍵位(&self) -> bool;
     fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool;
+    fn 目標盤面(&self) -> Option<盤面選擇碼> {
+        None
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -116,11 +119,30 @@ impl 判定鍵位 for 選擇鍵面 {
     fn 包含鍵位(&self, 鍵位: &鍵位定義) -> bool {
         self.盤面.包含盤面(&鍵位.盤面) && self.鍵碼 == 鍵位.鍵碼
     }
+
+    fn 目標盤面(&self) -> Option<盤面選擇碼> {
+        Some(self.盤面)
+    }
 }
 
 impl<'a> 輸入方案定義<'a> {
     pub fn 尋得字根(&self, 字根: &str) -> Option<&鍵位定義<'_>> {
         self.字根表.iter().find(|鍵| 鍵.輸入碼 == 字根)
+    }
+
+    /// 在指定激活 `盤面` 下求取單顆實體鍵 `鍵碼` 的有效字根定義:
+    /// - 高層盤面刻爲 `空` (`鍵面刻印::無刻`) 時遮斷下層並返回 `None`;
+    /// - 否則在所有滿足激活條件的候選字根中取佈局層序最高者 (`_` 透明位自動透傳至下層).
+    pub fn 有效鍵位(
+        &self, 盤面: 盤面選擇碼, 鍵碼: KeyCode
+    ) -> Option<&'a 鍵位定義<'a>> {
+        if 鍵碼 == KeyCode::No || self.佈局.是否遮斷(盤面, 鍵碼) {
+            return None;
+        }
+        self.字根表
+            .iter()
+            .filter(|鍵| 盤面.包含盤面(&鍵.盤面) && 鍵.鍵碼 == 鍵碼)
+            .max_by_key(|鍵| self.佈局.盤面層序(鍵.盤面))
     }
 
     pub fn 讀出鍵位(&self, 字根碼: &str, 盤面: &盤面選擇碼) -> 鍵組 {
@@ -130,7 +152,12 @@ impl<'a> 輸入方案定義<'a> {
         鍵組(
             self.字根表
                 .iter()
-                .filter(|字根| 盤面.包含盤面(&字根.盤面) && 鍵碼序列.contains(字根.輸入碼))
+                .filter(|字根| {
+                    鍵碼序列.contains(字根.輸入碼)
+                        && self
+                            .有效鍵位(*盤面, 字根.鍵碼)
+                            .is_some_and(|有效| std::ptr::eq(有效, *字根))
+                })
                 .map(|字根| 字根.鍵碼)
                 .collect(),
         )
@@ -138,57 +165,67 @@ impl<'a> 輸入方案定義<'a> {
 
     pub fn 寫成字根碼(&self, 鍵位: &impl 判定鍵位) -> String {
         if !鍵位.有無鍵位() {
-            String::new()
-        } else {
-            let 字根碼 = self
-                .字根表
-                .iter()
-                .filter(|鍵| 鍵位.包含鍵位(鍵))
-                .map(|鍵| 鍵.輸入碼)
-                .collect::<String>();
-            施展拼寫運算(&字根碼, self.轉寫法.輸入碼表示).unwrap_or(字根碼)
+            return String::new();
         }
+        let 盤面 = 鍵位.目標盤面();
+        let 字根碼 = self
+            .字根表
+            .iter()
+            .filter(|鍵| {
+                鍵位.包含鍵位(鍵)
+                    && 盤面.is_none_or(|目標盤面| {
+                        self.有效鍵位(目標盤面, 鍵.鍵碼)
+                            .is_some_and(|有效| std::ptr::eq(有效, *鍵))
+                    })
+            })
+            .map(|鍵| 鍵.輸入碼)
+            .collect::<String>();
+        施展拼寫運算(&字根碼, self.轉寫法.輸入碼表示).unwrap_or(字根碼)
     }
 
-    pub fn 查分隔鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
-    where
-        F: Fn(&&鍵位定義<'a>) -> bool,
-    {
-        self.轉寫法.邊界判定.分隔鍵.iter().find(查驗鍵位)
-    }
-
-    pub fn 查起始鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
-    where
-        F: Fn(&&鍵位定義<'a>) -> bool,
-    {
-        self.轉寫法.邊界判定.起始鍵.iter().find(查驗鍵位)
-    }
-
-    pub fn 查終止鍵<F>(&self, 查驗鍵位: F) -> Option<&'a 鍵位定義<'a>>
-    where
-        F: Fn(&&鍵位定義<'a>) -> bool,
-    {
-        self.轉寫法.邊界判定.終止鍵.iter().find(查驗鍵位)
+    fn 命中邊界鍵(&self, 鍵面: &選擇鍵面, 邊界表: &[鍵位定義<'a>]) -> bool {
+        if !鍵面.有無鍵位() || self.佈局.是否遮斷(鍵面.盤面, 鍵面.鍵碼) {
+            return false;
+        }
+        let 頂層序 = self
+            .有效鍵位(鍵面.盤面, 鍵面.鍵碼)
+            .map(|有效| self.佈局.盤面層序(有效.盤面));
+        邊界表.iter().any(|鍵位| {
+            鍵面.包含鍵位(鍵位)
+                && 頂層序.is_none_or(|有效層序| 有效層序 <= self.佈局.盤面層序(鍵位.盤面))
+        })
     }
 
     pub fn 是否分隔鍵(&self, 鍵面: &選擇鍵面) -> bool {
-        self.查分隔鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+        self.命中邊界鍵(鍵面, self.轉寫法.邊界判定.分隔鍵)
     }
 
     pub fn 是否起始鍵(&self, 鍵面: &選擇鍵面) -> bool {
-        self.查起始鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+        self.命中邊界鍵(鍵面, self.轉寫法.邊界判定.起始鍵)
     }
 
     pub fn 是否終止鍵(&self, 鍵面: &選擇鍵面) -> bool {
-        self.查終止鍵(|鍵位| 鍵面.包含鍵位(鍵位)).is_some()
+        self.命中邊界鍵(鍵面, self.轉寫法.邊界判定.終止鍵)
     }
 
     pub fn 是否分隔碼(&self, 輸入碼: &str) -> bool {
-        !輸入碼.is_empty() && self.查分隔鍵(|鍵位| 鍵位.輸入碼 == 輸入碼).is_some()
+        !輸入碼.is_empty()
+            && self
+                .轉寫法
+                .邊界判定
+                .分隔鍵
+                .iter()
+                .any(|鍵位| 鍵位.輸入碼 == 輸入碼)
     }
 
     pub fn 是否終止碼(&self, 輸入碼: &str) -> bool {
-        !輸入碼.is_empty() && self.查終止鍵(|鍵位| 鍵位.輸入碼 == 輸入碼).is_some()
+        !輸入碼.is_empty()
+            && self
+                .轉寫法
+                .邊界判定
+                .終止鍵
+                .iter()
+                .any(|鍵位| 鍵位.輸入碼 == 輸入碼)
     }
 }
 
