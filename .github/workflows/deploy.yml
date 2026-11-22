@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # 1. 安裝 Rust Nightly
       - name: Install nightly Rust
@@ -72,10 +72,11 @@ jobs:
 
       # 8. 發布到 Cloudflare Pages
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: typewriter
-          directory: dist # 上傳整個 dist 目錄 (包含 _redirects 和 typewriter 子目錄)
+          # 上傳整個 dist 目錄 (包含 _redirects 和 typewriter 子目錄)
+          command: pages deploy dist --project-name=typewriter
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
