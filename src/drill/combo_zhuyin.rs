@@ -23,5 +23,8 @@ pub const 宮保注音練習題: &[練習題] = &[
          chun cong tian shang lai",
         "東風破早梅 向暖一枝開 冰雪無人見 春從天上來",
     ),
-    練習題::求取("東風破·注音緣", "/typewriter/static/drill/dongfengpo-zhuyinyuan.txt"),
+    練習題::求取(
+        "東風破·注音緣",
+        "/typewriter/static/drill/dongfengpo-zhuyinyuan.txt",
+    ),
 ];

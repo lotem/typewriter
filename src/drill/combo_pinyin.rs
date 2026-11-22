@@ -90,7 +90,10 @@ er AE=<'a> A=<␣>",
          標準設備廣兼容 六鍵無衝七指禪 \
          速記千宗歸簡易 音韻萬變列琴盤",
     ),
-    練習題::求取("倉頡轉世賦", "/typewriter/static/drill/cangjiezhuanshifu.txt"),
+    練習題::求取(
+        "倉頡轉世賦",
+        "/typewriter/static/drill/cangjiezhuanshifu.txt",
+    ),
     練習題::求取("中州韻", "/typewriter/static/drill/zhongzhouyun.txt"),
     練習題::求取("鼠鬚管", "/typewriter/static/drill/shuxuguan.txt"),
     練習題::求取("歌者", "/typewriter/static/drill/gezhe.txt"),

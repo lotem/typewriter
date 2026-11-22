@@ -73,9 +73,7 @@ impl 鍵面動態着色法 for 並擊對標動態 {
     }
 
     fn 是否誤擊(&self, 鍵: KeyCode) -> bool {
-        self.並擊失誤態.get()
-            && !self.鍵位提示(鍵)
-            && self.實況並擊.read().累計擊鍵.0.contains(&鍵)
+        self.並擊失誤態.get() && !self.鍵位提示(鍵) && self.實況並擊.read().累計擊鍵.0.contains(&鍵)
     }
 }
 

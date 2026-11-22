@@ -134,10 +134,7 @@ pub fn 並擊機關(
     });
 
     let 並擊失誤 = Signal::derive(move || {
-        !作業進度完成()
-            && 目標輸入碼片段.read().is_some()
-            && 並擊完成()
-            && !並擊成功()
+        !作業進度完成() && 目標輸入碼片段.read().is_some() && 並擊完成() && !並擊成功()
     });
 
     let 並擊計次 = Signal::derive(move || 並擊狀態流.read().並擊計次);

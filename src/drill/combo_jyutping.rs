@@ -84,7 +84,10 @@ aat at et [i-t]=<it> ot [u-t]=<ut> eot yut
 aak ak ek [i-k]=<ik> ok [u-k]=<uk> oek",
     ),
     練習題::求取("馬德鐘－江山", "/typewriter/static/drill/gongsaan.txt"),
-    練習題::求取("陳慧嫻－千千闋歌", "/typewriter/static/drill/cincinkyutgo.txt"),
+    練習題::求取(
+        "陳慧嫻－千千闋歌",
+        "/typewriter/static/drill/cincinkyutgo.txt",
+    ),
     練習題::求取(
         "劉德華－一起走過的日子",
         "/typewriter/static/drill/jatheizaugwodikjatzi.txt",
